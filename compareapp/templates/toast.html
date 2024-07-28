@@ -1,0 +1,43 @@
+{% load static %}
+
+<button type="button" class="hidden" id="liveToastBtn"></button>
+
+<div class="fixed top-0 right-0 p-3 space-y-4">
+    {% if messages %}
+    {% for message in messages %}
+    <div id="liveToast" class="
+        {% if message.tags == 'danger' %}bg-red-500{% endif %}
+        {% if message.tags == 'warning' %}bg-yellow-500{% endif %}
+        {% if message.tags == 'success' %}bg-green-500{% endif %}
+        {% if message.tags == 'info' %}bg-blue-500{% endif %}
+        text-white px-4 py-3 rounded shadow-lg flex items-start space-x-2" role="alert" aria-live="assertive" aria-atomic="true">
+        <img src="{% static 'images/logosm.png' %}" width="25" height="25" class="" alt="logo">
+        <div>
+            <strong class="block font-bold">
+                {% if message.tags == 'danger' %}Error{% endif %}
+                {% if message.tags == 'warning' %}Warning{% endif %}
+                {% if message.tags == 'success' %}Information{% endif %}
+                {% if message.tags == 'info' %}Information{% endif %}
+            </strong>
+            <span class="text-sm">{{ message }}</span>
+        </div>
+        <button type="button" class="ml-auto text-white" aria-label="Close" onclick="this.parentElement.remove()">
+            &times;
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastTrigger = document.getElementById('liveToastBtn');
+        const toasts = document.querySelectorAll('#liveToast');
+
+        if (toastTrigger && toasts.length > 0) {
+            toasts.forEach(toast => {
+                toast.classList.remove('hidden');
+            });
+        }
+    });
+</script>
