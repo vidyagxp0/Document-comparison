@@ -1,87 +1,112 @@
-{% load static tailwind_tags %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% load static %}
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DCS - Form</title>
-    <link rel="shortcut icon" href="{% static 'image/logosm.png' %}" type="image/x-icon">
-    {% tailwind_css %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-</head>
-<body>
-    <header>
-        <div class="d-flex justify-content-between text-start px-5 text-white py-2" style="background-color: #2a3441;">
-            <div class=""><img src="{% static 'images/logo.png' %}" alt="logo" width="150" height="50"></div>
-            <div class="d-flex gap-1 justify-content-center align-items-center">
-                <div class="">
-                    <img src="{% static 'images/user.png' %}" alt="user" width="40" height="40">
-                    <span class="position-absolute start-200 translate-middle p-1 bg-success rounded-circle">
-                        <span class="visually-hidden">Active</span>
-                    </span>
-                </div>
-                <div class="dropdown">
-                    <button class="btn btn-secondary-subtle dropdown-toggle border-0 fw-medium text-white" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      Admin
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-start">
-                      <div class="d-flex justify-content-center align-items-center px-5 h5 gap-2"><img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> Admin</div>
-                      <div class="dropdown-divider"></div>
-                      <div><a class="px-4 dropdown-item" href="#"> ◆ &nbsp; About</a></div>
-                      <div><a class="px-4 dropdown-item" href="#"> ◆ &nbsp; Feedback</a></div>
-                      <div><a class="px-4 dropdown-item" href="{% url "index" %}"><img src="{% static 'images/logout.png' %}" alt="logout" width="16" height="15">&nbsp; Log Out</a></div>
+{% extends "layout.html" %}
+
+{% block title %} 
+    Document Upload
+{% endblock title %}
+
+{% block body %}
+    <div class="container mx-auto my-12 px-6">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Upload Documents</h1>
+            <p class="mt-2 text-lg text-gray-600">Select the type of documents you wish to upload, specify the number of attachments, and generate the upload fields.</p>
+        </div>
+
+        <form action="#" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+                <fieldset class="mb-6">
+                    <legend class="text-lg font-medium text-gray-800">Select Attachment Type</legend>
+                    <div class="flex gap-6 mt-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="attachmentType" id="PDF" class="form-radio text-blue-600" checked onclick="toggleForms()">
+                            <span class="ml-2 text-gray-700">PDF</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="attachmentType" id="Word" class="form-radio text-blue-600" onclick="toggleForms()">
+                            <span class="ml-2 text-gray-700">Word Doc</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+                <!-- Form container for dynamic content -->
+                <div id="displayForm">
+                    <!-- PDF Form -->
+                    <div id="pdfForm" class="hidden">
+                        <div class="flex gap-5 mb-6">
+                            <div class="w-3/4">
+                                <label for="rowsPDF" class="block text-sm font-medium text-gray-700">Number of PDF Documents</label>
+                                <input type="number" name="rows" id="rowsPDF" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" placeholder="Enter number of attachments">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="generateRows('pdf')">Generate</button>
+                            </div>
+                        </div>
+                        <div class="border rounded-lg p-4" id="fieldFormPDF">
+                            <!-- Dynamic fields will be added here -->
+                        </div>
+                    </div>
+
+                    <!-- Word/Doc Form -->
+                    <div id="wordForm" class="hidden">
+                        <div class="flex gap-5 mb-6">
+                            <div class="w-3/4">
+                                <label for="rowsWord" class="block text-sm font-medium text-gray-700">Number of Word Documents</label>
+                                <input type="number" name="rows" id="rowsWord" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" placeholder="Enter number of attachments">
+                            </div>
+                            <div class="flex items-end">
+                                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="generateRows('word')">Generate</button>
+                            </div>
+                        </div>
+                        <div class="border rounded-lg p-4" id="fieldFormWord">
+                            <!-- Dynamic fields will be added here -->
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </header>
+        </form>
+    </div>
 
-    <main>
-
-        <div class="container my-5">
-            <div class="text-center mb-5 h3">Documents Comparison</div>
-       
-            <form class="border rounded p-4" method="POST" enctype="multipart/form-data">
-                <div class="d-flex justify-content-between gap-4 mb-3">
-                    <div class="w-100">
-                        <label for="rows" class="form-label">Number of Attachments</label>
-                        <input type="number" name="rows" class="form-control" id="numAttachments" min="2" placeholder="Enter minimum 2">
-                    </div>
-                    <div class="mt-4 pt-2">
-                        <button type="button" class="btn btn-primary" onclick="generateAttachments()">Generate</button>
-                    </div>
-                </div>
-                <div id="attachmentsForm" class="mt-4 border rounded p-3">
-                    {% csrf_token %}
-                </div>
-            </form> 
-
-        </div>
-    </main>
-
-    {% include "toast.html" with messages=messages %}
-   
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
-        function generateAttachments() {
-            const row = document.getElementById('numAttachments').value;
-            const form = document.getElementById('attachmentsForm');
-            document.querySelectorAll('.previous').forEach( field => field.remove());
-            let html = '';
-    
-            if ( row <= '1' ) {
-                return
+        function toggleForms() {
+            const isPDFSelected = document.getElementById('PDF').checked;
+            const pdfForm = document.getElementById('pdfForm');
+            const wordForm = document.getElementById('wordForm');
+            
+            if (isPDFSelected) {
+                pdfForm.classList.remove('hidden');
+                wordForm.classList.add('hidden');
+            } else {
+                pdfForm.classList.add('hidden');
+                wordForm.classList.remove('hidden');
             }
-    
-            for (let i = 1; i <= row; i++) {
-                html += `<div class="mb-3 previous"><label for="attachment_${i}" class="form-label">Attachment ${i}</label><input type="file" required name="attachment_${i}" class="form-control" id="attachment_${i}"></div>`;
-            }
-    
-            html += `<div class="mt-4 previous"><button type="submit" class="btn btn-success">Compare Documents</button></div>`;
-    
-            form.innerHTML += html;
         }
+
+        function generateRows(type) {
+            const numRows = document.getElementById(`rows${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
+            const form = document.getElementById(`fieldForm${type.charAt(0).toUpperCase() + type.slice(1)}`);
+            form.innerHTML = ''; // Clear existing fields
+
+            if (numRows <= 0) {
+                return;
+            }
+
+            let html = '';
+
+            for (let i = 1; i <= numRows; i++) {
+                html += `<div class="mb-4">
+                    <label for="${type}_attachment_${i}" class="block text-sm font-medium text-gray-700">Attachment ${i}</label>
+                    <input type="file" required name="${type}_attachment_${i}" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" id="${type}_attachment_${i}">
+                </div>`;
+            }
+
+            html += `<div class="mt-4">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Perform Comparison</button>
+            </div>`;
+
+            form.innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', toggleForms);
     </script>
-</body>
-</html>
+
+{% endblock body %}

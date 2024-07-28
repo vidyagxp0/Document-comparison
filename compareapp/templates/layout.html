@@ -1,0 +1,120 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doc Comparison Pro - {% block title %}{% endblock title %}</title>
+    <link rel="shortcut icon" href="{% static 'images/logosm.png' %}" type="image/x-icon">
+    {% tailwind_css %}
+    <style>
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-closed {
+            opacity: 0;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Header -->
+    <header>
+        <div class="flex justify-between items-center px-10 py-2.5 bg-gray-800 bg-opacity-90 text-white">
+            <div>
+                <a href="#" class="text-white text-[20px] md:text-2xl font-bold flex items-center gap-4">
+                    <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo">
+                </a>
+            </div>
+            <p class="text-white text-[20px] md:text-2xl font-bold -ml-20 hidden md:block">Document Comparison Pro</p>
+            <div class="flex gap-4 items-center relative">
+                <div class="relative">
+                    <img src="{% static 'images/user.png' %}" alt="user" width="40" height="40">
+                    <span class="absolute top-0 right-0 p-1 bg-green-500 rounded-full">
+                        <span class="sr-only">Active</span>
+                    </span>
+                </div>
+                <div class="relative">
+                    <button id="dropdownButton" class="font-medium text-white bg-transparent" type="button">
+                        Admin
+                    </button>
+                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md">
+                        <div class="flex justify-center items-center px-5 py-2 gap-2 border-b">
+                            <img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> Admin
+                        </div>
+                        <div><a class="block px-4 py-2 hover:bg-gray-200" href="#" id="aboutButton">◆ &nbsp; About</a></div>
+                        <div><a class="block px-4 py-2 hover:bg-gray-200" href="https://vidyagxp.com/" target="_blank">◆ &nbsp; Feedback</a></div>
+                        <div><a class="block px-4 py-2 hover:bg-gray-200" href="{% url 'logout' %}">◆ &nbsp; Log Out</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Modal -->
+    <div id="aboutModal" class="modal modal-closed fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 p-6 relative">
+            <button id="closeModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-4xl">&times;</button>
+            <h2 class="text-2xl font-semibold mb-4">About Doc Comparison Pro</h2>
+            <p class="text-lg mb-4">Welcome to Doc Comparison Pro, your go-to solution for comparing documents with ease. Our tool is designed to streamline your workflow and ensure accurate, efficient comparisons.</p>
+            <h3 class="text-xl font-semibold mb-2">Features</h3>
+            <ul class="list-disc list-inside mb-4 ml-4">
+                <li>Compare multiple documents side-by-side.</li>
+                <li>Highlight differences and similarities.</li>
+                <li>Generate detailed comparison reports.</li>
+                <li>User-friendly interface with intuitive navigation.</li>
+            </ul>
+            <h3 class="text-xl font-semibold mb-2">Our Team</h3>
+            <p class="text-lg mb-4">Our team is composed of dedicated professionals who are passionate about document management and technology. We are committed to providing the best tools and support to enhance your productivity.</p>
+            <h3 class="text-xl font-semibold mb-2">Contact Us</h3>
+            <p class="text-lg">For more information or support, please contact us at <a href="mailto:quality@vidyagxp.com" class="text-blue-500 hover:underline">quality@vidyagxp.com</a>.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdownButton = document.getElementById('dropdownButton');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const aboutButton = document.getElementById('aboutButton');
+            const aboutModal = document.getElementById('aboutModal');
+            const closeModal = document.getElementById('closeModal');
+
+            dropdownButton.addEventListener('click', function () {
+                dropdownMenu.classList.toggle('hidden');
+            });
+
+            aboutButton.addEventListener('click', function () {
+                aboutModal.classList.remove('modal-closed');
+                aboutModal.classList.add('modal-open');
+            });
+
+            closeModal.addEventListener('click', function () {
+                aboutModal.classList.remove('modal-open');
+                aboutModal.classList.add('modal-closed');
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    dropdownMenu.classList.add('hidden');
+                }
+            });
+
+            aboutModal.addEventListener('click', function (event) {
+                if (event.target === aboutModal) {
+                    aboutModal.classList.remove('modal-open');
+                    aboutModal.classList.add('modal-closed');
+                }
+            });
+        });
+    </script>
+    
+    {% block body %}{% endblock body %}
+        
+</body>
+</html>
