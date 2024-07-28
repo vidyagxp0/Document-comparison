@@ -1,7 +1,7 @@
 import os
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from docx import Document
 from docx.shared import RGBColor
@@ -11,6 +11,11 @@ import difflib
 
 def index(request):
     return render(request, "index.html")
+
+def logoutUser(request):
+    logout(request)
+    messages.info(request, "You have logged out.")
+    return redirect('index')
 
 def loginUser(request):
     if request.method == "POST":
@@ -26,7 +31,8 @@ def loginUser(request):
                 messages.success(request, "You have successfully logged in.")
                 return redirect('form')
             else:
-                messages.error(request, "Invalid username or password.")
+                messages.error(request, "Please provide valid login credentials.")
+            
     return render(request, "login.html")
 
 def read_docx(file_path):
@@ -57,6 +63,10 @@ def compare_documents_docx(content1, content2):
     return [line for line in diff if not line.startswith('? ')]
 
 def form(request):
+    if not request.user.is_authenticated:
+        messages.warning(request, "Login Required!")
+        return redirect('login')
+
     if request.method == 'POST':
         attachmentCount = int(request.POST.get('rows'))
         doc_dir = os.path.join(settings.MEDIA_ROOT, 'documents')
@@ -143,4 +153,8 @@ def form(request):
 
     return render(request, "form.html")
 
+def bulkPDF(request):
+    pass
 
+def bulkDoc(request):
+    pass
