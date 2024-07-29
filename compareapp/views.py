@@ -73,57 +73,75 @@ def form(request):
 
 def bulkPDF(request):
     if request.method == 'POST':
-        files = request.FILES.getlist('attachment_pdf_1')
-        if files:
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, settings.PDF_UPLOAD_DIR))
-            saved_files = [fs.save(file.name, file) for file in files]
-            file_paths = [fs.path(filename) for filename in saved_files]
-            report = compare_pdfs(file_paths)
-            return render(request, 'report.html', {'report': report})
-    return redirect('upload-page')
+        attachmentCount = int(request.POST.get('rows'))
+        main_dir = os.path.join(settings.MEDIA_ROOT, 'documents')
+        pdf_dir = os.path.join(main_dir, 'pdfs')
+        result_dir = os.path.join(main_dir, 'comparison-data')
 
-    # if request.method == 'POST':
-    #     attachmentCount = int(request.POST.get('rows'))
-    #     pdf_dir = os.path.join(settings.MEDIA_ROOT, 'STP-Files')
-    #     processed_dir = os.path.join(pdf_dir, 'Processed')
-    #     error_dir = os.path.join(pdf_dir, 'Error')
-        
-    #     os.makedirs(processed_dir, exist_ok=True)
-    #     os.makedirs(error_dir, exist_ok=True)
-        
-    #     for i in range(1, attachmentCount + 1):
-    #         file_object = request.FILES.get(f'attachment_pdf_{i}')
-    #         is_pdf = file_object.name.split('.')[-1].lower() == 'pdf'
+        os.makedirs(pdf_dir, exist_ok=True)
+        os.makedirs(result_dir, exist_ok=True)
+    
+        for i in range(1, attachmentCount + 1):
+            file_object = request.FILES.get(f'attachment_pdf_{i}')
+            is_pdf = file_object.name.split('.')[-1].lower() == 'pdf'
 
-    #         if not is_pdf:
-    #             messages.warning(request, 'Please insert PDF files only to perform the action.')
-    #             return redirect('view-stp')
+            if not is_pdf:
+                messages.warning(request, 'Please insert PDF files only to perform the action.')
+                return redirect('form')
             
-    #         if file_object:
-    #             file_path = os.path.join(pdf_dir, file_object.name)
-    #             counter = 1
+            if file_object:
+                file_path = os.path.join(pdf_dir, file_object.name)
+                counter = 1
 
-    #             # Ensure unique file path
-    #             while os.path.exists(file_path):
-    #                 base, ext = os.path.splitext(file_path)
-    #                 file_path = f"{base} ({counter}){ext}"
-    #                 counter += 1
+                # Ensure unique file path
+                while os.path.exists(file_path):
+                    base, ext = os.path.splitext(file_path)
+                    file_path = f"{base} ({counter}){ext}"
+                    counter += 1
 
-    #             # Save the file temporarily
-    #             with open(file_path, 'wb') as temp_pdf:
-    #                 for chunk in file_object.chunks():
-    #                     temp_pdf.write(chunk)
+                # Save the file temporarily
+                with open(file_path, 'wb') as temp_pdf:
+                    for chunk in file_object.chunks():
+                        temp_pdf.write(chunk)
+
+
+    return redirect('form')
 
 def bulkDoc(request):
     if request.method == 'POST':
-        files = request.FILES.getlist('attachment_word_1')
-        if files:
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, settings.DOC_UPLOAD_DIR))
-            saved_files = [fs.save(file.name, file) for file in files]
-            file_paths = [fs.path(filename) for filename in saved_files]
-            report = compare_docs(file_paths)
-            return render(request, 'report.html', {'report': report})
-    return redirect('upload-page')
+        attachmentCount = int(request.POST.get('rows'))
+        main_dir = os.path.join(settings.MEDIA_ROOT, 'documents')
+        doc_dir = os.path.join(main_dir, 'docs')
+        result_dir = os.path.join(main_dir, 'comparison-data')
+
+        os.makedirs(doc_dir, exist_ok=True)
+        os.makedirs(result_dir, exist_ok=True)
+    
+        for i in range(1, attachmentCount + 1):
+            file_object = request.FILES.get(f'attachment_word_{i}')
+            is_pdf = file_object.name.split('.')[-1].lower() == 'docx'
+
+            if not is_pdf:
+                messages.warning(request, 'Please insert word files only to perform the action.')
+                return redirect('form')
+            
+            if file_object:
+                file_path = os.path.join(doc_dir, file_object.name)
+                counter = 1
+
+                # Ensure unique file path
+                while os.path.exists(file_path):
+                    base, ext = os.path.splitext(file_path)
+                    file_path = f"{base} ({counter}){ext}"
+                    counter += 1
+
+                # Save the file temporarily
+                with open(file_path, 'wb') as temp_pdf:
+                    for chunk in file_object.chunks():
+                        temp_pdf.write(chunk)
+
+
+    return redirect('form')
 
 def compare_pdfs(file_paths):
     texts = []
