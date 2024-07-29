@@ -1,69 +1,69 @@
 {% extends "layout.html" %}
 
 {% block title %} 
-    Document Upload
+    Home
 {% endblock title %}
 
 {% block body %}
+
+    {% include "toast.html" with messages=messages %}
+
     <div class="container mx-auto my-12 px-6">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">Upload Documents</h1>
-            <p class="mt-2 text-lg text-gray-600">Select the type of documents you wish to upload, specify the number of attachments, and generate the upload fields.</p>
+            <h1 class="text-4xl font-bold text-gray-900">Upload Documents for Comparison</h1>
+            <p class="mt-2 text-lg text-gray-600">Choose the type of documents you want to compare, specify the number of documents, and generate the upload fields to proceed with the comparison.</p>
         </div>
-
-        <form action="#" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-                <fieldset class="mb-6">
-                    <legend class="text-lg font-medium text-gray-800">Select Attachment Type</legend>
-                    <div class="flex gap-6 mt-4">
-                        <label class="flex items-center">
-                            <input type="radio" name="attachmentType" id="PDF" class="form-radio text-blue-600" checked onclick="toggleForms()">
-                            <span class="ml-2 text-gray-700">PDF</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="radio" name="attachmentType" id="Word" class="form-radio text-blue-600" onclick="toggleForms()">
-                            <span class="ml-2 text-gray-700">Word Doc</span>
-                        </label>
-                    </div>
-                </fieldset>
-
-                <!-- Form container for dynamic content -->
-                <div id="displayForm">
-                    <!-- PDF Form -->
-                    <div id="pdfForm" class="hidden">
-                        <div class="flex gap-5 mb-6">
-                            <div class="w-3/4">
-                                <label for="rowsPDF" class="block text-sm font-medium text-gray-700">Number of PDF Documents</label>
-                                <input type="number" name="rows" id="rowsPDF" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" placeholder="Enter number of attachments">
-                            </div>
-                            <div class="flex items-end">
-                                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="generateRows('pdf')">Generate</button>
-                            </div>
-                        </div>
-                        <div class="border rounded-lg p-4" id="fieldFormPDF">
-                            <!-- Dynamic fields will be added here -->
-                        </div>
-                    </div>
-
-                    <!-- Word/Doc Form -->
-                    <div id="wordForm" class="hidden">
-                        <div class="flex gap-5 mb-6">
-                            <div class="w-3/4">
-                                <label for="rowsWord" class="block text-sm font-medium text-gray-700">Number of Word Documents</label>
-                                <input type="number" name="rows" id="rowsWord" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" placeholder="Enter number of attachments">
-                            </div>
-                            <div class="flex items-end">
-                                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="generateRows('word')">Generate</button>
-                            </div>
-                        </div>
-                        <div class="border rounded-lg p-4" id="fieldFormWord">
-                            <!-- Dynamic fields will be added here -->
-                        </div>
-                    </div>
+        <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Step 1: Select Document Type</h2>
+            <div class="flex space-x-4 mb-6 ml-5">
+                <div class="flex items-center">
+                    <input class="form-radio text-indigo-600" type="radio" name="attachmentType" id="PDF" checked onclick="toggleForms()">
+                    <label class="ml-2 text-md font-medium text-gray-700" for="PDF">PDF</label>
+                </div>
+                <div class="flex items-center">
+                    <input class="form-radio text-indigo-600" type="radio" name="attachmentType" id="Word" onclick="toggleForms()">
+                    <label class="ml-2 text-md font-medium text-gray-700" for="Word">Word/Doc</label>
                 </div>
             </div>
-        </form>
+
+            <div id="displayForm">
+                <!-- Form for Word/Doc Upload -->
+                <form action="{% url 'bulk-doc' %}" method="POST" enctype="multipart/form-data" id="wordForm">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Step 2: Upload Word/Doc Files</h2>
+                    <div class="flex space-x-4 mb-4">
+                        <div class="flex-1">
+                            <label for="rowsWord" class="block text-md font-medium text-gray-700">Number of Documents</label>
+                            <input type="number" name="rows" class="mt-1 form-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" id="rowsWord" placeholder="Enter no of documents ( min-2 )">
+                        </div>
+                        <div class="mt-6">
+                            <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="generateRows('word')">Generate</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-gray-300 rounded p-4" id="fieldFormWord">
+                        {% csrf_token %}
+                    </div>
+                </form>
+
+                <!-- Form for PDF Upload -->
+                <form action="{% url 'bulk-pdf' %}" method="POST" enctype="multipart/form-data" id="pdfForm" style="display:none;">
+                    <h2 class="text-lg font-bold text-gray-800 mb-4">Step 2: Upload PDF Files</h2>
+                    <div class="flex space-x-4 mb-4">
+                        <div class="flex-1">
+                            <label for="rowsPDF" class="block text-md font-medium text-gray-700">Number of Documents (PDF)</label>
+                            <input type="number" name="rows" class="mt-1 form-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" id="rowsPDF" placeholder="Enter no of documents ( min-2 )">
+                        </div>
+                        <div class="mt-6">
+                            <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="generateRows('pdf')">Generate</button>
+                        </div>
+                    </div>
+
+                    <div class="border border-gray-300 rounded p-4" id="fieldFormPDF">
+                        {% csrf_token %}
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -73,37 +73,36 @@
             const wordForm = document.getElementById('wordForm');
             
             if (isPDFSelected) {
-                pdfForm.classList.remove('hidden');
-                wordForm.classList.add('hidden');
+                pdfForm.style.display = 'block';
+                wordForm.style.display = 'none';
             } else {
-                pdfForm.classList.add('hidden');
-                wordForm.classList.remove('hidden');
+                pdfForm.style.display = 'none';
+                wordForm.style.display = 'block';
             }
         }
 
         function generateRows(type) {
-            const numRows = document.getElementById(`rows${type.charAt(0).toUpperCase() + type.slice(1)}`).value;
-            const form = document.getElementById(`fieldForm${type.charAt(0).toUpperCase() + type.slice(1)}`);
-            form.innerHTML = ''; // Clear existing fields
+            const row = type === 'pdf' ? document.getElementById('rowsPDF').value : document.getElementById('rowsWord').value;
+            const form = type === 'pdf' ? document.getElementById('fieldFormPDF') : document.getElementById('fieldFormWord');
+            document.querySelectorAll('.previous').forEach(field => field.remove());
+            let html = '';
 
-            if (numRows <= 0) {
+            if (row <= '1') {
                 return;
             }
 
-            let html = '';
-
-            for (let i = 1; i <= numRows; i++) {
-                html += `<div class="mb-4">
-                    <label for="${type}_attachment_${i}" class="block text-sm font-medium text-gray-700">Attachment ${i}</label>
-                    <input type="file" required name="${type}_attachment_${i}" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" id="${type}_attachment_${i}">
-                </div>`;
+            for (let i = 1; i <= row; i++) {
+                html += `<div class="mb-4 previous">
+                            <label for="attachment_${type}_${i}" class="block text-md font-medium text-gray-700">Document - ${i}</label>
+                            <input type="file" required name="attachment_${type}_${i}" class="mt-2 form-input w-full p-1.5 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" id="attachment_${type}_${i}">
+                         </div>`;
             }
 
-            html += `<div class="mt-4">
-                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Perform Comparison</button>
-            </div>`;
+            html += `<div class="mt-6 previous">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">Perform Comparison</button>
+                     </div>`;
 
-            form.innerHTML = html;
+            form.innerHTML += html;
         }
 
         document.addEventListener('DOMContentLoaded', toggleForms);
