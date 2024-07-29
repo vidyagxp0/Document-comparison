@@ -2,11 +2,13 @@ import os
 from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
+from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from docx import Document
 from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import difflib
+import PyPDF2
 
 
 def index(request):
@@ -67,7 +69,114 @@ def form(request):
         messages.warning(request, "Login Required!")
         return redirect('login')
 
+    return render(request, "form.html")
+
+def bulkPDF(request):
     if request.method == 'POST':
+        files = request.FILES.getlist('attachment_pdf_1')
+        if files:
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, settings.PDF_UPLOAD_DIR))
+            saved_files = [fs.save(file.name, file) for file in files]
+            file_paths = [fs.path(filename) for filename in saved_files]
+            report = compare_pdfs(file_paths)
+            return render(request, 'report.html', {'report': report})
+    return redirect('upload-page')
+
+    # if request.method == 'POST':
+    #     attachmentCount = int(request.POST.get('rows'))
+    #     pdf_dir = os.path.join(settings.MEDIA_ROOT, 'STP-Files')
+    #     processed_dir = os.path.join(pdf_dir, 'Processed')
+    #     error_dir = os.path.join(pdf_dir, 'Error')
+        
+    #     os.makedirs(processed_dir, exist_ok=True)
+    #     os.makedirs(error_dir, exist_ok=True)
+        
+    #     for i in range(1, attachmentCount + 1):
+    #         file_object = request.FILES.get(f'attachment_pdf_{i}')
+    #         is_pdf = file_object.name.split('.')[-1].lower() == 'pdf'
+
+    #         if not is_pdf:
+    #             messages.warning(request, 'Please insert PDF files only to perform the action.')
+    #             return redirect('view-stp')
+            
+    #         if file_object:
+    #             file_path = os.path.join(pdf_dir, file_object.name)
+    #             counter = 1
+
+    #             # Ensure unique file path
+    #             while os.path.exists(file_path):
+    #                 base, ext = os.path.splitext(file_path)
+    #                 file_path = f"{base} ({counter}){ext}"
+    #                 counter += 1
+
+    #             # Save the file temporarily
+    #             with open(file_path, 'wb') as temp_pdf:
+    #                 for chunk in file_object.chunks():
+    #                     temp_pdf.write(chunk)
+
+def bulkDoc(request):
+    if request.method == 'POST':
+        files = request.FILES.getlist('attachment_word_1')
+        if files:
+            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, settings.DOC_UPLOAD_DIR))
+            saved_files = [fs.save(file.name, file) for file in files]
+            file_paths = [fs.path(filename) for filename in saved_files]
+            report = compare_docs(file_paths)
+            return render(request, 'report.html', {'report': report})
+    return redirect('upload-page')
+
+def compare_pdfs(file_paths):
+    texts = []
+    for path in file_paths:
+        with open(path, 'rb') as file:
+            pdf_reader = PyPDF2.PdfFileReader(file)
+            text = ''
+            for page_num in range(pdf_reader.getNumPages()):
+                text += pdf_reader.getPage(page_num).extractText()
+            texts.append(text)
+    
+    differences = []
+    base_text = texts[0]
+    for i in range(1, len(texts)):
+        differences.append(diff(base_text, texts[i]))
+    
+    return differences
+
+def compare_docs(file_paths):
+    texts = []
+    for path in file_paths:
+        doc = Document(path)
+        text = ''
+        for para in doc.paragraphs:
+            text += para.text
+        texts.append(text)
+    
+    differences = []
+    base_text = texts[0]
+    for i in range(1, len(texts)):
+        differences.append(diff(base_text, texts[i]))
+    
+    return differences
+
+def diff(text1, text2):
+    diff = []
+    text1_lines = text1.splitlines()
+    text2_lines = text2.splitlines()
+    
+    for line in text1_lines:
+        if line not in text2_lines:
+            diff.append(f'- {line}')
+    
+    for line in text2_lines:
+        if line not in text1_lines:
+            diff.append(f'+ {line}')
+    
+    return '\n'.join(diff)
+
+
+
+"""
+if request.method == 'POST':
         attachmentCount = int(request.POST.get('rows'))
         doc_dir = os.path.join(settings.MEDIA_ROOT, 'documents')
 
@@ -151,10 +260,4 @@ def form(request):
 
             return render(request, "result.html", { 'url': result_url })
 
-    return render(request, "form.html")
-
-def bulkPDF(request):
-    pass
-
-def bulkDoc(request):
-    pass
+"""
