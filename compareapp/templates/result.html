@@ -15,14 +15,14 @@
         </div>
 
         {% if comparison_results %}
-            <table class="min-w-full bg-white border border-gray-200">
+            <table class="bg-white border rounded-lg overflow-hidden border-gray-200">
                 <thead>
                     <tr class="border-b bg-gray-100">
-                        <th class="px-4 py-2 text-left">Document Number</th>
-                        <th class="px-4 py-2 text-left">Document Title</th>
-                        <th class="px-4 py-2 text-left">Document Type</th>
-                        <th class="px-4 py-2 text-left">Summary</th>
-                        <th class="px-4 py-2 text-left">Details</th>
+                        <th class="px-4 py-2 text-left bg-slate-800 opacity-85 text-white">Document Number</th>
+                        <th class="px-4 py-2 text-left bg-slate-800 opacity-85 text-white">Document Title</th>
+                        <th class="px-4 py-2 text-left bg-slate-800 opacity-85 text-white">Document Type</th>
+                        <th class="px-4 py-2 text-left bg-slate-800 opacity-85 text-white">Summary</th>
+                        <th class="px-4 py-2 text-left bg-slate-800 opacity-85 text-white">Details</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,9 +30,9 @@
                         <tr class="border-b">
                             <td class="px-4 py-2">{{ forloop.counter }}</td>
                             <td class="px-4 py-2">{{ result.doc1_title }} vs {{ result.doc2_title }}</td>
-                            <td class="px-4 py-2">.docx</td>
+                            <td class="px-4 py-2">docx</td>
                             <td class="px-4 py-2">{{ result.summary }}</td>
-                            <td class="px-4 py-2">
+                            <td class="px-4 py-2 w-9/12 overflow-auto">
                                 {% for line in result.details %}
                                     <p>{{ line }}</p>
                                 {% endfor %}
