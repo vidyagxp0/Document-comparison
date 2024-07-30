@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from docx import Document
+from .forms import DocumentForm
+from .models import Document as Form
 from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 import difflib
@@ -42,8 +44,28 @@ def form(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
+    
+    if request.method == 'POST':
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('document-list')
+        else:
+            messages.warning(request, "All the fields are required to fill!")
+    else:
+        form = DocumentForm()
+    document_count = Form.objects.count()
 
-    return render(request, "form.html")
+
+    return render(request, "form.html", {'form': form, 'document_count': document_count})
+
+def documentList(request):
+    if not request.user.is_authenticated:
+        messages.warning(request, "Login Required!")
+        return redirect('login')
+    
+    
+    return render(request, 'document-list.html')
 
 def read_docx(file_path):
     doc = Document(file_path)
@@ -121,6 +143,7 @@ def bulkDoc(request):
                         comparison_results.append({
                             'doc1_title': document_titles[i],
                             'doc2_title': document_titles[j],
+                            'doc_type': 'docx',
                             'summary': summary,
                             'details': comparison_result
                         })
@@ -247,6 +270,7 @@ def bulkPDF(request):
                         comparison_results.append({
                             'doc1_title': document_titles[i],
                             'doc2_title': document_titles[j],
+                            'doc_type': 'pdf',
                             'summary': summary,
                             'details': comparison_result
                         })

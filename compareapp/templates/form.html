@@ -10,102 +10,35 @@
 
     <div class="container mx-auto my-12 px-6">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">Upload Documents for Comparison</h1>
-            <p class="mt-2 text-lg text-gray-600">Choose the type of documents you want to compare, specify the number of documents, and generate the upload fields to proceed with the comparison.</p>
+            <h1 class="text-4xl font-bold text-gray-900">Upload Documents</h1>
+            {% comment %} <p class="mt-2 text-lg text-gray-600">Choose the type of documents you want to compare, specify the number of documents, and generate the upload fields to proceed with the comparison.</p> {% endcomment %}
         </div>
-        <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-            <h2 class="text-lg font-bold text-gray-800 mb-4">Step 1: Select Document Type</h2>
-            <div class="flex space-x-4 mb-6 ml-5">
-                <div class="flex items-center">
-                    <input class="form-radio text-indigo-600" type="radio" name="attachmentType" id="PDF" checked onclick="toggleForms()">
-                    <label class="ml-2 text-md font-medium text-gray-700" for="PDF">PDF</label>
+        <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
+            <div class="flex">
+                <div class="w-[70%]">
+                    <div class="mb-3 font-bold text-xl">Document ID : {{ doc_id }}</div>
+                    <form method="post" enctype="multipart/form-data" class="border rounded-lg p-4 bg-slate-100">
+                        <div class="text-slate-700 font-sans">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                        </div>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
+                    </form>
                 </div>
-                <div class="flex items-center">
-                    <input class="form-radio text-indigo-600" type="radio" name="attachmentType" id="Word" onclick="toggleForms()">
-                    <label class="ml-2 text-md font-medium text-gray-700" for="Word">Word/Doc</label>
+                <div class="w-[30%] flex justify-center items-center">
+                    <div>
+                        <div class="border rounded-full bg-slate-600 p-4 text-white font-bold pt-0 text-center">
+                            <p class="mt-12"> Submitted Record </p>
+                            <p class="my-3 text-red-900 font-extrabold text-4xl">{{ document_count }}</p>
+                        </div>
+                        <div class="my-2 text-center">◆</div>
+                        {% if document_count >= 2 %}
+                            <a href="#" class="bg-pink-700 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded mt-2">Perform Comparison</a>
+                        {% endif %}  
+                    </div>
                 </div>
-            </div>
-
-            <div id="displayForm">
-                <!-- Form for Word/Doc Upload -->
-                <form action="{% url 'bulk-doc' %}" method="POST" enctype="multipart/form-data" id="wordForm">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4">Step 2: Upload Word/Doc Files</h2>
-                    <div class="flex space-x-4 mb-4">
-                        <div class="flex-1">
-                            <label for="rowsWord" class="block text-md font-medium text-gray-700">Number of Documents</label>
-                            <input type="number" name="rows" class="mt-1 form-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" id="rowsWord" placeholder="Enter no of documents ( min-2 )">
-                        </div>
-                        <div class="mt-6">
-                            <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="generateRows('word')">Generate</button>
-                        </div>
-                    </div>
-
-                    <div class="border border-gray-300 rounded p-4" id="fieldFormWord">
-                        {% csrf_token %}
-                    </div>
-                </form>
-
-                <!-- Form for PDF Upload -->
-                <form action="{% url 'bulk-pdf' %}" method="POST" enctype="multipart/form-data" id="pdfForm" style="display:none;">
-                    <h2 class="text-lg font-bold text-gray-800 mb-4">Step 2: Upload PDF Files</h2>
-                    <div class="flex space-x-4 mb-4">
-                        <div class="flex-1">
-                            <label for="rowsPDF" class="block text-md font-medium text-gray-700">Number of Documents (PDF)</label>
-                            <input type="number" name="rows" class="mt-1 form-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" id="rowsPDF" placeholder="Enter no of documents ( min-2 )">
-                        </div>
-                        <div class="mt-6">
-                            <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="generateRows('pdf')">Generate</button>
-                        </div>
-                    </div>
-
-                    <div class="border border-gray-300 rounded p-4" id="fieldFormPDF">
-                        {% csrf_token %}
-                    </div>
-                </form>
             </div>
         </div>
     </div>
-
-    <script>
-        function toggleForms() {
-            const isPDFSelected = document.getElementById('PDF').checked;
-            const pdfForm = document.getElementById('pdfForm');
-            const wordForm = document.getElementById('wordForm');
-            
-            if (isPDFSelected) {
-                pdfForm.style.display = 'block';
-                wordForm.style.display = 'none';
-            } else {
-                pdfForm.style.display = 'none';
-                wordForm.style.display = 'block';
-            }
-        }
-
-        function generateRows(type) {
-            const row = type === 'pdf' ? document.getElementById('rowsPDF').value : document.getElementById('rowsWord').value;
-            const form = type === 'pdf' ? document.getElementById('fieldFormPDF') : document.getElementById('fieldFormWord');
-            document.querySelectorAll('.previous').forEach(field => field.remove());
-            let html = '';
-
-            if (row <= '1') {
-                return;
-            }
-
-            for (let i = 1; i <= row; i++) {
-                html += `<div class="mb-4 previous">
-                            <label for="attachment_${type}_${i}" class="block text-md font-medium text-gray-700">Document - ${i}</label>
-                            <input type="file" required name="attachment_${type}_${i}" class="mt-2 form-input w-full p-1.5 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" id="attachment_${type}_${i}">
-                         </div>`;
-            }
-
-            html += `<div class="mt-6 previous">
-                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">Perform Comparison</button>
-                     </div>`;
-
-            form.innerHTML += html;
-        }
-
-        document.addEventListener('DOMContentLoaded', toggleForms);
-    </script>
 
 {% endblock body %}

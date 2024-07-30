@@ -1,3 +1,5 @@
 from django.contrib import admin
+from compareapp.models import Document, ComparisonResult
 
-# Register your models here.
+admin.site.register(Document)
+admin.site.register(ComparisonResult)

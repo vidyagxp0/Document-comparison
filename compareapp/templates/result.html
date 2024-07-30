@@ -27,12 +27,12 @@
                 </thead>
                 <tbody>
                     {% for result in comparison_results %}
-                        <tr class="border-b">
+                        <tr class="border-b border-gray-300">
                             <td class="px-4 py-2">{{ forloop.counter }}</td>
                             <td class="px-4 py-2">{{ result.doc1_title }} vs {{ result.doc2_title }}</td>
-                            <td class="px-4 py-2">docx</td>
+                            <td class="px-4 py-2">{{ result.doc_type }}</td>
                             <td class="px-4 py-2">{{ result.summary }}</td>
-                            <td class="px-4 py-2 w-9/12 overflow-auto">
+                            <td class="px-4 py-2  h-10 overflow-hidden">
                                 {% for line in result.details %}
                                     <p>{{ line }}</p>
                                 {% endfor %}
