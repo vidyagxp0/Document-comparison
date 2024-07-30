@@ -1,6 +1,6 @@
 import os
 from django.conf import settings
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
@@ -49,23 +49,53 @@ def form(request):
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+            messages.success(request, "Document added successfully.")
             return redirect('document-list')
         else:
             messages.warning(request, "All the fields are required to fill!")
     else:
         form = DocumentForm()
     document_count = Form.objects.count()
-
-
-    return render(request, "form.html", {'form': form, 'document_count': document_count})
+    formData = Form.objects.last()
+    if not formData:
+        doc_id = 1
+    else:
+        doc_id = formData.document_id + 1
+        
+    return render(request, "form.html", {'form': form, 'doc_id': doc_id, 'document_count': document_count})
 
 def documentList(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
     
+    documents = Form.objects.all()
     
-    return render(request, 'document-list.html')
+    if not documents:
+        messages.info(request, "Please upload documents first.")
+    
+    return render(request, 'document-list.html', { 'documents': documents })
+
+def removeDocument(request, doc_id):
+    if not request.user.is_authenticated:
+        messages.warning(request, "Login Required!")
+        return redirect('login')
+    
+    document = get_object_or_404(Form, document_id=doc_id)
+
+    if not document:
+        messages.warning(request, "Invalid document ID, please provide valid ID")
+        return redirect('document-list')
+    
+    try:
+        document.delete()
+        messages.success(request, "Document deleted successfully.")
+        return redirect('document-list')
+    except:
+        messages.error(request, "Error occured while performing the action.")
+
+    return redirect('document-list')
+
 
 def read_docx(file_path):
     doc = Document(file_path)

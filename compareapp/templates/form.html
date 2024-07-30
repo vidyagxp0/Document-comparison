@@ -14,8 +14,8 @@
             {% comment %} <p class="mt-2 text-lg text-gray-600">Choose the type of documents you want to compare, specify the number of documents, and generate the upload fields to proceed with the comparison.</p> {% endcomment %}
         </div>
         <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
-            <div class="flex">
-                <div class="w-[70%]">
+            <div class="flex-row md:flex">
+                <div class="w-full md:w-[70%]">
                     <div class="mb-3 font-bold text-xl">Document ID : {{ doc_id }}</div>
                     <form method="post" enctype="multipart/form-data" class="border rounded-lg p-4 bg-slate-100">
                         <div class="text-slate-700 font-sans">
@@ -25,7 +25,7 @@
                         <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
                     </form>
                 </div>
-                <div class="w-[30%] flex justify-center items-center">
+                <div class="mt-4 md:mt-0 w-full md:w-[30%] flex justify-center items-center">
                     <div>
                         <div class="border rounded-full bg-slate-600 p-4 text-white font-bold pt-0 text-center">
                             <p class="mt-12"> Submitted Record </p>

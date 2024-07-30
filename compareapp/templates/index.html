@@ -13,12 +13,12 @@
     <div class="relative h-screen flex flex-col" style="background-image: url({% static 'images/bg.jpg' %}); background-size: cover; background-position: center;">
         <nav class="bg-gray-800 bg-opacity-90 py-2.5">
             <div class="mx-10 flex justify-between items-center">
-                <a href="#" class="text-white text-[20px] md:text-2xl font-bold flex items-center gap-4">
+                <a href="#" class="bg-gradient-to-r from-red-700 from-[30%] to-black bg-clip-text text-transparent text-[20px] md:text-2xl font-bold flex items-center gap-4">
                     <img class="w-14 h-14 " src="{% static 'images/logosm.png' %}" alt="" srcset="">
-                    Doc Comparison Pro</a>
+                    Document Comparison Pro</a>
                 <div class="flex space-x-4 hidden md:block">
-                    <a href="#" class="text-gray-300 hover:text-white">Features</a>
-                    <a href="{% url 'login' %}" class="text-gray-300 hover:text-white">Login</a>
+                    <a href="#" class="text-gray-300 hover:text-red-700">Features</a>
+                    <a href="{% url 'login' %}" class="text-gray-300 hover:text-red-700">Login</a>
                 </div>
             </div>
         </nav>
