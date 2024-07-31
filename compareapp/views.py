@@ -110,19 +110,58 @@ def comparison(request):
     
     data = {}
     for doc in documents:
-        file_path = doc.upload_document.path  # Ensure this is the correct path
+        file_path = doc.upload_document.path
         sections = read_docx(file_path)
-        data[doc.document_id] = sections  # Use doc.document_id to uniquely identify documents
+        data[doc.document_id] = sections
 
     result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison')
     os.makedirs(result_dir, exist_ok=True)
 
     result_path = os.path.join(result_dir, "comparison-data.docx")
     create_merged_docx(data, result_path)
-    
-    # Generate the URL
+
     output_url = request.build_absolute_uri(settings.MEDIA_URL + 'comparison/comparison-data.docx')
-    return render(request, 'result.html', { 'documents': documents, 'output_path': output_url })
+
+    # Prepare comparison details
+    comparison_details = {}
+    overall_similarity_scores = {}
+    headers = set()
+    for sections in data.values():
+        headers.update(sections.keys())
+
+    headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
+
+    for header in headers:
+        comparison_details[header] = {}
+        ref_section_content = list(data.values())[0].get(header, "")
+        for doc_id, sections in data.items():
+            section_content = sections.get(header, "")
+            if section_content:
+                similarity, is_different = compare_sections(section_content, ref_section_content)
+                summary = "Same" if not is_different else "Different"
+                comparison_status = "Compared" if ref_section_content else "Not Compared"
+                
+                comparison_details[header][doc_id] = {
+                    'similarity_score': similarity,
+                    'summary': summary,
+                    'comparison_status': comparison_status
+                }
+
+    # Calculate overall similarity score for each document
+    ref_doc_content = "\n".join(list(data.values())[0].values())
+    for doc_id, sections in data.items():
+        doc_content = "\n".join(sections.values())
+        overall_similarity_score, _ = compare_sections(doc_content, ref_doc_content)
+        overall_similarity_scores[doc_id] = overall_similarity_score
+
+    print(documents,"\n", overall_similarity_scores)
+
+    return render(request, 'result.html', { 
+        'documents': documents, 
+        'output_path': output_url,
+        'comparison_details': comparison_details,
+        'overall_similarity_scores': overall_similarity_scores
+    })
 
 def read_docx(file_path):
     doc = Document(file_path)
@@ -147,17 +186,18 @@ def read_docx(file_path):
     return sections
 
 def highlight_differences(doc, title, text, is_different):
-    doc.add_heading(title, level=2)
     paragraphs = text.split('\n')
     for para_text in paragraphs:
         para = doc.add_paragraph()
         for part in para_text.split(' '):
             run = para.add_run(part + ' ')
             if is_different:
-                run.font.color.rgb = RGBColor(255, 0, 0)
+                run.font.color.rgb = RGBColor(255, 0, 0)  # Red color for differences
 
 def compare_sections(section1, section2):
-    return section1 != section2
+    similarity = difflib.SequenceMatcher(None, section1, section2).ratio()
+    is_different = similarity < 1.0
+    return similarity, is_different
 
 def create_merged_docx(data, output_path):
     new_doc = Document()
@@ -173,9 +213,16 @@ def create_merged_docx(data, output_path):
         for doc_id, sections in data.items():
             section_content = sections.get(header, "")
             if section_content:
-                is_different = compare_sections(section_content, list(data.values())[0].get(header, ""))
-                # Add a subheading for the document ID
+                ref_section_content = list(data.values())[0].get(header, "")
+                similarity, is_different = compare_sections(section_content, ref_section_content)
+                summary = "Same" if not is_different else "Different"
+                comparison_status = "Compared" if ref_section_content else "Not Compared"
+
                 new_doc.add_heading(f"Document {doc_id}", level=2)
+                new_doc.add_paragraph(f"Similarity Score: {similarity:.2f}")
+                new_doc.add_paragraph(f"Summary: {summary}")
+                new_doc.add_paragraph(f"Comparison Status: {comparison_status}")
+
                 highlight_differences(new_doc, header, section_content, is_different)
     
     new_doc.save(output_path)
