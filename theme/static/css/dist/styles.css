@@ -1020,6 +1020,11 @@ select {
   margin-bottom: 0.75rem;
 }
 
+.my-5 {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
 .-ml-20 {
   margin-left: -5rem;
 }

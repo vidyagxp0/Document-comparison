@@ -20,7 +20,7 @@
                     <div class="head">
                         <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" href="{% url "document-list" %}">Back</a>
                         {% if documents.count > 1 %}
-                            <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="#">Download report</a>
+                            <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ output_path }}">Download report</a>
                         {% endif %}
                     </div>
                 </div>
@@ -57,31 +57,14 @@
                     </table>
                 </div>
             {% endif %}
-            <div class="">
+            {% comment %} <div class="">
                 <div class="font-bold text-xl text-slate-600 mb-6">Documents Comparison</div>
                 <div class="overflow-auto mb-8">
-                    <div class="mt-4">
-                        <a href="{{ output_path }}" target="_blank" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-2">Download Merged Document</a>
+                    <div class="my-5">
+                        <a href="{{ output_path }}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-2">Download Merged Document</a>
                     </div>
-                    <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
-                        <thead>
-                            <tr>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document 1 Section</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document 2 Section</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for result in comparison_results %}
-                                {% for section in result %}
-                                    <tr>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ section }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
                 </div>
-            </div>
+            </div> {% endcomment %}
         </div>
     </div>
 

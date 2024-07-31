@@ -112,70 +112,70 @@ def comparison(request):
     for doc in documents:
         file_path = doc.upload_document.path  # Ensure this is the correct path
         sections = read_docx(file_path)
-        data[doc.document_id] = sections  # Use doc.id to uniquely identify documents
+        data[doc.document_id] = sections  # Use doc.document_id to uniquely identify documents
 
-    output_path = os.path.join(settings.MEDIA_ROOT, "data.docx")
-    create_merged_docx(data, output_path)
-    
-    return render(request, 'result.html', { 'documents': documents, 'output_path': output_path })
-    
+    result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison')
+    os.makedirs(result_dir, exist_ok=True)
 
+    result_path = os.path.join(result_dir, "comparison-data.docx")
+    create_merged_docx(data, result_path)
+    
+    # Generate the URL
+    output_url = request.build_absolute_uri(settings.MEDIA_URL + 'comparison/comparison-data.docx')
+    return render(request, 'result.html', { 'documents': documents, 'output_path': output_url })
 
 def read_docx(file_path):
     doc = Document(file_path)
     sections = {}
     current_section = None
     current_content = []
-    
+
     for para in doc.paragraphs:
         text = para.text.strip()
         if text:
-            if text[0].isdigit() and text[1] == '.':
+            if text[0].isdigit() and (text[1] == '.' or (text[1].isdigit() and text[2] == '.')):
                 if current_section:
-                    sections[current_section] = ' '.join(current_content)
+                    sections[current_section] = '\n'.join(current_content)
                 current_section = text
                 current_content = []
             else:
                 current_content.append(text)
-    
+
     if current_section:
-        sections[current_section] = ' '.join(current_content)
-    
+        sections[current_section] = '\n'.join(current_content)
+
     return sections
 
 def highlight_differences(doc, title, text, is_different):
     doc.add_heading(title, level=2)
-    para = doc.add_paragraph()
-    for part in text.split(' '):
-        run = para.add_run(part + ' ')
-        if is_different:
-            run.font.color.rgb = RGBColor(255, 0, 0)  # Red color for differences
+    paragraphs = text.split('\n')
+    for para_text in paragraphs:
+        para = doc.add_paragraph()
+        for part in para_text.split(' '):
+            run = para.add_run(part + ' ')
+            if is_different:
+                run.font.color.rgb = RGBColor(255, 0, 0)
 
 def compare_sections(section1, section2):
     return section1 != section2
 
 def create_merged_docx(data, output_path):
     new_doc = Document()
-    headers = [
-        "1. Introduction",
-        "2. Responsibilities",
-        "3. OOS Identification and Notification",
-        "4. OOS Investigation",
-        "5. OOS Communication",
-        "6. Corrective and Preventive Actions (CAPA)",
-        "7. Backorder Management",
-        "8. Product Recall (if applicable)",
-        "9. Recordkeeping",
-        "10. Training",
-        "11. Review and Update"
-    ]
     
+    headers = set()
+    for sections in data.values():
+        headers.update(sections.keys())
+
+    headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
+
     for header in headers:
         new_doc.add_heading(header, level=1)
         for doc_id, sections in data.items():
             section_content = sections.get(header, "")
             if section_content:
                 is_different = compare_sections(section_content, list(data.values())[0].get(header, ""))
+                # Add a subheading for the document ID
+                new_doc.add_heading(f"Document {doc_id}", level=2)
                 highlight_differences(new_doc, header, section_content, is_different)
     
     new_doc.save(output_path)

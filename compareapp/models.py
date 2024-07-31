@@ -106,6 +106,24 @@ class Document(models.Model):
 
     # Define DOC_TYPE_CHOICES
     DOC_TYPE_CHOICES = (
+        ('stp', 'Standard Test Procedure'),
+        ('sop', 'Standard Operating Procedure'),
+        ('wi', 'Work Instruction'),
+        ('spec', 'Specification'),
+        ('vp', 'Validation Protocol'),
+        ('pfd', 'Process Flow Diagram'),
+        ('qp', 'Qualification Protocol'),
+        ('sop_micro', 'Standard Operation Procedure for Microbiology'),
+        ('sop_chem', 'Standard Operation Procedure for Chemistry/Wet Chemistry'),
+        ('sop_instr', 'Standard Operation Procedure for Instrumental/Analytical Tests'),
+        ('sop_equip', 'Standard Operation Procedure for Equipment/Instruments SOP'),
+        ('qp', 'Quality Policies'),
+        ('mv', 'Method Validation'),
+        ('vp', 'Validation Protocol'),
+        ('elec', 'Electron'),
+    )
+
+    DOC_FORMAT_CHOICES = (
         ('pdf', 'PDF'),
         ('docx', 'Word Document (.docx)'),
         ('xlsx', 'Spreadsheet'),
@@ -126,7 +144,7 @@ class Document(models.Model):
     language = models.CharField(max_length=255, choices=LANGUAGE_CHOICES)
     version = models.CharField(max_length=255)
     doc_type = models.CharField(max_length=255, choices=DOC_TYPE_CHOICES)
-    doc_format = models.CharField(max_length=255)
+    doc_format = models.CharField(max_length=255, choices=DOC_FORMAT_CHOICES)
     comments = models.TextField()
 
     def __str__(self):

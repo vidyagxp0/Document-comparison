@@ -14,7 +14,6 @@ class DocumentForm(forms.ModelForm):
         super(DocumentForm, self).__init__(*args, **kwargs)
         self.fields['title'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
         self.fields['author'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
-        # self.fields['creation_date'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
         self.fields['version'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
         self.fields['language'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full mb-3'})
         self.fields['doc_type'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full mb-3'})
