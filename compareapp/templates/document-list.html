@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Document List
+    Documents
 {% endblock title %}
 
 {% block body %}
@@ -18,7 +18,7 @@
                 <div class="text-end mb-4">
                     <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" href="{% url "form" %}">Back</a>
                 {% if documents.count > 1 %}
-                    <button class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4">Perform Comparison</button>
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% url "compare" %}">Perform Comparison</a>
                 {% endif %}
                 </div>
                 <div class="overflow-auto">
@@ -51,7 +51,7 @@
             {% else %}
             <div class="text-center">
                 <p class="text-gray-600 mb-4">No documents found. Please upload a document first.</p>
-                <button class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3 mr-4" onclick="history.back();">Back</button>
+                <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3 mr-4" href="{% url "form" %}">Back</a>
             {% endif %}
         </div>
     </div>
