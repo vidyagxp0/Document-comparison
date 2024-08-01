@@ -51,7 +51,7 @@ def form(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Document added successfully.")
-            return redirect('document-list')
+            return redirect('form')
         else:
             messages.warning(request, "All the fields are required to fill!")
     else:
@@ -131,30 +131,27 @@ def comparison(request):
 
     headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
 
+    primary_doc_id = list(data.keys())[0]  # Assume the first document is the primary document
     for header in headers:
-        comparison_details[header] = {}
-        ref_section_content = list(data.values())[0].get(header, "")
+        comparison_details[header] = {
+            'primary': data[primary_doc_id].get(header, ""),
+            'documents': {}
+        }
+        ref_section_content = data[primary_doc_id].get(header, "")
         for doc_id, sections in data.items():
-            section_content = sections.get(header, "")
-            if section_content:
-                similarity, is_different = compare_sections(section_content, ref_section_content)
-                summary = "Same" if not is_different else "Different"
-                comparison_status = "Compared" if ref_section_content else "Not Compared"
-                
-                comparison_details[header][doc_id] = {
-                    'similarity_score': similarity,
-                    'summary': summary,
-                    'comparison_status': comparison_status
-                }
+            if doc_id != primary_doc_id:
+                section_content = sections.get(header, "")
+                if section_content:
+                    similarity, is_different = compare_sections(section_content, ref_section_content)
+                    if is_different:  # Only include if different
+                        comparison_details[header]['documents'][doc_id] = section_content
 
     # Calculate overall similarity score for each document
     ref_doc_content = "\n".join(list(data.values())[0].values())
     for doc_id, sections in data.items():
         doc_content = "\n".join(sections.values())
         overall_similarity_score, _ = compare_sections(doc_content, ref_doc_content)
-        overall_similarity_scores[doc_id] = overall_similarity_score
-
-    print(documents,"\n", overall_similarity_scores)
+        overall_similarity_scores[doc_id] = int(overall_similarity_score * 100)
 
     return render(request, 'result.html', { 
         'documents': documents, 
@@ -162,6 +159,7 @@ def comparison(request):
         'comparison_details': comparison_details,
         'overall_similarity_scores': overall_similarity_scores
     })
+
 
 def read_docx(file_path):
     doc = Document(file_path)

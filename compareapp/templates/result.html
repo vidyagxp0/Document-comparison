@@ -1,4 +1,5 @@
 {% extends "layout.html" %}
+{% load custom_filters %}
 
 {% block title %}
     Result
@@ -16,12 +17,9 @@
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             {% if documents %}
                 <div class="flex justify-between mb-6">
-                    <div class="head font-bold text-xl text-slate-600">Compared Document List</div>
+                    <div class="font-bold text-xl text-slate-600">Compared Document List</div>
                     <div class="head">
                         <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" href="{% url "document-list" %}">Back</a>
-                        {% if documents.count > 1 %}
-                            <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ output_path }}">Download report</a>
-                        {% endif %}
                     </div>
                 </div>
                 <div class="mb-8 flex leading-normal rounded-lg overflow-auto bg-slate-100">
@@ -38,7 +36,6 @@
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">File Format</th>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comments</th>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Summary</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -54,7 +51,6 @@
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_format }}</td>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comments }}</td>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">Compared</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">Different</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -62,13 +58,15 @@
                     <table class="leading-normal overflow-hidden bg-slate-100">
                         <thead>
                             <tr>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Summary</th>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity_Score</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for doc_id, score in overall_similarity_scores.items %}
                                 <tr>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ score|floatformat:2 }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{% if score == 100 %}Same{% else %}Different{% endif %}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ score }}%</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -76,31 +74,34 @@
                 </div>
             {% endif %}
             <div class="">
-                <div class="font-bold text-xl text-slate-600 mb-6">Detailed summary of compared documents</div>
+                <div class="mb-5 flex justify-between items-center">
+                    <p class="font-bold text-xl text-slate-600">Detailed summary of compared documents</p>
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ output_path }}">Download report</a>
+                </div>
                 <div class="overflow-auto mb-8 rounded-lg">
                     <table class="min-w-full leading-normal bg-slate-100">
                         <thead>
                             <tr>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Section</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document ID</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity Score</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Summary</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Primary Document</th>
+                                {% for doc in documents %}
+                                    {% if doc.document_id != documents.0.document_id %}
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document {{ doc.document_id }}</th>
+                                    {% endif %}
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody>
                             {% for header, details in comparison_details.items %}
-                                {% for doc_id, info in details.items %}
-                                    <tr>
-                                        {% if forloop.first %}
-                                            <td rowspan="{{ details|length }}">{{ header }}</td>
+                                <tr>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ header }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ details.primary }}</td>
+                                    {% for doc in documents %}
+                                        {% if doc.document_id != documents.0.document_id %}
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ details.documents|get_item:doc.document_id|default:'-' }}</td>
                                         {% endif %}
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">Document {{ doc_id }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ info.similarity_score|floatformat:2 }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ info.summary }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ info.comparison_status }}</td>
-                                    </tr>
-                                {% endfor %}
+                                    {% endfor %}
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>

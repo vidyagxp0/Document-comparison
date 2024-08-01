@@ -141,10 +141,10 @@ class Document(models.Model):
     author = models.CharField(max_length=255)
     creation_date = models.DateField(default=timezone.now)
     upload_document = models.FileField(upload_to='documents/')
-    language = models.CharField(max_length=255, choices=LANGUAGE_CHOICES)
-    version = models.CharField(max_length=255)
-    doc_type = models.CharField(max_length=255, choices=DOC_TYPE_CHOICES)
-    doc_format = models.CharField(max_length=255, choices=DOC_FORMAT_CHOICES)
+    language = models.CharField(max_length=255, choices=LANGUAGE_CHOICES, default='en')
+    version = models.CharField(max_length=255, default='1.0.0')
+    doc_type = models.CharField(max_length=255, choices=DOC_TYPE_CHOICES, default='stp')
+    doc_format = models.CharField(max_length=255, choices=DOC_FORMAT_CHOICES, default='docx')
     comments = models.TextField()
 
     def __str__(self):

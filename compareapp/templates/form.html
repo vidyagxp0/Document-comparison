@@ -27,13 +27,13 @@
                 </div>
                 <div class="mt-4 md:mt-0 w-full md:w-[30%] flex justify-center items-center">
                     <div>
-                        <div class="border rounded-full bg-slate-600 p-4 text-white font-bold pt-0 text-center">
-                            <p class="mt-12"> Submitted Record </p>
+                        <div class="border rounded-lg bg-slate-200 px-4 text-slate-700 font-bold pt-0 text-center">
+                            <p class="my-3"> Documents Count </p>
                             <p class="my-3 text-red-900 font-extrabold text-4xl">{{ document_count }}</p>
                         </div>
-                        <div class="my-2 text-center">◆</div>
-                        {% if document_count >= 2 %}
-                            <a href="{% url "compare" %}" class="bg-pink-700 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded mt-2">Perform Comparison</a>
+                        <div class="my-2 h-2"></div>
+                        {% if document_count >= 1 %}
+                            <a href="{% url "document-list" %}" class="bg-pink-700 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded mt-2">View Document List</a>
                         {% endif %}  
                     </div>
                 </div>
