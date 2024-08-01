@@ -117,10 +117,10 @@ def comparison(request):
     result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison')
     os.makedirs(result_dir, exist_ok=True)
 
-    result_path = os.path.join(result_dir, "comparison-data.docx")
+    result_path = os.path.join(result_dir, "comparison-report.docx")
     create_merged_docx(data, result_path)
 
-    output_url = request.build_absolute_uri(settings.MEDIA_URL + 'comparison/comparison-data.docx')
+    output_url = request.build_absolute_uri(settings.MEDIA_URL + 'comparison/comparison-report.docx')
 
     # Prepare comparison details
     comparison_details = {}
@@ -199,7 +199,7 @@ def compare_sections(section1, section2):
 
 def create_merged_docx(data, output_path):
     new_doc = Document()
-    
+    new_doc.add_heading('Documents Comparison Report', 0).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
     headers = set()
     for sections in data.values():
         headers.update(sections.keys())
