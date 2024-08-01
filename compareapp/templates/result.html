@@ -94,8 +94,9 @@
                         <tbody>
                             {% for header, details in comparison_details.items %}
                                 <tr>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ header }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ details.primary }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm font-bold">{{ header }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm
+                                    *: ">{{ details.primary|default:"-" }}</td>
                                     {% for doc in documents %}
                                         {% if doc.document_id != documents.0.document_id %}
                                             <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ details.documents|get_item:doc.document_id|default:'-' }}</td>
