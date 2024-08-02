@@ -1,22 +1,25 @@
 import os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpRequest
 from django.contrib.auth import authenticate, login, logout
 from django.templatetags.static import static
 from docx.oxml.ns import qn
-from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from docx import Document
 from .forms import DocumentForm
 from .models import Document as Form
 from docx.shared import RGBColor
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.shared import Pt, Inches
-from docx.oxml import OxmlElement
+from docx.oxml import OxmlElement, parse_xml
+from datetime import datetime as date
 import difflib
-import PyPDF2   
-import fitz
-import docx
+from random import randint
+# import PyPDF2   
+# import fitz
+# import docx
 
 
 def index(request):
@@ -101,7 +104,7 @@ def removeDocument(request, doc_id):
 
     return redirect('document-list')
 
-def comparison(request):
+def comparison(request: HttpRequest):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
@@ -123,7 +126,10 @@ def comparison(request):
 
     result_path = os.path.join(result_dir, "comparison-report.docx")
     logo_path = "compareapp" + static('images/logo.png')
-    create_merged_docx(data, result_path, logo_path)
+
+    reason = request.GET.get('reason', '')
+    comparedBy = request.user.username.upper()
+    create_merged_docx(data, result_path, logo_path, comparedBy, reason)
 
     output_url = request.build_absolute_uri(settings.MEDIA_URL + 'comparison/comparison-report.docx')
 
@@ -167,7 +173,6 @@ def comparison(request):
         'overall_similarity_scores': overall_similarity_scores
     })
 
-
 def read_docx(file_path):
     doc = Document(file_path)
     sections = {}
@@ -204,7 +209,7 @@ def compare_sections(section1, section2):
     is_different = similarity < 1.0
     return similarity, is_different
 
-def create_merged_docx(data, output_path, logo_path):
+def create_merged_docx(data, output_path, logo_path, comparedBy, reason):
     new_doc = Document()
 
     # Set headers and footers for the entire document
@@ -212,7 +217,18 @@ def create_merged_docx(data, output_path, logo_path):
 
     # Header with logo image
     header = section.header
-    header_table = header.add_table(rows=2, cols=2, width=Inches(6))
+    header_table = header.add_table(rows=3, cols=2, width=Inches(6))
+
+    header_table.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+    # Set table borders for header
+    set_table_borders(header_table)
+
+    # Set vertical alignment for all cells
+    for row in header_table.rows:
+        for cell in row.cells:
+            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+
     header_table.cell(0, 0).paragraphs[0].add_run().add_picture(logo_path, width=Inches(1.5))  # Adjust width as needed
 
     header_right_cell = header_table.cell(0, 1)
@@ -222,23 +238,40 @@ def create_merged_docx(data, output_path, logo_path):
 
     header_left_cell = header_table.cell(1, 0)
     header_left_para = header_left_cell.paragraphs[0]
-    header_left_para.add_run("Compared By: Aditya Patel").font.size = Pt(10)
+    header_left_para.add_run("Compared By: " + comparedBy).font.size = Pt(10)
     header_left_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 
     header_right1_cell = header_table.cell(1, 1)
     header_right1_para = header_right1_cell.paragraphs[0]
-    header_right1_para.add_run("Report No.: CR100023").font.size = Pt(10)
+    header_right1_para.add_run(f"Report Number: CR100{randint(100, 999)}").font.size = Pt(10)
     header_right1_para.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
+
+    header_table.cell(2, 0).merge(header_table.cell(2, 1))
+
+    header_right2_cell = header_table.cell(2, 0)
+    header_right2_para = header_right2_cell.paragraphs[0]
+    header_right2_para.add_run("Comparison Reason: " + reason).font.size = Pt(10)
+    header_right2_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 
     # Footer with text and page number
     footer = section.footer
     footer_table = footer.add_table(rows=1, cols=2, width=Inches(6))  # One row, two columns
-    footer_table.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
+
+    footer_table.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+    # Set table borders for footer
+    set_table_borders(footer_table)
+
+    # Set vertical alignment for all cells in footer
+    for row in footer_table.rows:
+        for cell in row.cells:
+            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
     # Left cell content (compared by text)
     footer_left_cell = footer_table.cell(0, 0)
     footer_left_para = footer_left_cell.paragraphs[0]
-    footer_left_para.add_run("Comparison Date: 01-08-2024").font.size = Pt(10)
+    cdate = date.now()
+    footer_left_para.add_run(f"Comparison Date: {str(cdate).split(' ')[0]}").font.size = Pt(10)
     footer_left_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 
     # Right cell content (page number)
@@ -259,6 +292,35 @@ def create_merged_docx(data, output_path, logo_path):
     run._r.append(instrText)
 
     fldChar = OxmlElement('w:fldChar')
+    fldChar.set(qn('w:fldCharType'), 'separate')
+    run._r.append(fldChar)
+
+    run._r.append(OxmlElement('w:t'))
+
+    fldChar = OxmlElement('w:fldChar')
+    fldChar.set(qn('w:fldCharType'), 'end')
+    run._r.append(fldChar)
+
+    run = footer_right_para.add_run(" of ")
+
+    # Add the total page number field
+    run = footer_right_para.add_run()
+    fldChar = OxmlElement('w:fldChar')
+    fldChar.set(qn('w:fldCharType'), 'begin')
+    run._r.append(fldChar)
+
+    instrText = OxmlElement('w:instrText')
+    instrText.set(qn('xml:space'), 'preserve')
+    instrText.text = 'NUMPAGES'
+    run._r.append(instrText)
+
+    fldChar = OxmlElement('w:fldChar')
+    fldChar.set(qn('w:fldCharType'), 'separate')
+    run._r.append(fldChar)
+
+    run._r.append(OxmlElement('w:t'))
+
+    fldChar = OxmlElement('w:fldChar')
     fldChar.set(qn('w:fldCharType'), 'end')
     run._r.append(fldChar)
 
@@ -267,8 +329,6 @@ def create_merged_docx(data, output_path, logo_path):
         headers.update(sections.keys())
 
     headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
-
-    # new_doc.add_heading('Documents Comparison Report', level=0).alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
     for header in headers:
         new_doc.add_heading(header, level=1)
@@ -281,10 +341,28 @@ def create_merged_docx(data, output_path, logo_path):
                 comparison_status = "Compared" if ref_section_content else "Not Compared"
 
                 new_doc.add_heading(f"Document {doc_id}", level=2)
-                new_doc.add_paragraph(f"Similarity Score: {similarity:.2f}")
+                new_doc.add_paragraph(f"Similarity Score: {int(similarity*100)}%")
                 new_doc.add_paragraph(f"Summary: {summary}")
                 new_doc.add_paragraph(f"Comparison Status: {comparison_status}")
 
                 highlight_differences(new_doc, header, section_content, is_different)
 
     new_doc.save(output_path)
+
+def set_table_borders(table):
+    tbl = table._element
+    tbl_pr = tbl.tblPr if tbl.tblPr is not None else OxmlElement('w:tblPr')
+    tbl_borders = OxmlElement('w:tblBorders')
+    for border_name in ["top", "left", "bottom", "right", "insideH", "insideV"]:
+        border = OxmlElement(f'w:{border_name}')
+        border.set(qn('w:val'), 'single')
+        border.set(qn('w:sz'), '4')
+        border.set(qn('w:space'), '0')
+        border.set(qn('w:color'), '000000')
+        tbl_borders.append(border)
+    tbl_pr.append(tbl_borders)
+    tbl.append(tbl_pr)
+
+
+def preview(request):
+    return render(request, 'report-preview.html')
