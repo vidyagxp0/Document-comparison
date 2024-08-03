@@ -1,6 +1,6 @@
 import os
 from django.conf import settings
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import HttpRequest
 from django.contrib.auth import authenticate, login, logout
 from django.templatetags.static import static
@@ -17,10 +17,18 @@ from docx.oxml import OxmlElement, parse_xml
 from datetime import datetime as date
 import difflib
 from random import randint
-# import PyPDF2   
-# import fitz
-# import docx
+from pathlib import Path
+import win32com.client
+import pythoncom
+import logging
+import pdfkit
+from docx2pdf import convert
+import requests
+from django.http import JsonResponse
+import json
+from django.views.decorators.csrf import csrf_exempt
 
+CHATPDF_API_KEY = 'sec_svlzEoctoxWzXMSGAaPmbpJjX9z6bUrU'
 
 def index(request):
     return render(request, "index.html")
@@ -363,6 +371,49 @@ def set_table_borders(table):
     tbl_pr.append(tbl_borders)
     tbl.append(tbl_pr)
 
+logger = logging.getLogger(__name__)
 
-def preview(request):
-    return render(request, 'report-preview.html')
+def docx_to_pdf(docx_path, pdf_path):
+    try:
+        # Initialize the COM library
+        pythoncom.CoInitialize()
+        
+        # Dispatch the Word Application
+        word = win32com.client.Dispatch("Word.Application")
+        doc = word.Documents.Open(str(docx_path))
+
+        doc.SaveAs(str(pdf_path), FileFormat=17)  # 17 corresponds to wdFormatPDF
+        doc.Close()
+        word.Quit()
+
+    except Exception as e:
+        logger.error(f"Error converting DOCX to PDF: {e}")
+        raise
+
+    finally:
+        # Uninitialize the COM library
+        pythoncom.CoUninitialize()
+
+def preview(request: HttpRequest):
+    output_path = request.GET.get('path', '')
+    saved_doc = Path(settings.MEDIA_ROOT) / 'comparison/comparison-report.docx'
+    pdf_path = saved_doc.with_suffix('.pdf')
+    pdf_url = str(pdf_path.relative_to(settings.MEDIA_ROOT)).replace("\\", "/")
+
+    try:
+        # Convert the DOCX file to PDF
+        docx_to_pdf(saved_doc, pdf_path)
+    except :
+        return HttpResponse("Oops please reload the page.", status=500)
+    
+    return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'document_path': output_path})
+
+def upload_pdf(request):
+    pdf_url = request.POST.get('file_url')
+    headers = {
+        'Authorization': f'Bearer {settings.CHATPDF_API_KEY}',
+        'Content-Type': 'application/json'
+    }
+    data = {'file_url': pdf_url}
+    response = requests.post('https://api.chatpdf.com/v1/sources/add-file', json=data, headers=headers)
+    return JsonResponse(response.json())

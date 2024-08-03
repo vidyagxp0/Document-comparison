@@ -15,6 +15,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # Application definition
 
@@ -29,6 +30,7 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'django_browser_reload',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -40,9 +42,18 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
+
+CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = 'SmartCompare.urls'
+
+CHATPDF_API_KEY = 'sec_svlzEoctoxWzXMSGAaPmbpJjX9z6bUrU'
 
 TEMPLATES = [
     {

@@ -1,28 +1,119 @@
 {% extends "layout.html" %}
-{% load custom_filters %}
+{% load static %}
 
 {% block title %}
     Report Preview
 {% endblock title %}
 
 {% block body %}
-
     {% include "toast.html" with messages=messages %}
 
     <div class="container mx-auto my-12 px-6">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-900">Report Preview</h1>
-            {% comment %} <p class="mt-2 text-lg text-gray-600">Here are the documents you have uploaded.</p> {% endcomment %}
         </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             <div class="flex justify-between mb-6">
                 <div class="font-bold text-xl text-slate-600">Preview</div>
-                <div class="head">
+                <div class="flex items-center">
                     <button class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" onclick="history.back();">Back</button>
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ document_path }}">Print</a>
                 </div>
             </div>
-            {{ output_path }}
+            <div class="">
+                <embed src="{{ pdf_path }}" type="application/pdf" class="w-full h-screen" />
+            </div>
+            <div class="fixed bottom-10 right-10">
+                <div class="relative inline-flex">
+                    <span class="animate-ping absolute inline-flex h-24 w-24 rounded-full bg-slate-900 opacity-75"></span>
+                    <img src="{% static 'images/mllogo.jpg' %}" alt="Chat PDF Button" id="chatPdfButton" class="w-24 h-24 rounded-full relative bg-sky-500 cursor-pointer">
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- Modal structure -->
+    <div id="chatPdfModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/2">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">Extract Information From Document By Chat</h2>
+                <button id="closeModal" class="text-gray-600 hover:text-gray-800 text-3xl font-bold">&times;</button>
+            </div>
+            <div id="chatContainer" class="overflow-y-auto h-96 mb-4 border border-gray-200 p-4 rounded-lg">
+                <!-- Chat content will be dynamically added here -->
+            </div>
+            <input id="chatInput" type="text" class="border border-gray-300 rounded-lg w-full p-2" placeholder="Type your message here...">
+            <button id="sendMessage" class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-4 mt-2">Send</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('chatPdfButton').addEventListener('click', () => {
+            document.getElementById('chatPdfModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            document.getElementById('chatPdfModal').classList.add('hidden');
+        });
+
+        async function uploadPdf() {
+            try {
+                const response = await fetch('/upload-pdf/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ file_url: "{{ pdf_path|escapejs }}" })
+                });
+        
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.source_id; // Assuming the response contains a source_id
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(`Error uploading PDF: ${errorData.message || response.statusText}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                return null;
+            }
+        }
+
+        document.getElementById('sendMessage').addEventListener('click', async () => {
+            const message = document.getElementById('chatInput').value;
+            if (message.trim()) {
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.innerHTML += `<div class="text-right text-green py-2 px-3 mb-2">${message}</div>`;
+    
+                try {
+                    const sourceId = await uploadPdf();
+                    if (!sourceId) {
+                        chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error uploading PDF2</div>`;
+                        return;
+                    }
+
+                    const response = await fetch('https://api.chatpdf.com/ask', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer sec_svlzEoctoxWzXMSGAaPmbpJjX9z6bUrU' // Replace with your API key
+                        },
+                        body: JSON.stringify({ question: message, source_id: sourceId })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        chatContainer.innerHTML += `<div class="text-left text-gray-800 mb-2">${data.answer}</div>`;
+                    } else {
+                        chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error fetching response</div>`;
+                    }
+                } catch (error) {
+                    chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error: ${error.message}</div>`;
+                }
+    
+                document.getElementById('chatInput').value = '';
+                chatContainer.scrollTop = chatContainer.scrollHeight; // Scroll to the bottom
+            }
+        });
+    </script>
 {% endblock body %}
