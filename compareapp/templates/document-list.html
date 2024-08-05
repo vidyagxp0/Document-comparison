@@ -11,7 +11,6 @@
     <div class="container mx-auto my-12 px-6">
         <div class="text-center mb-8">
             <h1 class="text-4xl font-bold text-gray-900">Document List</h1>
-            {% comment %} <p class="mt-2 text-lg text-gray-600">Here are the documents you have uploaded.</p> {% endcomment %}
         </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             {% if documents %}
@@ -42,8 +41,8 @@
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comments }}</td>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm flex gap-4">
-                                        <a href="{{ document.upload_document.url }}" target="_blank" class="text-blue-500 hover:text-blue-700"><img src="{% static 'images/download.svg' %}" class="h-5 w-4" title="Download" alt="" srcset=""></a>
-                                        <a href="{% url 'remove-doc' document.document_id %}" class="text-red-500 hover:text-red-700 ml-2"><img src="{% static 'images/trash.svg' %}" alt="" class="h-4 5-4" title="Delete" srcset=""></a>
+                                        <a href="{{ document.upload_document.url }}" target="_blank" class="text-blue-500 hover:text-blue-700"><img src="{% static 'images/download.svg' %}" class="h-5 w-4" title="Download" alt=""></a>
+                                        <button onclick="openDeleteModal({{ document.document_id }})" class="ml-2"><img src="{% static 'images/trash.svg' %}" alt="" class="h-4 w-4" title="Delete"></button>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -59,18 +58,34 @@
         </div>
     </div>
      
-    <!-- Modal -->
+    <!-- Modals -->
+
     <div id="comparisonModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
             <h2 class="text-2xl font-bold mb-4">Reason for Comparison</h2>
             <form id="comparisonForm">
                 <div class="mb-4">
                     <label for="reason" class="block text-md font-medium text-gray-700">Reason <span class="text-red-700 font-bold">*</span></label>
-                    <textarea id="reason" placeholder="Enter a valid reason for comparison" name="reason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required></textarea>
+                    <textarea id="reason" maxlength="150" placeholder="Enter a valid reason for comparison" name="reason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required></textarea>
                 </div>
                 <div class="flex justify-end">
                     <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-4">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
+            <h2 class="text-2xl font-bold mb-4">Delete Document</h2>
+            <form id="deleteForm">
+                <div class="mb-4">
+                    <h5>Are you sure, want to delete the document?</h5>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeDeleteModal()">No</button>
+                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white rounded-lg py-2 px-4 mr-2">Yes</button>
                 </div>
             </form>
         </div>
@@ -83,6 +98,9 @@
             const form = document.getElementById("comparisonForm");
             const reasonTextarea = document.getElementById("reason");
 
+            const deleteModal = document.getElementById("deleteModal");
+            let deleteForm = document.getElementById("deleteForm");
+
             // Function to open the modal
             window.openModal = function() {
                 modal.classList.remove("hidden");
@@ -94,7 +112,11 @@
                 reasonTextarea.value = ""; // Clear the textarea
             };
 
-            // Handle form submission
+            window.closeDeleteModal = function() {
+                deleteModal.classList.add("hidden");
+            };
+
+            // Handle comparison form submission
             form.addEventListener("submit", function(event) {
                 event.preventDefault();
                 const reason = reasonTextarea.value.trim();
@@ -103,6 +125,21 @@
                     window.location.href = "{% url 'compare' %}?reason=" + encodeURIComponent(reason);
                 }
             });
+
+            // Function to open the delete modal
+            window.openDeleteModal = function(id) {
+                deleteModal.classList.remove("hidden");
+
+                // Remove previous event listeners to prevent multiple bindings
+                deleteForm.replaceWith(deleteForm.cloneNode(true));
+                deleteForm = document.getElementById("deleteForm");
+
+                deleteForm.addEventListener("submit", function(event) {
+                    event.preventDefault();
+                    const url = `{% url 'remove-doc' 0 %}`.replace('0', id);
+                    window.location.href = url;
+                });
+            };
         });
     </script>
 {% endblock body %}

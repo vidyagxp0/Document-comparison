@@ -10,5 +10,6 @@ urlpatterns = [
     path('comparison/', views.comparison, name="compare"),
     path('comparison/report/preview', views.preview, name="preview"),
     path('form/remove/<int:doc_id>/', views.removeDocument, name="remove-doc"),
-    path('upload_pdf/', views.upload_pdf, name='upload_pdf'),
+    path('upload-pdf/', views.uploadPDF, name='upload-pdf'),
+    path('proxy-chat-pdf/', views.proxy_chat_pdf, name='proxy-chat-pdf'),
 ]

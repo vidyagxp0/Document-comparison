@@ -13,7 +13,7 @@ from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.shared import Pt, Inches
-from docx.oxml import OxmlElement, parse_xml
+from docx.oxml import OxmlElement
 from datetime import datetime as date
 import difflib
 from random import randint
@@ -21,14 +21,10 @@ from pathlib import Path
 import win32com.client
 import pythoncom
 import logging
-import pdfkit
-from docx2pdf import convert
 import requests
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
-
-CHATPDF_API_KEY = 'sec_svlzEoctoxWzXMSGAaPmbpJjX9z6bUrU'
 
 def index(request):
     return render(request, "index.html")
@@ -401,19 +397,72 @@ def preview(request: HttpRequest):
     pdf_url = str(pdf_path.relative_to(settings.MEDIA_ROOT)).replace("\\", "/")
 
     try:
-        # Convert the DOCX file to PDF
         docx_to_pdf(saved_doc, pdf_path)
     except :
         return HttpResponse("Oops please reload the page.", status=500)
     
     return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'document_path': output_path})
 
-def upload_pdf(request):
-    pdf_url = request.POST.get('file_url')
-    headers = {
-        'Authorization': f'Bearer {settings.CHATPDF_API_KEY}',
-        'Content-Type': 'application/json'
-    }
-    data = {'file_url': pdf_url}
-    response = requests.post('https://api.chatpdf.com/v1/sources/add-file', json=data, headers=headers)
-    return JsonResponse(response.json())
+@csrf_exempt
+def uploadPDF(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            relative_pdf_path = data.get('file_url')
+
+            absolute_pdf_path = os.path.join(settings.MEDIA_ROOT, relative_pdf_path)
+
+            if not os.path.exists(absolute_pdf_path):
+                return JsonResponse({'error': 'File not found or invalid file path'}, status=400)
+
+            with open(absolute_pdf_path, 'rb') as pdf_file:
+                files = [
+                    ('file', ('file', pdf_file, 'application/pdf'))
+                ]
+                headers = {
+                    'x-api-key': settings.CHATPDF_API_KEY
+                }
+
+                response = requests.post('https://api.chatpdf.com/v1/sources/add-file', headers=headers, files=files)
+
+                if response.status_code == 200:
+                    return JsonResponse(response.json())
+                else:
+                    return JsonResponse({'error': response.text}, status=response.status_code)
+        except Exception as e:
+            print(f"Exception: {str(e)}")
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
+logger = logging.getLogger(__name__)
+
+@csrf_exempt
+def proxy_chat_pdf(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            question = data.get('question')
+            source_id = data.get('source_id')
+            headers = {
+                'x-api-key': settings.CHATPDF_API_KEY,
+                'Content-Type': 'application/json'
+            }
+            payload = {
+                'sourceId': source_id,
+                'messages': [
+                    {'role': 'user', 'content': question}
+                ]
+            }
+            response = requests.post('https://api.chatpdf.com/v1/chats/message', json=payload, headers=headers)
+            
+            if response.ok:
+                return JsonResponse(response.json())
+            else:
+                logger.error(f"ChatPDF API Error: {response.status_code} - {response.text}")
+                return JsonResponse(response.json(), status=response.status_code)
+        except Exception as e:
+            logger.exception("An error occurred while processing the request")
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
