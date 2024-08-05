@@ -157,17 +157,29 @@ def comparison(request: HttpRequest):
             if doc_id != primary_doc_id:
                 section_content = sections.get(header, "")
                 if section_content:
-                    similarity, is_different = compare_sections(section_content, ref_section_content)
+                    # similarity, is_different = compare_sections(section_content, ref_section_content)
+                    # if is_different:  # Only include if different
+                    #     comparison_details[header]['documents'][doc_id] = section_content
+                    # else:
+                    #     comparison_details[header]['documents'][doc_id] = 'Same as Primary Document'
+
+                    similarity, is_different, tag = compare_sections(section_content, ref_section_content)
                     if is_different:  # Only include if different
-                        comparison_details[header]['documents'][doc_id] = section_content
+                        comparison_details[header]['documents'][doc_id] = {
+                            'content': section_content or 'Removed',
+                            'tag': tag
+                        }
                     else:
-                        comparison_details[header]['documents'][doc_id] = 'Same as Primary Document'
+                        comparison_details[header]['documents'][doc_id] = {
+                            'content': 'Same as Primary Document',
+                            'tag': 'S'
+                        }
 
     # Calculate overall similarity score for each document
     ref_doc_content = "\n".join(list(data.values())[0].values())
     for doc_id, sections in data.items():
         doc_content = "\n".join(sections.values())
-        overall_similarity_score, _ = compare_sections(doc_content, ref_doc_content)
+        overall_similarity_score, _, _ = compare_sections(doc_content, ref_doc_content)
         overall_similarity_scores[doc_id] = int(overall_similarity_score * 100)
 
     return render(request, 'result.html', { 
@@ -209,9 +221,31 @@ def highlight_differences(doc, title, text, is_different):
                 run.font.color.rgb = RGBColor(255, 0, 0)  # Red color for differences
 
 def compare_sections(section1, section2):
-    similarity = difflib.SequenceMatcher(None, section1, section2).ratio()
+    primary_text = section2.strip()
+    other_text = section1.strip()
+    
+    # Calculate similarity ratio
+    seq_matcher = difflib.SequenceMatcher(None, primary_text, other_text)
+    similarity = seq_matcher.ratio()
     is_different = similarity < 1.0
-    return similarity, is_different
+
+    # Determine the tag
+    if similarity == 1.0:
+        tag = "S" 
+    elif len(other_text) > len(primary_text):
+        if other_text.startswith(primary_text):
+            tag = "A"  # Added
+        else:
+            tag = "M"  # Modified
+    elif len(other_text) < len(primary_text):
+        if primary_text.startswith(other_text):
+            tag = "M"  # Modified
+        else:
+            tag = "R"  # Removed
+    else:
+        tag = "M"  # Modified
+
+    return similarity, is_different, tag
 
 def create_merged_docx(data, output_path, logo_path, comparedBy, reason):
     new_doc = Document()
@@ -340,12 +374,13 @@ def create_merged_docx(data, output_path, logo_path, comparedBy, reason):
             section_content = sections.get(header, "")
             if section_content:
                 ref_section_content = list(data.values())[0].get(header, "")
-                similarity, is_different = compare_sections(section_content, ref_section_content)
+                similarity, is_different, tag = compare_sections(section_content, ref_section_content)
                 summary = "Same" if not is_different else "Different"
                 comparison_status = "Compared" if ref_section_content else "Not Compared"
 
                 new_doc.add_heading(f"Document {doc_id}", level=2)
                 new_doc.add_paragraph(f"Similarity Score: {int(similarity*100)}%")
+                new_doc.add_paragraph(f"Tag: {tag}")
                 new_doc.add_paragraph(f"Summary: {summary}")
                 new_doc.add_paragraph(f"Comparison Status: {comparison_status}")
 
@@ -378,7 +413,7 @@ def docx_to_pdf(docx_path, pdf_path):
         word = win32com.client.Dispatch("Word.Application")
         doc = word.Documents.Open(str(docx_path))
 
-        doc.SaveAs(str(pdf_path), FileFormat=17)  # 17 corresponds to wdFormatPDF
+        doc.SaveAs(str(pdf_path), FileFormat=17) 
         doc.Close()
         word.Quit()
 
@@ -387,7 +422,6 @@ def docx_to_pdf(docx_path, pdf_path):
         raise
 
     finally:
-        # Uninitialize the COM library
         pythoncom.CoUninitialize()
 
 def preview(request: HttpRequest):

@@ -95,11 +95,19 @@
                             {% for header, details in comparison_details.items %}
                                 <tr>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm font-bold">{{ header }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm
-                                    *: ">{{ details.primary|default:"-" }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ details.primary|default:"-" }}</td>
                                     {% for doc in documents %}
                                         {% if doc.document_id != documents.0.document_id %}
-                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ details.documents|get_item:doc.document_id|default:'-' }}</td>
+                                            {% with details.documents|get_item:doc.document_id as doc_detail %}
+                                                <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                                    {{ doc_detail.content|default:"-" }}
+                                                    {% if doc_detail.tag and doc_detail.tag != 'S' %}
+                                                        <span class="text-xs font-semibold {% if doc_detail.tag == 'M' %}text-red-500{% elif doc_detail.tag == 'A' %}text-green-800{% elif doc_detail.tag == 'R' %}text-yellow-500{% else %}text-gray-500{% endif %}">
+                                                            [{{ doc_detail.tag }}]
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                            {% endwith %}
                                         {% endif %}
                                     {% endfor %}
                                 </tr>
