@@ -157,12 +157,6 @@ def comparison(request: HttpRequest):
             if doc_id != primary_doc_id:
                 section_content = sections.get(header, "")
                 if section_content:
-                    # similarity, is_different = compare_sections(section_content, ref_section_content)
-                    # if is_different:  # Only include if different
-                    #     comparison_details[header]['documents'][doc_id] = section_content
-                    # else:
-                    #     comparison_details[header]['documents'][doc_id] = 'Same as Primary Document'
-
                     similarity, is_different, tag = compare_sections(section_content, ref_section_content)
                     if is_different:  # Only include if different
                         comparison_details[header]['documents'][doc_id] = {
@@ -229,21 +223,23 @@ def compare_sections(section1, section2):
     similarity = seq_matcher.ratio()
     is_different = similarity < 1.0
 
-    # Determine the tag
+    # Determine the tag with a more detailed analysis
+    diffs = list(seq_matcher.get_opcodes())
+    added = any(opcode == 'insert' for opcode, _, _, _, _ in diffs)
+    removed = any(opcode == 'delete' for opcode, _, _, _, _ in diffs)
+    replaced = any(opcode == 'replace' for opcode, _, _, _, _ in diffs)
+    
     if similarity == 1.0:
-        tag = "S" 
-    elif len(other_text) > len(primary_text):
-        if other_text.startswith(primary_text):
-            tag = "A"  # Added
-        else:
-            tag = "M"  # Modified
-    elif len(other_text) < len(primary_text):
-        if primary_text.startswith(other_text):
-            tag = "M"  # Modified
-        else:
-            tag = "R"  # Removed
+        tag = "S"  # Same
     else:
-        tag = "M"  # Modified
+        if added and not removed and not replaced:
+            tag = "A"  # Added
+        elif removed and not added and not replaced:
+            tag = "R"  # Removed
+        elif replaced or (added and removed):
+            tag = "M"  # Modified
+        else:
+            tag = "M"  # Modified, catch-all for any changes
 
     return similarity, is_different, tag
 
