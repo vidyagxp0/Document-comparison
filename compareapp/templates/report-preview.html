@@ -17,7 +17,7 @@
                 <div class="font-bold text-xl text-slate-600">Preview</div>
                 <div class="flex items-center">
                     <button class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" onclick="history.back();">Back</button>
-                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ document_path }}">Print</a>
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ document_path }}">Print Document Report</a>
                 </div>
             </div>
             <div class="">
@@ -33,8 +33,8 @@
     </div>
 
     <!-- Modal structure -->
-    <div id="chatPdfModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/2">
+    <div id="chatPdfModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center animate- hidden">
+        <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/2 ">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold">Chat with Document</h2>
                 <button id="closeChat" class="text-gray-600 hover:text-gray-800 text-3xl font-bold z-50">&times;</button>
@@ -42,20 +42,36 @@
             <div id="chatContainer" class="overflow-y-auto h-96 mb-4 border border-gray-200 p-4 rounded-lg">
                 <!-- Chat content will be dynamically added here -->
             </div>
-            <input id="chatInput" type="text" class="border border-gray-300 rounded-lg w-full p-2" placeholder="Type your message here...">
-            <button id="sendMessage" class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-4 mt-2">Send</button>
+            <div class="flex gap-4 items-center"> 
+                <input id="chatInput" type="text" class="border border-gray-300 rounded-lg w-full p-2" placeholder="Type your message here...">
+                <button class="bg-gray-200 hover:bg-red-700 px-3 py-2 rounded-lg">
+                    <img id="sendMessage" class="size-6 stroke-red-800 hover:stroke-white " src="{% static 'images/send.png' %}" alt="" srcset="">
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('chatPdfButton').addEventListener('click', () => {
+        let sourceId = null;
+
+        document.getElementById('chatPdfButton').addEventListener('click', async () => {
             document.getElementById('chatPdfModal').classList.remove('hidden');
+            document.getElementById('loader').classList.remove('hidden');
+            
+            if (!sourceId) {
+                sourceId = await uploadPdf();
+            }
+            if (sourceId) {
+                document.getElementById('loader').classList.add('hidden');
+            } else {
+                alert('Error uploading PDF. Please try again.');
+            }
         });
-        
+
         document.getElementById('closeChat').addEventListener('click', () => {
             document.getElementById('chatPdfModal').classList.add('hidden');
         });
-        
+
         async function uploadPdf() {
             try {
                 const response = await fetch('{% url "upload-pdf" %}', {
@@ -65,7 +81,7 @@
                     },
                     body: JSON.stringify({ file_url: "comparison/comparison-report.pdf" }) 
                 });
-        
+
                 if (response.ok) {
                     const data = await response.json();
                     return data.sourceId; 
@@ -78,20 +94,17 @@
                 return null;
             }
         }
-        
+
         document.getElementById('sendMessage').addEventListener('click', async () => {
             const message = document.getElementById('chatInput').value;
             if (message.trim()) {
                 const chatContainer = document.getElementById('chatContainer');
-                chatContainer.innerHTML += `<div class="text-right text-green py-2 px-3 mb-2">${message}</div>`;
-        
+                chatContainer.innerHTML += `
+                    <div class="text-right mb-3 ml-32">
+                        <span class="inline-block bg-gray-700 text-white py-2 px-3 mb-2 rounded-lg">${message}</span>
+                    </div>`;
+
                 try {
-                    const sourceId = await uploadPdf();
-                    if (!sourceId) {
-                        chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error uploading PDF</div>`;
-                        return;
-                    }
-        
                     const response = await fetch('{% url "proxy-chat-pdf" %}', {
                         method: 'POST',
                         headers: {
@@ -99,19 +112,22 @@
                         },
                         body: JSON.stringify({ question: message, source_id: sourceId })
                     });
-        
+
                     if (response.ok) {
                         const data = await response.json();
-                        chatContainer.innerHTML += `<div class="text-left text-gray-800 mb-2">${data.content}</div>`;
+                        chatContainer.innerHTML += `
+                            <div class="text-left mb-3 mr-32">
+                                <span class="inline-block bg-gray-700 text-white py-2 px-3 mb-2 rounded-lg">${data.content}</span>
+                            </div>`;
                     } else {
                         chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error fetching response</div>`;
                     }
                 } catch (error) {
                     chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error: ${error.message}</div>`;
                 }
-        
+
                 document.getElementById('chatInput').value = '';
-                chatContainer.scrollTop = chatContainer.scrollHeight; 
+                chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         });
     </script>

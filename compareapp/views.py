@@ -18,8 +18,7 @@ from datetime import datetime as date
 import difflib
 from random import randint
 from pathlib import Path
-import win32com.client
-import pythoncom
+import convertapi
 import logging
 import requests
 from django.http import JsonResponse
@@ -400,25 +399,49 @@ def set_table_borders(table):
 
 logger = logging.getLogger(__name__)
 
+# window specific converter docx to pdf
+# import win32com.client
+# import pythoncom
+# def docx_to_pdf(docx_path, pdf_path):
+#     try:
+#         # Initialize the COM library
+#         pythoncom.CoInitialize()
+        
+#         # Dispatch the Word Application
+#         word = win32com.client.Dispatch("Word.Application")
+#         doc = word.Documents.Open(str(docx_path))
+          
+#         doc.SaveAs(str(pdf_path), FileFormat=17) 
+#         doc.Close()
+#         word.Quit()
+
+#     except Exception as e:
+#         logger.error(f"Error converting DOCX to PDF: {e}")
+#         raise
+
+#     finally:
+#         pythoncom.CoUninitialize()
+
 def docx_to_pdf(docx_path, pdf_path):
     try:
-        # Initialize the COM library
-        pythoncom.CoInitialize()
+        # Set your ConvertAPI secret
+        convertapi.api_secret = '64dK2PAmjNXw24T3'
+
+        # Convert the file paths to strings
+        docx_path = str(docx_path)
+        pdf_path = str(pdf_path)
+
+        # Convert the DOCX to PDF
+        result = convertapi.convert('pdf', {
+            'File': docx_path
+        })
+
+        # Save the result to the specified path
+        result.file.save(pdf_path)
         
-        # Dispatch the Word Application
-        word = win32com.client.Dispatch("Word.Application")
-        doc = word.Documents.Open(str(docx_path))
-
-        doc.SaveAs(str(pdf_path), FileFormat=17) 
-        doc.Close()
-        word.Quit()
-
     except Exception as e:
         logger.error(f"Error converting DOCX to PDF: {e}")
         raise
-
-    finally:
-        pythoncom.CoUninitialize()
 
 def preview(request: HttpRequest):
     output_path = request.GET.get('path', '')

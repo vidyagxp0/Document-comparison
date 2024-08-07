@@ -57,6 +57,11 @@
             </div>
         </div>
     </header>
+
+    <!-- Loader -->
+    <div id="loader" class="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50 hidden">
+        <div class="animate-spin rounded-full border-t-4 border-red-900 h-16 w-16"></div>
+    </div>
     
     <!-- Modal -->
     <div id="aboutModal" class="modal modal-closed fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -80,6 +85,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('loader').classList.remove('hidden');
             const dropdownButton = document.getElementById('dropdownButton');
             const dropdownMenu = document.getElementById('dropdownMenu');
             const aboutButton = document.getElementById('aboutButton');
@@ -113,6 +119,10 @@
                 }
             });
         });
+
+        window.onload = function() {
+            document.getElementById('loader').classList.add('hidden');
+        };
     </script>
     
     {% block body %}{% endblock body %}
