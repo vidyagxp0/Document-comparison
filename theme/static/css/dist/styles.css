@@ -995,12 +995,32 @@ select {
   top: 0.75rem;
 }
 
+.bottom-0 {
+  bottom: 0px;
+}
+
+.top-auto {
+  top: auto;
+}
+
 .z-50 {
   z-index: 50;
 }
 
+.z-0 {
+  z-index: 0;
+}
+
+.-z-0 {
+  z-index: 0;
+}
+
 .m-4 {
   margin: 1rem;
+}
+
+.m-0 {
+  margin: 0px;
 }
 
 .mx-10 {
@@ -1096,6 +1116,10 @@ select {
   margin-top: 1rem;
 }
 
+.mt-auto {
+  margin-top: auto;
+}
+
 .block {
   display: block;
 }
@@ -1131,46 +1155,6 @@ select {
 .size-6 {
   width: 1.5rem;
   height: 1.5rem;
-}
-
-.size-7 {
-  width: 1.75rem;
-  height: 1.75rem;
-}
-
-.size-8 {
-  width: 2rem;
-  height: 2rem;
-}
-
-.size-5 {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.size-\[\] {
-  width: ;
-  height: ;
-}
-
-.size-\[6px\] {
-  width: 6px;
-  height: 6px;
-}
-
-.size-\[10px\] {
-  width: 10px;
-  height: 10px;
-}
-
-.size-\[50px\] {
-  width: 50px;
-  height: 50px;
-}
-
-.size-\[30px\] {
-  width: 30px;
-  height: 30px;
 }
 
 .h-14 {
@@ -1211,6 +1195,22 @@ select {
 
 .h-screen {
   height: 100vh;
+}
+
+.h-20 {
+  height: 5rem;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.h-10 {
+  height: 2.5rem;
+}
+
+.h-auto {
+  height: auto;
 }
 
 .w-11\/12 {
@@ -1257,6 +1257,18 @@ select {
   width: 100%;
 }
 
+.w-\[100\] {
+  width: 100;
+}
+
+.w-\[100\%\] {
+  width: 100%;
+}
+
+.w-screen {
+  width: 100vw;
+}
+
 .min-w-full {
   min-width: 100%;
 }
@@ -1267,6 +1279,14 @@ select {
 
 .max-w-md {
   max-width: 28rem;
+}
+
+.flex-auto {
+  flex: 1 1 auto;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
 }
 
 .flex-grow {
@@ -1316,6 +1336,10 @@ select {
   cursor: pointer;
 }
 
+.scroll-m-9 {
+  scroll-margin: 2.25rem;
+}
+
 .list-inside {
   list-style-position: inside;
 }
@@ -1330,6 +1354,10 @@ select {
 
 .flex-col {
   flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
 }
 
 .content-start {
@@ -1626,16 +1654,16 @@ select {
   stroke: #991b1b;
 }
 
+.stroke-pink-900 {
+  stroke: #831843;
+}
+
 .stroke-current {
   stroke: currentColor;
 }
 
-.stroke-red-50 {
-  stroke: #fef2f2;
-}
-
-.stroke-none {
-  stroke: none;
+.stroke-transparent {
+  stroke: transparent;
 }
 
 .p-1 {
