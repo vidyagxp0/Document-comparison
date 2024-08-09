@@ -41,8 +41,8 @@
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comments }}</td>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm flex gap-4">
-                                        <a href="{{ document.upload_document.url }}" target="_blank" class="text-blue-500 hover:text-blue-700"><img src="{% static 'images/download.svg' %}" class="h-5 w-4" title="Download" alt=""></a>
-                                        <button onclick="openDeleteModal({{ document.document_id }})" class="ml-2"><img src="{% static 'images/trash.svg' %}" alt="" class="h-4 w-4" title="Delete"></button>
+                                        <a href="{{ document.upload_document.url }}" target="_blank" class="text-blue-500 hover:text-blue-700"><img src="{% static 'images/download.png' %}" class="h-5 w-4" title="Download" alt=""></a>
+                                        <button onclick="openDeleteModal({{ document.document_id }})" class="ml-2"><img src="{% static 'images/delete.png' %}" alt="" class="h-4 w-4" title="Delete"></button>
                                     </td>
                                 </tr>
                             {% endfor %}

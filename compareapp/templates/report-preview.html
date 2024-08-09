@@ -44,8 +44,8 @@
             </div>
             <div class="flex gap-4 items-center"> 
                 <input id="chatInput" type="text" class="border border-gray-300 rounded-lg w-full p-2" placeholder="Type your message here...">
-                <button class="bg-gray-200 hover:bg-red-700 px-3 py-2 rounded-lg">
-                    <img id="sendMessage" class="size-6 stroke-red-800 hover:stroke-white " src="{% static 'images/send.png' %}" alt="" srcset="">
+                <button id="sendMessage" class="bg-gray-200 hover:bg-red-700 px-3 py-2 rounded-lg">
+                    <img class="size-6" src="{% static 'images/send.png' %}" alt="" srcset="">
                 </button>
             </div>
         </div>
@@ -100,8 +100,8 @@
             if (message.trim()) {
                 const chatContainer = document.getElementById('chatContainer');
                 chatContainer.innerHTML += `
-                    <div class="text-right mb-3 ml-32">
-                        <span class="inline-block bg-gray-700 text-white py-2 px-3 mb-2 rounded-lg">${message}</span>
+                    <div class="float-end mb-3 ml-32">
+                        <span class="text-left inline-block bg-gray-700 text-white py-2 px-3 mb-2 rounded-lg">${message}</span>
                     </div>`;
 
                 try {

@@ -67,13 +67,14 @@ def form(request):
     else:
         form = DocumentForm()
     document_count = Form.objects.count()
+    doc_titles = Form.objects.all().values()
     formData = Form.objects.last()
     if not formData:
         doc_id = 1
     else:
         doc_id = formData.document_id + 1
         
-    return render(request, "form.html", {'form': form, 'doc_id': doc_id, 'document_count': document_count})
+    return render(request, "form.html", {'form': form, 'doc_id': doc_id, 'document_count': document_count, 'doc_titles': doc_titles})
 
 def documentList(request):
     if not request.user.is_authenticated:
@@ -156,11 +157,14 @@ def comparison(request: HttpRequest):
             if doc_id != primary_doc_id:
                 section_content = sections.get(header, "")
                 if section_content:
-                    similarity, is_different, tag = compare_sections(section_content, ref_section_content)
+                    similarity, is_different, tag ,added_text, removed_text, modified_text  = compare_sections(ref_section_content, section_content)
                     if is_different:  # Only include if different
                         comparison_details[header]['documents'][doc_id] = {
                             'content': section_content or 'Removed',
-                            'tag': tag
+                            'tag': tag,
+                            'added_text': added_text,
+                            'removed_text': removed_text,
+                            'modified_text': modified_text
                         }
                     else:
                         comparison_details[header]['documents'][doc_id] = {
@@ -172,7 +176,7 @@ def comparison(request: HttpRequest):
     ref_doc_content = "\n".join(list(data.values())[0].values())
     for doc_id, sections in data.items():
         doc_content = "\n".join(sections.values())
-        overall_similarity_score, _, _ = compare_sections(doc_content, ref_doc_content)
+        overall_similarity_score, _, _, _, _, _ = compare_sections(ref_doc_content, doc_content )
         overall_similarity_scores[doc_id] = int(overall_similarity_score * 100)
 
     return render(request, 'result.html', { 
@@ -181,6 +185,47 @@ def comparison(request: HttpRequest):
         'comparison_details': comparison_details,
         'overall_similarity_scores': overall_similarity_scores
     })
+
+def compare_sections(section1, section2):
+    # Remove leading/trailing spaces
+    section1 = section1.strip()
+    section2 = section2.strip()
+    
+    # Calculate similarity ratio
+    seq_matcher = difflib.SequenceMatcher(None, section1, section2)
+    similarity = seq_matcher.ratio()
+    is_different = similarity < 1.0
+
+    # Track changes
+    added_text = []
+    removed_text = []
+    modified_text = []
+    
+    # Iterate through the differences
+    for tag, i1, i2, j1, j2 in seq_matcher.get_opcodes():
+        if tag == 'equal':
+            pass  # Unchanged parts
+        elif tag == 'replace':
+            removed_text.append(section1[i1:i2])    # Replaced in section1
+            added_text.append(section2[j1:j2])      # Added in section2
+        elif tag == 'delete':
+            removed_text.append(section1[i1:i2])    # Deleted in section1
+        elif tag == 'insert':
+            added_text.append(section2[j1:j2])      # Inserted in section2
+    
+    # Classify the change type
+    if similarity == 1.0:
+        tag = "S"  # Same
+    else:
+        if added_text and not removed_text:
+            tag = "A"  # Added
+        elif removed_text and not added_text:
+            tag = "R"  # Removed
+        else:
+            tag = "M"  # Modified
+            modified_text.append(section2)
+
+    return similarity, is_different, tag, ' '.join(added_text), ' '.join(removed_text), ' '.join(modified_text) 
 
 def read_docx(file_path):
     doc = Document(file_path)
@@ -203,44 +248,6 @@ def read_docx(file_path):
         sections[current_section] = '\n'.join(current_content)
 
     return sections
-
-def highlight_differences(doc, title, text, is_different):
-    paragraphs = text.split('\n')
-    for para_text in paragraphs:
-        para = doc.add_paragraph()
-        for part in para_text.split(' '):
-            run = para.add_run(part + ' ')
-            if is_different:
-                run.font.color.rgb = RGBColor(255, 0, 0)  # Red color for differences
-
-def compare_sections(section1, section2):
-    primary_text = section2.strip()
-    other_text = section1.strip()
-    
-    # Calculate similarity ratio
-    seq_matcher = difflib.SequenceMatcher(None, primary_text, other_text)
-    similarity = seq_matcher.ratio()
-    is_different = similarity < 1.0
-
-    # Determine the tag with a more detailed analysis
-    diffs = list(seq_matcher.get_opcodes())
-    added = any(opcode == 'insert' for opcode, _, _, _, _ in diffs)
-    removed = any(opcode == 'delete' for opcode, _, _, _, _ in diffs)
-    replaced = any(opcode == 'replace' for opcode, _, _, _, _ in diffs)
-    
-    if similarity == 1.0:
-        tag = "S"  # Same
-    else:
-        if added and not removed and not replaced:
-            tag = "A"  # Added
-        elif removed and not added and not replaced:
-            tag = "R"  # Removed
-        elif replaced or (added and removed):
-            tag = "M"  # Modified
-        else:
-            tag = "M"  # Modified, catch-all for any changes
-
-    return similarity, is_different, tag
 
 def create_merged_docx(data, output_path, logo_path, comparedBy, reason):
     new_doc = Document()
@@ -369,7 +376,7 @@ def create_merged_docx(data, output_path, logo_path, comparedBy, reason):
             section_content = sections.get(header, "")
             if section_content:
                 ref_section_content = list(data.values())[0].get(header, "")
-                similarity, is_different, tag = compare_sections(section_content, ref_section_content)
+                similarity, is_different, tag , added_text, removed_text, modified_text = compare_sections(ref_section_content, section_content)
                 summary = "Same" if not is_different else "Different"
                 comparison_status = "Compared" if ref_section_content else "Not Compared"
 
@@ -378,6 +385,13 @@ def create_merged_docx(data, output_path, logo_path, comparedBy, reason):
                 new_doc.add_paragraph(f"Tag: {tag}")
                 new_doc.add_paragraph(f"Summary: {summary}")
                 new_doc.add_paragraph(f"Comparison Status: {comparison_status}")
+
+                if added_text:
+                    new_doc.add_paragraph(f"Added Text: {added_text}")
+                if removed_text:
+                    new_doc.add_paragraph(f"Removed Text: {removed_text}")
+                if modified_text:
+                    new_doc.add_paragraph(f"Modified Text: {modified_text}")
 
                 highlight_differences(new_doc, header, section_content, is_different)
 
@@ -396,6 +410,15 @@ def set_table_borders(table):
         tbl_borders.append(border)
     tbl_pr.append(tbl_borders)
     tbl.append(tbl_pr)
+
+def highlight_differences(doc, title, text, is_different):
+    paragraphs = text.split('\n')
+    for para_text in paragraphs:
+        para = doc.add_paragraph()
+        for part in para_text.split(' '):
+            run = para.add_run(part + ' ')
+            if is_different:
+                run.font.color.rgb = RGBColor(255, 0, 0)  # Red color for differences
 
 logger = logging.getLogger(__name__)
 
