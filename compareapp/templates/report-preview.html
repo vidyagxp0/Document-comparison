@@ -17,7 +17,7 @@
                 <div class="font-bold text-xl text-slate-600">Preview</div>
                 <div class="flex items-center">
                     <button class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" onclick="history.back();">Back</button>
-                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ document_path }}">Print Document Report</a>
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ document_path }}">Download Report</a>
                 </div>
             </div>
             <div class="">
@@ -31,7 +31,7 @@
             </div>
         </div>
     </div>
-
+                                                                                                       
     <!-- Modal structure -->
     <div id="chatPdfModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center animate- hidden">
         <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/2 ">
@@ -44,9 +44,9 @@
             </div>
             <div class="flex gap-4 items-center"> 
                 <input id="chatInput" type="text" class="border border-gray-300 rounded-lg w-full p-2" placeholder="Type your message here...">
-                <button id="sendMessage" class="bg-gray-200 hover:bg-red-700 px-3 py-2 rounded-lg">
-                    <img class="size-6" src="{% static 'images/send.png' %}" alt="" srcset="">
-                </button>
+                <div id="sendMessage" class="hover:bg-gray-100 rounded-full">
+                    <img class="size-16" src="{% static 'images/sent.png' %}" alt="" srcset="">
+                </div>
             </div>
         </div>
     </div>
@@ -63,6 +63,11 @@
             }
             if (sourceId) {
                 document.getElementById('loader').classList.add('hidden');
+                const chatContainer = document.getElementById('chatContainer');
+                chatContainer.innerHTML += `
+                    <div class="flex justify-start mb-3">
+                        <span class="bg-gray-700 text-white py-2 px-3 rounded-lg max-w-xs md:max-w-xl break-words">Hello, how can i help you today!</span>
+                    </div>`;
             } else {
                 alert('Error uploading PDF. Please try again.');
             }
@@ -100,8 +105,8 @@
             if (message.trim()) {
                 const chatContainer = document.getElementById('chatContainer');
                 chatContainer.innerHTML += `
-                    <div class="float-end mb-3 ml-32">
-                        <span class="text-left inline-block bg-gray-700 text-white py-2 px-3 mb-2 rounded-lg">${message}</span>
+                    <div class="flex justify-end mb-3">
+                        <span class="bg-blue-600 text-white py-2 px-3 rounded-lg max-w-xs md:max-w-xl break-words">${message}</span>
                     </div>`;
 
                 try {
@@ -116,8 +121,8 @@
                     if (response.ok) {
                         const data = await response.json();
                         chatContainer.innerHTML += `
-                            <div class="text-left mb-3 mr-32">
-                                <span class="inline-block bg-gray-700 text-white py-2 px-3 mb-2 rounded-lg">${data.content}</span>
+                           <div class="flex justify-start mb-3">
+                                <span class="bg-gray-700 text-white py-2 px-3 rounded-lg max-w-xs md:max-w-xl  break-words">${data.content}</span>
                             </div>`;
                     } else {
                         chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error fetching response</div>`;

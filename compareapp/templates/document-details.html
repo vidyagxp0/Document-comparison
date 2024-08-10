@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Document Information
+{% endblock title %}
+
+{% block body %}
+    {% load static %}
+    {% include "toast.html" with messages=messages %}
+
+    <div class="container mx-auto my-12 px-6">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Document Information</h1>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+            {% if document %}
+                <div class="text-end mb-4">
+                    <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" href="{% url "form" %}">Back</a>
+                </div>
+                <div class="overflow-auto">
+                    <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
+                        <thead>
+                            <tr>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Attribute</th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Document ID</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.document_id }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Title</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.title }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Author</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.author }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Creation Date</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.creation_date }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Document Type</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_type }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Document Format</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_format }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Language</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.language }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Version</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.version }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Comments</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ document.comments }}</td>
+                            </tr>
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">Action</td>
+                                <td class="px-5 py-3 border-b border-gray-200">
+                                    <a href="{{ document.upload_document.url }}" class="hover:bg-slate-200 rounded-full">
+                                        <img src="{% static 'images/download.png' %}" class="size-8" title="Download" alt="">
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+            <div class="text-center">
+                <p class="text-gray-600 mb-4">No document found. Please upload a document first.</p>
+                <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3 mr-4" href="{% url "form" %}">Back</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock body %}

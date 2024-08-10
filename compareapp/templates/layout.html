@@ -29,7 +29,7 @@
     <header>
         <div class="flex justify-between items-center px-10 py-2.5 bg-gray-800 bg-opacity-90 text-white">
             <div>
-                <a href="#" class="flex items-center gap-4">
+                <a href="{% url "dashboard" %}" class="flex items-center gap-4">
                     <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo">
                     <p class="hidden md:block bg-gradient-to-r from-red-700 from-[30%] to-black bg-clip-text text-transparent text-[20px] md:text-2xl font-bold"> Document Comparison Pro </p>
                 </a>
@@ -50,9 +50,9 @@
                         <div class="flex justify-center items-center px-5 py-2 gap-2 border-b">
                             <img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> Admin
                         </div>
-                        <div><a class="block px-4 py-2 hover:bg-gray-200" href="#" id="aboutButton">◆ &nbsp; About</a></div>
-                        <div><a class="block px-4 py-2 hover:bg-gray-200" href="https://vidyagxp.com/" target="_blank">◆ &nbsp; Feedback</a></div>
-                        <div><a class="block px-4 py-2 hover:bg-gray-200" href="{% url 'logout' %}">◆ &nbsp; Log Out</a></div>
+                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="#" id="aboutButton"><img class="size-6" src="{% static 'images/about.png' %}" alt="" srcset=""><span>About</span></a></div>
+                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="https://vidyagxp.com/" target="_blank"><img class="size-6" src="{% static 'images/feedback.png' %}" alt="" srcset=""> <span>Feedback</span></a></div>
+                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'logout' %}"><img class="size-6" src="{% static 'images/logout.png' %}" alt="" srcset=""> <span>Log Out</span></a></div>
                     </div>
                 </div>
             </div>

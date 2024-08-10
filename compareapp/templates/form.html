@@ -32,28 +32,120 @@
                             <p class="my-3"> Documents Count </p>
                             <p class="my-3 text-red-900 font-extrabold text-4xl">{{ document_count }}</p>
                         </div>
+                        
                         <div class="mt-4">
-                        {% if document_count >= 1 %}
-                            <a href="{% url "document-list" %}" class="bg-pink-700 hover:bg-pink-600 text-white font-bold py-2 px-4 rounded-lg">View Document List</a>
-                        {% endif %}  
+                            {% if document_count >= 2 %}
+                                <button onclick="openModal()" class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3">Perform Comparison</button>
+                            {% endif %}  
                         </div>
                     </div>
 
-                    {% if doc_titles %}
+                    {% if documents %}
                         <div class="w-full h-auto border rounded-lg bg-gray-100 p-4">
-                            {% for doc in doc_titles %}
+                            {% for doc in documents %}  
                                 <div class="relative inline-block border rounded-lg bg-white text-center px-3 py-2 mb-3 mr-2">
                                     <div class="absolute -top-1 -right-1">
-                                        <img class="size-5" src="{% static 'images/remove.png' %}" alt="" srcset="">
+                                        <button onclick="openDeleteModal({{ doc.document_id }})" title="Delete Document">
+                                            <img class="size-4" src="{% static 'images/cross.png' %}" alt="" srcset="">
+                                        </button>
                                     </div>
-                                    <p>{{ doc.title }}</p>
+                                    <a href="{% url "view-document" doc.document_id %}" class="text-blue-700">{{ doc.title }}</a>
                                 </div>
                             {% endfor %}
                         </div>
                     {% endif %}
+
+                    <div class="mt-4">
+                        {% if document_count >= 1 %}
+                            <a href="{% url "document-list" %}" class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3">View All Documents</a>
+                        {% endif %}  
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="comparisonModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
+            <h2 class="text-2xl font-bold mb-4">Reason for Comparison</h2>
+            <form id="comparisonForm">
+                <div class="mb-4">
+                    <label for="reason" class="block text-md font-medium text-gray-700">Reason <span class="text-red-700 font-bold">*</span></label>
+                    <textarea id="reason" maxlength="150" placeholder="Enter a valid reason for comparison" name="reason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required></textarea>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-4">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
+            <h2 class="text-2xl font-bold mb-4">Delete Document</h2>
+            <form id="deleteForm">
+                <div class="mb-4">
+                    <h5>Are you sure, want to delete the document?</h5>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" class="bg-slate-400 hover:bg-slate-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeDeleteModal()">Cancel</button>
+                    <button type="submit" class="bg-red-800 hover:bg-red-700 text-white rounded-lg py-2 px-4 mr-2">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Get the modal and form elements
+            const modal = document.getElementById("comparisonModal");
+            const form = document.getElementById("comparisonForm");
+            const reasonTextarea = document.getElementById("reason");
+
+            const deleteModal = document.getElementById("deleteModal");
+            let deleteForm = document.getElementById("deleteForm");
+
+            // Function to open the modal
+            window.openModal = function() {
+                modal.classList.remove("hidden");
+            };
+
+            // Function to close the modal
+            window.closeModal = function() {
+                modal.classList.add("hidden");
+                reasonTextarea.value = ""; // Clear the textarea
+            };
+
+            window.closeDeleteModal = function() {
+                deleteModal.classList.add("hidden");
+            };
+
+            // Handle comparison form submission
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                const reason = reasonTextarea.value.trim();
+                if (reason) {
+                    // If a valid reason is provided, proceed to the comparison page
+                    window.location.href = "{% url 'compare' %}?reason=" + encodeURIComponent(reason);
+                }
+            });
+
+            // Function to open the delete modal
+            window.openDeleteModal = function(id) {
+                deleteModal.classList.remove("hidden");
+
+                // Remove previous event listeners to prevent multiple bindings
+                deleteForm.replaceWith(deleteForm.cloneNode(true));
+                deleteForm = document.getElementById("deleteForm");
+
+                deleteForm.addEventListener("submit", function(event) {
+                    event.preventDefault();
+                    const url = `{% url 'remove-doc' 0 %}`.replace('0', id);
+                    window.location.href = url;
+                });
+            };
+        });
+    </script>
 
 {% endblock body %}

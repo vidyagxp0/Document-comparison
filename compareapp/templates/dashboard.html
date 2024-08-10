@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Dashboard
+{% endblock title %}
+
+{% block body %}
+    {% load static %}
+    {% include "toast.html" with messages=messages %}
+
+    <div class="container mx-auto my-12 px-6">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">Dashboard</h1>
+        </div>
+        <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+            <div class="mb-5 flex justify-end">
+                <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">
+                    <img class="inline-block mt-0 pt-0 size-6" src="{% static 'images/add.png' %}" alt="" srcset="">
+                    <span>New Comparison</span>
+                </a>
+            </div>
+            <div class="overflow-auto">
+                <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
+                    <thead>
+                        <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Report Number</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Comparison Reason</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Compared Documents</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Comparison Date</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Compared By</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Document ID</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.document_id }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Title</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.title }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Author</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.author }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Creation Date</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.creation_date }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Document Type</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_type }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Document Format</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_format }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Language</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.language }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Version</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.version }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Comments</td>
+                            <td class="px-5 py-3 border-b border-gray-200">{{ document.comments }}</td>
+                        </tr>
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">Action</td>
+                            <td class="px-5 py-3 border-b border-gray-200">
+                                <a href="{{ document.upload_document.url }}" class="hover:bg-slate-200 rounded-full">
+                                    <img src="{% static 'images/download.png' %}" class="size-8" title="Download" alt="">
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock body %}

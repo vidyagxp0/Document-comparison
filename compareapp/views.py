@@ -51,11 +51,14 @@ def loginUser(request):
             
     return render(request, "login.html")
 
+def dashboard(request):
+    return render(request, 'dashboard.html')
+
 def form(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
-    
+
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
@@ -67,14 +70,29 @@ def form(request):
     else:
         form = DocumentForm()
     document_count = Form.objects.count()
-    doc_titles = Form.objects.all().values()
+    documents = Form.objects.all().values()
     formData = Form.objects.last()
+
     if not formData:
         doc_id = 1
     else:
         doc_id = formData.document_id + 1
         
-    return render(request, "form.html", {'form': form, 'doc_id': doc_id, 'document_count': document_count, 'doc_titles': doc_titles})
+    return render(request, "form.html", {'form': form, 'doc_id': doc_id, 'document_count': document_count, 'documents': documents})
+
+def documentDetail(request, doc_id):
+    if not request.user.is_authenticated:
+        messages.warning(request, "Login Required!")
+        return redirect('login')
+    
+    document = get_object_or_404(Form, document_id=doc_id)
+
+    print(document)
+
+    if not document:
+        messages.warning(request, "Invalid Document ID.")
+    
+    return render(request, 'document-details.html', { 'document': document })
 
 def documentList(request):
     if not request.user.is_authenticated:
@@ -97,16 +115,16 @@ def removeDocument(request, doc_id):
 
     if not document:
         messages.warning(request, "Invalid document ID, please provide valid ID")
-        return redirect('document-list')
+        return redirect('view-document')
     
     try:
         document.delete()
         messages.success(request, "Document deleted successfully.")
-        return redirect('document-list')
+        return redirect('view-document')
     except:
         messages.error(request, "Error occured while performing the action.")
 
-    return redirect('document-list')
+    return redirect('view-document')
 
 def comparison(request: HttpRequest):
     if not request.user.is_authenticated:
@@ -422,33 +440,10 @@ def highlight_differences(doc, title, text, is_different):
 
 logger = logging.getLogger(__name__)
 
-# window specific converter docx to pdf
-# import win32com.client
-# import pythoncom
-# def docx_to_pdf(docx_path, pdf_path):
-#     try:
-#         # Initialize the COM library
-#         pythoncom.CoInitialize()
-        
-#         # Dispatch the Word Application
-#         word = win32com.client.Dispatch("Word.Application")
-#         doc = word.Documents.Open(str(docx_path))
-          
-#         doc.SaveAs(str(pdf_path), FileFormat=17) 
-#         doc.Close()
-#         word.Quit()
-
-#     except Exception as e:
-#         logger.error(f"Error converting DOCX to PDF: {e}")
-#         raise
-
-#     finally:
-#         pythoncom.CoUninitialize()
-
 def docx_to_pdf(docx_path, pdf_path):
     try:
         # Set your ConvertAPI secret
-        convertapi.api_secret = '64dK2PAmjNXw24T3'
+        convertapi.api_secret = 'QdENoLepFl1Z6CwK'
 
         # Convert the file paths to strings
         docx_path = str(docx_path)
