@@ -104,7 +104,6 @@ class Document(models.Model):
         ('zh-hant', 'Traditional Chinese')
     )
 
-    # Define DOC_TYPE_CHOICES
     DOC_TYPE_CHOICES = (
         ('stp', 'Standard Test Procedure'),
         ('sop', 'Standard Operating Procedure'),
@@ -146,16 +145,20 @@ class Document(models.Model):
     doc_type = models.CharField(max_length=255, choices=DOC_TYPE_CHOICES, default='stp')
     doc_format = models.CharField(max_length=255, choices=DOC_FORMAT_CHOICES, default='docx')
     comments = models.TextField()
+    comparison_status = models.CharField(max_length=255, null=True, blank=True)
+    summary = models.CharField(max_length=255, null=True, blank=True)
+    similarity_score = models.FloatField(null=True, blank=True)
+    report_number = models.CharField(max_length=255, null=True, blank=True)
+    new = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
 
-class ComparisonResult(models.Model):
-    document = models.ForeignKey(Document, on_delete=models.CASCADE)
-    comparison_status = models.CharField(max_length=255)
-    similarity_score = models.FloatField()
-    summary = models.TextField()
-
-    def __str__(self):
-        return f"Comparison Result for {self.document.title} - Status: {self.comparison_status}"
-
+class ComparisonReport(models.Model):
+    report_number = models.CharField(max_length=255)
+    comparison_reason = models.CharField(max_length=255)
+    compared_documents = models.JSONField()
+    comparison_summary = models.JSONField()
+    comparison_date = models.DateField()
+    compared_by = models.CharField(max_length=255)
+    report_path = models.TextField()

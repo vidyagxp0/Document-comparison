@@ -15,7 +15,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['89.116.21.165' ,'localhost', '127.0.0.1']
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'
+X_FRAME_OPTIONS = 'SAMEORIGIN'          # To embed oly same domain content in iframe or embed
 
 # Application definition
 
@@ -30,7 +30,6 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'django_browser_reload',
-    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -42,14 +41,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    'http://89.116.21.165',
-]
-
-CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = 'SmartCompare.urls'
 
 CHATPDF_API_KEY = 'sec_svlzEoctoxWzXMSGAaPmbpJjX9z6bUrU'
@@ -83,7 +76,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',  # Or your database host
-        'PORT': '3306',       # Or your database port
+        'PORT': '3307',       # Or your database port
     }
 }
 
@@ -136,6 +129,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 TAILWIND_APP_NAME = 'theme'
 
+# During Development not for Production
 INTERNAL_IPS = [
     "127.0.0.1",
     "89.116.21.165"

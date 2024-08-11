@@ -14,15 +14,16 @@
         </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             <div class="mb-5 flex justify-end">
-                <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">
+                <a class="bg-pink-700 hover:bg-pink-600 text-white font-medium rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">
                     <img class="inline-block mt-0 pt-0 size-6" src="{% static 'images/add.png' %}" alt="" srcset="">
                     <span>New Comparison</span>
                 </a>
             </div>
             <div class="overflow-auto">
-                <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
+                <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100 text-left">
                     <thead>
                         <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">S.No.</th>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Report Number</th>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Comparison Reason</th>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Compared Documents</th>
@@ -32,48 +33,94 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- Record 1 -->
                         <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Document ID</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.document_id }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Title</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.title }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Author</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.author }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Creation Date</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.creation_date }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Document Type</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_type }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Document Format</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_format }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Language</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.language }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Version</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.version }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Comments</td>
-                            <td class="px-5 py-3 border-b border-gray-200">{{ document.comments }}</td>
-                        </tr>
-                        <tr>
-                            <td class="px-5 py-3 border-b border-gray-200">Action</td>
+                            <td class="px-5 py-3 border-b border-gray-200">1</td>
+                            <td class="px-5 py-3 border-b border-gray-200">CR1001</td>
+                            <td class="px-5 py-3 border-b border-gray-200">Test the observation on reports.</td>
+                            <td class="px-5 py-3 border-b border-gray-200">23, 34, 12</td>
+                            <td class="px-5 py-3 border-b border-gray-200">2024-08-12</td>
+                            <td class="px-5 py-3 border-b border-gray-200">ADMIN</td>
                             <td class="px-5 py-3 border-b border-gray-200">
-                                <a href="{{ document.upload_document.url }}" class="hover:bg-slate-200 rounded-full">
-                                    <img src="{% static 'images/download.png' %}" class="size-8" title="Download" alt="">
-                                </a>
+                                <img class="size-5" src="{% static 'images/doc.png' %}" alt="Document">
+                            </td>
+                        </tr>
+                
+                        <!-- Record 2 -->
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">2</td>
+                            <td class="px-5 py-3 border-b border-gray-200">CR1002</td>
+                            <td class="px-5 py-3 border-b border-gray-200">Review the analysis results.</td>
+                            <td class="px-5 py-3 border-b border-gray-200">45, 56, 78</td>
+                            <td class="px-5 py-3 border-b border-gray-200">2024-09-01</td>
+                            <td class="px-5 py-3 border-b border-gray-200">ADMIN</td>
+                            <td class="px-5 py-3 border-b border-gray-200">
+                                <img class="size-5" src="{% static 'images/doc.png' %}" alt="Document">
+                            </td>
+                        </tr>
+                
+                        <!-- Record 3 -->
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">3</td>
+                            <td class="px-5 py-3 border-b border-gray-200">CR1003</td>
+                            <td class="px-5 py-3 border-b border-gray-200">Analyze the feedback data.</td>
+                            <td class="px-5 py-3 border-b border-gray-200">89, 10, 33</td>
+                            <td class="px-5 py-3 border-b border-gray-200">2024-10-15</td>
+                            <td class="px-5 py-3 border-b border-gray-200">ADMIN</td>
+                            <td class="px-5 py-3 border-b border-gray-200">
+                                <img class="size-5" src="{% static 'images/doc.png' %}" alt="Document">
+                            </td>
+                        </tr>
+                
+                        <!-- Record 4 -->
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">4</td>
+                            <td class="px-5 py-3 border-b border-gray-200">CR1004</td>
+                            <td class="px-5 py-3 border-b border-gray-200">Update the project plan.</td>
+                            <td class="px-5 py-3 border-b border-gray-200">21, 32, 43</td>
+                            <td class="px-5 py-3 border-b border-gray-200">2024-11-05</td>
+                            <td class="px-5 py-3 border-b border-gray-200">ADMIN</td>
+                            <td class="px-5 py-3 border-b border-gray-200">
+                                <img class="size-5" src="{% static 'images/doc.png' %}" alt="Document">
+                            </td>
+                        </tr>
+                
+                        <!-- Record 5 -->
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">5</td>
+                            <td class="px-5 py-3 border-b border-gray-200">CR1005</td>
+                            <td class="px-5 py-3 border-b border-gray-200">Prepare the budget report.</td>
+                            <td class="px-5 py-3 border-b border-gray-200">12, 34, 56</td>
+                            <td class="px-5 py-3 border-b border-gray-200">2024-12-01</td>
+                            <td class="px-5 py-3 border-b border-gray-200">ADMIN</td>
+                            <td class="px-5 py-3 border-b border-gray-200">
+                                <img class="size-5" src="{% static 'images/doc.png' %}" alt="Document">
+                            </td>
+                        </tr>
+                
+                        <!-- Record 6 -->
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">6</td>
+                            <td class="px-5 py-3 border-b border-gray-200">CR1006</td>
+                            <td class="px-5 py-3 border-b border-gray-200">Conduct user interviews.</td>
+                            <td class="px-5 py-3 border-b border-gray-200">78, 90, 21</td>
+                            <td class="px-5 py-3 border-b border-gray-200">2024-12-15</td>
+                            <td class="px-5 py-3 border-b border-gray-200">ADMIN</td>
+                            <td class="px-5 py-3 border-b border-gray-200">
+                                <img class="size-5" src="{% static 'images/doc.png' %}" alt="Document">
+                            </td>
+                        </tr>
+                
+                        <!-- Record 7 -->
+                        <tr>
+                            <td class="px-5 py-3 border-b border-gray-200">7</td>
+                            <td class="px-5 py-3 border-b border-gray-200">CR1007</td>
+                            <td class="px-5 py-3 border-b border-gray-200">Evaluate marketing strategies.</td>
+                            <td class="px-5 py-3 border-b border-gray-200">65, 87, 54</td>
+                            <td class="px-5 py-3 border-b border-gray-200">2025-01-05</td>
+                            <td class="px-5 py-3 border-b border-gray-200">ADMIN</td>
+                            <td class="px-5 py-3 border-b border-gray-200">
+                                <img class="size-5" src="{% static 'images/doc.png' %}" alt="Document">
                             </td>
                         </tr>
                     </tbody>

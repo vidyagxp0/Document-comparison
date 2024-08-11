@@ -25,6 +25,7 @@ from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 
+
 def index(request):
     return render(request, "index.html")
 
@@ -45,13 +46,17 @@ def loginUser(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, "You have successfully logged in.")
-                return redirect('form')
+                return redirect('dashboard')
             else:
                 messages.error(request, "Please provide valid login credentials.")
             
     return render(request, "login.html")
 
 def dashboard(request):
+    if not request.user.is_authenticated:
+        messages.warning(request, "Login Required!")
+        return redirect('login')
+
     return render(request, 'dashboard.html')
 
 def form(request):
@@ -69,6 +74,7 @@ def form(request):
             messages.warning(request, "All the fields are required to fill!")
     else:
         form = DocumentForm()
+        
     document_count = Form.objects.count()
     documents = Form.objects.all().values()
     formData = Form.objects.last()
@@ -115,16 +121,16 @@ def removeDocument(request, doc_id):
 
     if not document:
         messages.warning(request, "Invalid document ID, please provide valid ID")
-        return redirect('view-document')
+        return redirect('document-list')
     
     try:
         document.delete()
         messages.success(request, "Document deleted successfully.")
-        return redirect('view-document')
+        return redirect('document-list')
     except:
         messages.error(request, "Error occured while performing the action.")
 
-    return redirect('view-document')
+    return redirect('document-list')
 
 def comparison(request: HttpRequest):
     if not request.user.is_authenticated:
@@ -205,16 +211,13 @@ def comparison(request: HttpRequest):
     })
 
 def compare_sections(section1, section2):
-    # Remove leading/trailing spaces
     section1 = section1.strip()
     section2 = section2.strip()
     
-    # Calculate similarity ratio
     seq_matcher = difflib.SequenceMatcher(None, section1, section2)
     similarity = seq_matcher.ratio()
     is_different = similarity < 1.0
 
-    # Track changes
     added_text = []
     removed_text = []
     modified_text = []
@@ -231,7 +234,9 @@ def compare_sections(section1, section2):
         elif tag == 'insert':
             added_text.append(section2[j1:j2])      # Inserted in section2
     
-    # Classify the change type
+    if similarity < 0.4:
+        modified_text.append(section2)
+    
     if similarity == 1.0:
         tag = "S"  # Same
     else:
@@ -241,7 +246,6 @@ def compare_sections(section1, section2):
             tag = "R"  # Removed
         else:
             tag = "M"  # Modified
-            modified_text.append(section2)
 
     return similarity, is_different, tag, ' '.join(added_text), ' '.join(removed_text), ' '.join(modified_text) 
 
@@ -537,3 +541,4 @@ def proxy_chat_pdf(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
+    
