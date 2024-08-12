@@ -28,9 +28,9 @@
                 
                 <div class="mt-4 md:mt-0 w-full md:w-[30%] flex flex-col justify-center items-center">
                     <div class="my-10 border p-4 rounded-lg bg-slate-100">
-                        <div class="border rounded-lg bg-slate-200 px-4 text-slate-700 font-bold pt-0 text-center">
+                        <div class="border rounded-lg bg-slate-200 py-2 px-4 text-slate-700 font-bold text-center">
                             <p class="my-3"> Documents Count </p>
-                            <p class="my-3 text-red-900 font-extrabold text-4xl">{{ document_count }}</p>
+                            <a href="{% url "initial-document" %}" title="View all documents ready for the comparison" class=" text-red-900 font-extrabold text-4xl">{{ document_count }}</a>
                         </div>
                         
                         <div class="mt-4">
@@ -54,12 +54,7 @@
                             {% endfor %}
                         </div>
                     {% endif %}
-
-                    <div class="mt-4">
-                        {% if document_count >= 1 %}
-                            <a href="{% url "document-list" %}" class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3">View All Documents</a>
-                        {% endif %}  
-                    </div>
+                   
                 </div>
             </div>
         </div>

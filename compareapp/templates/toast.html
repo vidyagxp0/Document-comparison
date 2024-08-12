@@ -10,7 +10,7 @@
         {% if message.tags == 'warning' %}bg-yellow-500{% endif %}
         {% if message.tags == 'success' %}bg-green-500{% endif %}
         {% if message.tags == 'info' %}bg-blue-500{% endif %}
-        text-white rounded shadow-lg w-80 transform transition duration-500 ease-in-out hidden translate-x-full" role="alert" aria-live="assertive" aria-atomic="true">
+        text-white rounded shadow-lg w-80 md:w-96 transform transition duration-500 ease-in-out hidden translate-x-full" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="flex justify-between items-center px-4 py-2 bg-slate-200 rounded-t text-black">
             <div class="flex gap-2 items-center">
                 <img src="{% static 'images/logosm.png' %}" class="w-8 h-8" alt="logo">

@@ -135,11 +135,22 @@ class Document(models.Model):
         ('other', 'Other'),
     )
 
+    def upload_to_path(instance, filename):
+        format_paths = {
+            'pdf': 'documents/pdf/',
+            'docx': 'documents/docx/',
+            'xlsx': 'documents/excel/',
+            'ppt': 'documents/ppt/',
+            'txt': 'documents/text/',
+            'other': 'documents/other/',
+        }
+        return f"{format_paths.get(instance.doc_format, 'documents/other/')}{filename}"
+
     document_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
     creation_date = models.DateField(default=timezone.now)
-    upload_document = models.FileField(upload_to='documents/')
+    upload_document = models.FileField(upload_to=upload_to_path)
     language = models.CharField(max_length=255, choices=LANGUAGE_CHOICES, default='en')
     version = models.CharField(max_length=255, default='1.0.0')
     doc_type = models.CharField(max_length=255, choices=DOC_TYPE_CHOICES, default='stp')
@@ -149,16 +160,19 @@ class Document(models.Model):
     summary = models.CharField(max_length=255, null=True, blank=True)
     similarity_score = models.FloatField(null=True, blank=True)
     report_number = models.CharField(max_length=255, null=True, blank=True)
-    new = models.BooleanField(default=False)
+    new = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title
 
 class ComparisonReport(models.Model):
-    report_number = models.CharField(max_length=255)
+    report_number = models.CharField(max_length=255, unique=True)
     comparison_reason = models.CharField(max_length=255)
     compared_documents = models.JSONField()
     comparison_summary = models.JSONField()
-    comparison_date = models.DateField()
+    comparison_date = models.DateField(default=timezone.now)
     compared_by = models.CharField(max_length=255)
-    report_path = models.TextField()
+    report_path = models.FileField(upload_to='comparison-reports/')
+
+    def __str__(self):
+        return self.comparison_reason

@@ -8,7 +8,7 @@ from docx.oxml.ns import qn
 from django.contrib import messages
 from docx import Document
 from .forms import DocumentForm
-from .models import Document as Form
+from .models import Document as Form, ComparisonReport
 from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
@@ -59,32 +59,57 @@ def dashboard(request):
 
     return render(request, 'dashboard.html')
 
-def form(request):
+def formView(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
 
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
+        documents = Form.objects.filter(new=True)
+        document_count = documents.count()
+        formData = Form.objects.last()
+
+        if formData:
+            doc_id = formData.document_id + 1
+        else:
+            doc_id = 1
+
         if form.is_valid():
+            doc_format = form.cleaned_data.get('doc_format')
+            upload_document = request.FILES.get('upload_document')
+
+            if upload_document and doc_format:
+                file_extension = os.path.splitext(upload_document.name)[1].lstrip('.').lower()
+
+                # Check if format is 'other' or the file extension matches the selected format
+                if doc_format != 'other' and doc_format != file_extension:
+                    messages.warning(request, f"Please upload the file with the selected format '{doc_format}'.")
+                    return render(request, "form.html", {'form': form, 'doc_id': doc_id, 'document_count': document_count, 'documents': documents})
+
             form.save()
             messages.success(request, "Document added successfully.")
             return redirect('form')
         else:
             messages.warning(request, "All the fields are required to fill!")
+
     else:
         form = DocumentForm()
-        
-    document_count = Form.objects.count()
-    documents = Form.objects.all().values()
-    formData = Form.objects.last()
+        documents = Form.objects.filter(new=True)
+        document_count = documents.count()
+        formData = Form.objects.last()
 
-    if not formData:
-        doc_id = 1
-    else:
-        doc_id = formData.document_id + 1
-        
-    return render(request, "form.html", {'form': form, 'doc_id': doc_id, 'document_count': document_count, 'documents': documents})
+        if formData:
+            doc_id = formData.document_id + 1
+        else:
+            doc_id = 1
+
+    return render(request, "form.html", {
+        'form': form,
+        'doc_id': doc_id,
+        'document_count': document_count,
+        'documents': documents
+    })
 
 def documentDetail(request, doc_id):
     if not request.user.is_authenticated:
@@ -100,17 +125,17 @@ def documentDetail(request, doc_id):
     
     return render(request, 'document-details.html', { 'document': document })
 
-def documentList(request):
+def initialDocument(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
     
-    documents = Form.objects.all()
+    documents = Form.objects.filter(new=True)
     
     if not documents:
         messages.info(request, "Please upload documents first.")
     
-    return render(request, 'document-list.html', { 'documents': documents })
+    return render(request, 'initial-document.html', { 'documents': documents })
 
 def removeDocument(request, doc_id):
     if not request.user.is_authenticated:
@@ -121,23 +146,23 @@ def removeDocument(request, doc_id):
 
     if not document:
         messages.warning(request, "Invalid document ID, please provide valid ID")
-        return redirect('document-list')
+        return redirect('initial-document')
     
     try:
         document.delete()
         messages.success(request, "Document deleted successfully.")
-        return redirect('document-list')
+        return redirect('initial-document')
     except:
         messages.error(request, "Error occured while performing the action.")
 
-    return redirect('document-list')
+    return redirect('initial-document')
 
 def comparison(request: HttpRequest):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
 
-    documents = Form.objects.all()
+    documents = Form.objects.filter(new=True)
     
     if not documents:
         messages.info(request, "Please upload documents first.")
@@ -149,7 +174,7 @@ def comparison(request: HttpRequest):
         sections = read_docx(file_path)
         data[doc.document_id] = sections
 
-    result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison')
+    result_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
     os.makedirs(result_dir, exist_ok=True)
 
     result_path = os.path.join(result_dir, "comparison-report.docx")
@@ -203,11 +228,46 @@ def comparison(request: HttpRequest):
         overall_similarity_score, _, _, _, _, _ = compare_sections(ref_doc_content, doc_content )
         overall_similarity_scores[doc_id] = int(overall_similarity_score * 100)
 
-    return render(request, 'result.html', { 
-        'documents': documents, 
+
+    # Now Saving the Comparison Result
+
+    last_report = ComparisonReport.objects.last()
+    if last_report:
+        new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
+    else:
+        new_report_number = "DCR1001"
+
+    for doc in documents:
+        doc.new = False
+        doc.summary = "Same" if overall_similarity_scores[doc.document_id] == 100 else "Different"
+        doc.similarity_score = overall_similarity_scores[doc.document_id]
+        doc.comparison_status = 'Compared'
+        doc.report_number = new_report_number
+        doc.save()
+
+    compared_documents = {}
+    for index, doc in zip(range(1, len(documents) + 1), documents):
+        compared_documents[f'doc{index}'] = doc.document_id
+
+    try:
+        comparison_report = ComparisonReport.objects.create(
+            report_number = new_report_number,
+            comparison_reason = reason,
+            compared_documents = compared_documents,
+            comparison_summary = comparison_details,
+            compared_by = comparedBy,
+            report_path = result_path
+        )
+        comparison_report.save()
+    
+        return HttpResponse(f"Report Saved Successfully as {new_report_number}")
+
+    except Exception as e:
+        return HttpResponse(f"Error : {e}")
+
+    return render(request, 'result.html', {    
         'output_path': output_url,
         'comparison_details': comparison_details,
-        'overall_similarity_scores': overall_similarity_scores
     })
 
 def compare_sections(section1, section2):
