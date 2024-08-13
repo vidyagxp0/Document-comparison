@@ -1,6 +1,7 @@
 import os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
+from django.urls import reverse
 from django.http import HttpRequest
 from django.contrib.auth import authenticate, login, logout
 from django.templatetags.static import static
@@ -56,8 +57,41 @@ def dashboard(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
+    
+    reports = ComparisonReport.objects.all()
 
-    return render(request, 'dashboard.html')
+    return render(request, 'dashboard.html', { "reports": reports })
+
+def viewComparison(request, report):
+    if not request.user.is_authenticated:
+        messages.warning(request, "Login Required!")
+        return redirect('login')
+    
+    report = ComparisonReport.objects.filter(report_number=report).values()
+
+    if not report:
+        messages.error(request, "The report is not available for given report number.")
+        return redirect('dashboard')
+
+    for item in report:
+        comparison_details = item['comparison_summary']
+        output_path = item['report_path']
+        compared_documents = item['compared_documents']
+
+    document_ids = []
+    for id in compared_documents.values():
+        document_ids.append(id)
+
+    documents = []
+    for id in document_ids:
+        doc = Form.objects.filter(document_id=id)
+        documents.append(doc)
+
+    return render(request, "result.html", {
+                "documents": documents,
+                "comparison_details": comparison_details,
+                "output_path": output_path,
+            })
 
 def formView(request):
     if not request.user.is_authenticated:
@@ -104,11 +138,16 @@ def formView(request):
         else:
             doc_id = 1
 
+    report_number = request.GET.get('report_number', None)
+    success = request.GET.get('success', None)
+
     return render(request, "form.html", {
         'form': form,
         'doc_id': doc_id,
         'document_count': document_count,
-        'documents': documents
+        'documents': documents,
+        'success': success,
+        'report_number': report_number
     })
 
 def documentDetail(request, doc_id):
@@ -162,7 +201,15 @@ def comparison(request: HttpRequest):
         messages.warning(request, "Login Required!")
         return redirect('login')
 
+    reason = request.GET.get('reason', '')
+    comparedBy = request.user.username.upper()
     documents = Form.objects.filter(new=True)
+    last_report = ComparisonReport.objects.last()
+
+    if last_report:
+        new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
+    else:
+        new_report_number = "DCR1001"
     
     if not documents:
         messages.info(request, "Please upload documents first.")
@@ -174,17 +221,15 @@ def comparison(request: HttpRequest):
         sections = read_docx(file_path)
         data[doc.document_id] = sections
 
-    result_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+    result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison-reports')
     os.makedirs(result_dir, exist_ok=True)
 
-    result_path = os.path.join(result_dir, "comparison-report.docx")
+    result_path = os.path.join(result_dir, f"{new_report_number}.docx")
     logo_path = "compareapp" + static('images/logo.png')
 
-    reason = request.GET.get('reason', '')
-    comparedBy = request.user.username.upper()
     create_merged_docx(data, result_path, logo_path, comparedBy, reason)
 
-    output_url = request.build_absolute_uri(settings.MEDIA_URL + 'comparison/comparison-report.docx')
+    # output_url = request.build_absolute_uri(settings.MEDIA_URL + f'comparison/comparison-report.docx')
 
     # Prepare comparison details
     comparison_details = {}
@@ -230,13 +275,6 @@ def comparison(request: HttpRequest):
 
 
     # Now Saving the Comparison Result
-
-    last_report = ComparisonReport.objects.last()
-    if last_report:
-        new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
-    else:
-        new_report_number = "DCR1001"
-
     for doc in documents:
         doc.new = False
         doc.summary = "Same" if overall_similarity_scores[doc.document_id] == 100 else "Different"
@@ -259,16 +297,15 @@ def comparison(request: HttpRequest):
             report_path = result_path
         )
         comparison_report.save()
-    
-        return HttpResponse(f"Report Saved Successfully as {new_report_number}")
+        return redirect(f'{reverse("form")}?success=True&report_number={new_report_number}')
 
     except Exception as e:
-        return HttpResponse(f"Error : {e}")
+        # messages.error(request, "Error occured while saving the comparison data.")
+        return HttpResponse(f"Error: {e}")
 
-    return render(request, 'result.html', {    
-        'output_path': output_url,
-        'comparison_details': comparison_details,
-    })
+    # return render(request, 'form.html', {    
+    #     'success': False
+    # })
 
 def compare_sections(section1, section2):
     section1 = section1.strip()

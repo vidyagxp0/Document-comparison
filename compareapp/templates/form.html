@@ -91,6 +91,23 @@
         </div>
     </div>
 
+    <div id="comparisonSuccess" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 {% if success %}{% else %}hidden{% endif %}">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
+            <img src="{% static 'images/success.png' %}" class="mx-auto mb-3" width="80" height="80"  alt="" srcset="">
+            <h2 class="text-2xl font-bold mb-4 text-center text-green-700">Comparison Successful</h2>
+            <div class="mb-4">
+                <p>Documents has been compared successfully.</p>
+                <p>Report Number: <strong>{{ report_number }}</strong></p>
+            </div>
+            <div class="flex justify-end gap-3">
+                <a href="{% url "view-comparison" report_number %}" class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-4 mr-2">
+                    View
+                </a>
+                <a href="{% url "form" %}" class="bg-slate-300 hover:bg-gray-400 text-white rounded-lg py-2 px-4" onclick="closeComparisonSuccessModal()">Close</a>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Get the modal and form elements
@@ -101,6 +118,8 @@
             const deleteModal = document.getElementById("deleteModal");
             let deleteForm = document.getElementById("deleteForm");
 
+            const comparisonSuccessModal = document.getElementById("comparisonSuccess");
+            
             // Function to open the modal
             window.openModal = function() {
                 modal.classList.remove("hidden");
@@ -110,6 +129,10 @@
             window.closeModal = function() {
                 modal.classList.add("hidden");
                 reasonTextarea.value = ""; // Clear the textarea
+            };
+
+            window.closeComparisonSuccessModal = function() {
+                comparisonSuccessModal.classList.add("hidden");
             };
 
             window.closeDeleteModal = function() {

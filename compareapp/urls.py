@@ -6,6 +6,7 @@ urlpatterns = [
     path('login/', views.loginUser, name="login"),
     path('logout/', views.logoutUser, name="logout"),
     path('dashboard/', views.dashboard, name="dashboard"),
+    path('comparison/view/<str:report>', views.viewComparison, name="view-comparison"),
     path('form/', views.formView, name="form"),
     path('form/view/<int:doc_id>/', views.documentDetail, name="view-document"),
     path('form/initial-documents', views.initialDocument, name="initial-document"),

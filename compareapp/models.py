@@ -172,7 +172,7 @@ class ComparisonReport(models.Model):
     comparison_summary = models.JSONField()
     comparison_date = models.DateField(default=timezone.now)
     compared_by = models.CharField(max_length=255)
-    report_path = models.FileField(upload_to='comparison-reports/')
+    report_path = models.TextField()
 
     def __str__(self):
         return self.comparison_reason
