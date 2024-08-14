@@ -14,10 +14,12 @@
         </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             <div class="mb-5 flex justify-end">
-                <a class="bg-pink-700 hover:bg-pink-600 text-white font-medium rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">
-                    <img class="inline-block mt-0 pt-0 size-6" src="{% static 'images/add.png' %}" alt="" srcset="">
-                    <span>New Comparison</span>
-                </a>
+                {% if reports %}
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white font-medium rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">
+                        <img class="inline-block mt-0 pt-0 size-6" src="{% static 'images/new-comparison.png' %}" alt="" srcset="">
+                        <span>New Comparison</span>
+                    </a>
+                {% endif %}
             </div>
             {% if reports %}
                 <div class="overflow-auto">
@@ -40,7 +42,7 @@
                                     <td class="px-5 py-3 border-b border-gray-200">{{ report.report_number }}</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ report.comparison_reason }}</td>
                                     <td class="px-5 py-3 border-b border-gray-200">
-                                        <div class="p-2 bg-slate-200 rounded w-[200px] h-auto overflow-y-scroll">
+                                        <div class="p-2 bg-slate-200 rounded w-64 h-[52px] overflow-y-scroll">
                                             {% for name, id in report.compared_documents.items %}
                                                 <div class="inline-block mb-1 rounded-full bg-cyan-600 px-2 py-1">
                                                     <a href="{% url "view-document" id %}" class="text-white">{{ name }}</a>
@@ -61,10 +63,13 @@
                     </table>
                 </div>
             {% else %}
-                <div class="text-center my-5">
+                <div class="text-center mt-5">
                     <img src="{% static 'images/success.png' %}" class="mx-auto my-3" width="80" height="80"  alt="" srcset="">
-                    <p class="text-gray-600 mb-4">No report found. Please perform comparion.</p>
-                    <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3 mr-4" href="{% url "form" %}">Back</a>
+                    <p class="text-gray-600 mb-4 text-2xl">No reports are available.</p>
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white font-medium rounded-lg py-2 px-3 mt-5" href="{% url "form" %}">
+                        <img class="inline-block size-6" src="{% static 'images/new-comparison.png' %}" alt="" srcset="">
+                        <span>New Comparison</span>
+                    </a>
                 </div>
             {% endif %}
         </div>

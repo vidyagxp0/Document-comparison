@@ -17,7 +17,6 @@ from docx.shared import Pt, Inches
 from docx.oxml import OxmlElement
 from datetime import datetime as date
 import difflib
-from random import randint
 from pathlib import Path
 import convertapi
 import logging
@@ -58,40 +57,31 @@ def dashboard(request):
         messages.warning(request, "Login Required!")
         return redirect('login')
     
-    reports = ComparisonReport.objects.all()
+    reports = None
 
     return render(request, 'dashboard.html', { "reports": reports })
 
-def viewComparison(request, report):
+def viewComparison(request, report_id):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
     
-    report = ComparisonReport.objects.filter(report_number=report).values()
+    report = ComparisonReport.objects.filter(report_number=report_id).first()
 
     if not report:
-        messages.error(request, "The report is not available for given report number.")
+        messages.warning(request, "The report is not available for given report number.")
         return redirect('dashboard')
 
-    for item in report:
-        comparison_details = item['comparison_summary']
-        output_path = item['report_path']
-        compared_documents = item['compared_documents']
-
-    document_ids = []
-    for id in compared_documents.values():
-        document_ids.append(id)
-
-    documents = []
-    for id in document_ids:
-        doc = Form.objects.filter(document_id=id)
-        documents.append(doc)
+    comparison_details = report.comparison_summary
+    compared_documents = report.compared_documents
+    document_ids = list(compared_documents.values())
+    documents = Form.objects.filter(document_id__in=document_ids)
 
     return render(request, "result.html", {
-                "documents": documents,
-                "comparison_details": comparison_details,
-                "output_path": output_path,
-            })
+        "documents": documents,
+        "comparison_details": comparison_details,
+        "report": report_id,
+    })
 
 def formView(request):
     if not request.user.is_authenticated:
@@ -156,8 +146,6 @@ def documentDetail(request, doc_id):
         return redirect('login')
     
     document = get_object_or_404(Form, document_id=doc_id)
-
-    print(document)
 
     if not document:
         messages.warning(request, "Invalid Document ID.")
@@ -227,9 +215,7 @@ def comparison(request: HttpRequest):
     result_path = os.path.join(result_dir, f"{new_report_number}.docx")
     logo_path = "compareapp" + static('images/logo.png')
 
-    create_merged_docx(data, result_path, logo_path, comparedBy, reason)
-
-    # output_url = request.build_absolute_uri(settings.MEDIA_URL + f'comparison/comparison-report.docx')
+    create_merged_docx(data, new_report_number, result_path, logo_path, comparedBy, reason)
 
     # Prepare comparison details
     comparison_details = {}
@@ -303,10 +289,6 @@ def comparison(request: HttpRequest):
         # messages.error(request, "Error occured while saving the comparison data.")
         return HttpResponse(f"Error: {e}")
 
-    # return render(request, 'form.html', {    
-    #     'success': False
-    # })
-
 def compare_sections(section1, section2):
     section1 = section1.strip()
     section2 = section2.strip()
@@ -368,7 +350,7 @@ def read_docx(file_path):
 
     return sections
 
-def create_merged_docx(data, output_path, logo_path, comparedBy, reason):
+def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, reason):
     new_doc = Document()
 
     # Set headers and footers for the entire document
@@ -402,7 +384,7 @@ def create_merged_docx(data, output_path, logo_path, comparedBy, reason):
 
     header_right1_cell = header_table.cell(1, 1)
     header_right1_para = header_right1_cell.paragraphs[0]
-    header_right1_para.add_run(f"Report Number: CR100{randint(100, 999)}").font.size = Pt(10)
+    header_right1_para.add_run(f"Report Number: {reportNo}").font.size = Pt(10)
     header_right1_para.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
     header_table.cell(2, 0).merge(header_table.cell(2, 1))
@@ -562,18 +544,18 @@ def docx_to_pdf(docx_path, pdf_path):
         logger.error(f"Error converting DOCX to PDF: {e}")
         raise
 
-def preview(request: HttpRequest):
-    output_path = request.GET.get('path', '')
-    saved_doc = Path(settings.MEDIA_ROOT) / 'comparison/comparison-report.docx'
-    pdf_path = saved_doc.with_suffix('.pdf')
+def preview(request, report):
+    comparison_report = Path(settings.MEDIA_ROOT) / f'comparison-reports/{report}.docx'
+    pdf_path = comparison_report.with_suffix('.pdf')
     pdf_url = str(pdf_path.relative_to(settings.MEDIA_ROOT)).replace("\\", "/")
 
-    try:
-        docx_to_pdf(saved_doc, pdf_path)
-    except :
-        return HttpResponse("Oops please reload the page.", status=500)
+    if not os.path.exists(pdf_path):
+        try:
+            docx_to_pdf(comparison_report, pdf_path)
+        except :
+            return HttpResponse("Oops please reload the page.", status=500)
     
-    return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'document_path': output_path})
+    return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'report': report})
 
 @csrf_exempt
 def uploadPDF(request):

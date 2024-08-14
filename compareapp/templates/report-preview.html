@@ -17,7 +17,7 @@
                 <div class="font-bold text-xl text-slate-600">Preview</div>
                 <div class="flex items-center">
                     <button class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" onclick="history.back();">Back</button>
-                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{{ document_path }}">Download Report</a>
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.docx">Download Report</a>
                 </div>
             </div>
             <div class="">
@@ -53,6 +53,7 @@
 
     <script>
         let sourceId = null;
+        const pdf_url = "{{ pdf_path }}";
 
         document.getElementById('chatPdfButton').addEventListener('click', async () => {
             document.getElementById('chatPdfModal').classList.remove('hidden');
@@ -84,7 +85,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ file_url: "comparison/comparison-report.pdf" }) 
+                    body: JSON.stringify({ file_url: "comparison-reports/{{ report }}.pdf" }) 
                 });
 
                 if (response.ok) {

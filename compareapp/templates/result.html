@@ -25,7 +25,7 @@
                     <table class="min-w-full leading-normal bg-slate-100">
                         <thead>
                             <tr>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document ID</th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document_ID</th>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Title</th>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Author</th>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Creation Date</th>
@@ -53,7 +53,7 @@
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comments }}</td>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comparison_status }}</td>
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.summary }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.similarity_score }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.similarity_score|floatformat:0 }}%</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -63,17 +63,17 @@
             <div class="">
                 <div class="mb-5 flex justify-between items-center">
                     <p class="font-bold text-xl text-slate-600">Comparison Summary</p>
-                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% url 'preview' %}?path={{ output_path|urlencode }}">View Report</a>
+                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% url 'preview' report %}">View Report</a>
                 </div>
                 <div class="overflow-auto mb-8 rounded-lg">
                     <table class="min-w-full leading-normal bg-slate-100 text-balance">
                         <thead>
                             <tr>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Section</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Primary Document</th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Primary Document({{ documents.0.document_id }})</th>
                                 {% for doc in documents %}
                                     {% if doc.document_id != documents.0.document_id %}
-                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document_{{ doc.document_id }}</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document-{{ doc.document_id }}</th>
                                     {% endif %}
                                 {% endfor %}
                             </tr>
@@ -89,23 +89,22 @@
                                                 <td class="px-5 py-5 border-b border-gray-200 text-sm">
                                                     {% if doc_detail %}
                                                         {% if doc_detail.modified_text %}
-                                                            <p><span class="text-yellow-600">{{ doc_detail.modified_text }}</span></p>
+                                                            <p><span class="bg-yellow-200 font-semibold">{{ doc_detail.modified_text|default:"-" }}</span></p>
                                                         {% else %}
                                                             {% if doc_detail.content %}
-                                                                <p>Content : <span class="text-black">{{ doc_detail.content|default:"-" }}</span></p>
+                                                                <p>Content : <span class="font-medium">{{ doc_detail.content|default:"-" }}</span></p>
                                                             {% endif %}
                                                             {% if doc_detail.added_text %}
-                                                                <p>Added : <span class="text-green-500">{{ doc_detail.added_text|default:"-" }}</span></p>
+                                                            <p><span class="bg-green-200 font-semibold">{{ doc_detail.added_text|default:"-" }}</span></p>
                                                             {% endif %}
                                                             {% if doc_detail.removed_text %}
-                                                                <p>Removed : <span class="text-red-500">{{ doc_detail.removed_text|default:"-" }}</span></p>
+                                                            <p><span class="bg-red-200 font-semibold">{{ doc_detail.removed_text|default:"-" }}</span></p>
                                                             {% endif %}
                                                         {% endif %}
                                                     {% else %}
-                                                    <p>-</p>
+                                                        <p>-</p>
                                                     {% endif %}
-
-
+                    
                                                     {% if doc_detail.tag and doc_detail.tag != 'S' %}
                                                         <span class="text-xs font-bold {% if doc_detail.tag == 'M' %}text-yellow-600{% elif doc_detail.tag == 'A' %}text-green-500{% elif doc_detail.tag == 'R' %}text-red-500{% else %}text-gray-500{% endif %}">
                                                             [{{ doc_detail.tag }}]
@@ -118,7 +117,7 @@
                                 </tr>
                             {% endfor %}
                         </tbody>
-                    </table>
+                    </table>                    
                 </div>
             </div>
         </div>
