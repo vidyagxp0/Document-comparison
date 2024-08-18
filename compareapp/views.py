@@ -2,6 +2,7 @@ import os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
+from django.db.models import Q
 from django.http import HttpRequest
 from django.contrib.auth import authenticate, login, logout
 from django.templatetags.static import static
@@ -57,7 +58,18 @@ def dashboard(request):
         messages.warning(request, "Login Required!")
         return redirect('login')
     
-    reports = None
+    query = request.GET.get('q', '')
+
+    if query:
+        reports = ComparisonReport.objects.filter(
+            Q(report_number__icontains=query) |
+            Q(comparison_reason__icontains=query) |
+            Q(compared_documents__name__icontains=query) |
+            Q(comparison_date__icontains=query) |
+            Q(compared_by__icontains=query)
+        ).distinct()
+    else:
+        reports = ComparisonReport.objects.all()
 
     return render(request, 'dashboard.html', { "reports": reports })
 
@@ -145,10 +157,11 @@ def documentDetail(request, doc_id):
         messages.warning(request, "Login Required!")
         return redirect('login')
     
-    document = get_object_or_404(Form, document_id=doc_id)
-
-    if not document:
-        messages.warning(request, "Invalid Document ID.")
+    try: 
+        document = get_object_or_404(Form, document_id=doc_id)
+    except:
+        messages.warning(request, "Invalid document ID, please provide valid ID.")
+        return redirect('dashboard')
     
     return render(request, 'document-details.html', { 'document': document })
 
@@ -168,21 +181,17 @@ def removeDocument(request, doc_id):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
-    
-    document = get_object_or_404(Form, document_id=doc_id)
 
-    if not document:
-        messages.warning(request, "Invalid document ID, please provide valid ID")
-        return redirect('initial-document')
-    
     try:
+        document = get_object_or_404(Form, document_id=doc_id)
         document.delete()
+        remove_file = document.upload_document.path
+        os.remove(remove_file)
         messages.success(request, "Document deleted successfully.")
         return redirect('initial-document')
     except:
-        messages.error(request, "Error occured while performing the action.")
-
-    return redirect('initial-document')
+        messages.warning(request, "Invalid document ID, please provide valid ID")
+        return redirect('form')
 
 def comparison(request: HttpRequest):
     if not request.user.is_authenticated:
@@ -526,7 +535,7 @@ logger = logging.getLogger(__name__)
 def docx_to_pdf(docx_path, pdf_path):
     try:
         # Set your ConvertAPI secret
-        convertapi.api_secret = 'QdENoLepFl1Z6CwK'
+        convertapi.api_secret = settings.CONVERT_API_SECRET
 
         # Convert the file paths to strings
         docx_path = str(docx_path)
@@ -549,11 +558,12 @@ def preview(request, report):
     pdf_path = comparison_report.with_suffix('.pdf')
     pdf_url = str(pdf_path.relative_to(settings.MEDIA_ROOT)).replace("\\", "/")
 
-    if not os.path.exists(pdf_path):
+    if not pdf_path.exists():
         try:
             docx_to_pdf(comparison_report, pdf_path)
         except :
-            return HttpResponse("Oops please reload the page.", status=500)
+            messages.info(request, 'Error occured while rendering the file!')
+            return redirect('view-comparison', report)
     
     return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'report': report})
 

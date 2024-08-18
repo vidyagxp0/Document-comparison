@@ -10,13 +10,13 @@
     {% include "toast.html" with messages=messages %}
 
     <div class="container mx-auto my-12 px-6">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">Comparison Report</h1>
+        <div class="text-start mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Comparison Report</h1>
         </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             {% if documents %}
                 <div class="flex justify-between mb-6">
-                    <div class="font-bold text-xl text-slate-600">Compared Document List</div>
+                    <div class="font-bold text-xl text-slate-600">Compared Documents Info</div>
                     <div class="head">
                         <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" href="{% url "dashboard" %}">Back</a>
                     </div>

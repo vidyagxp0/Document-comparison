@@ -9,19 +9,19 @@
     {% include "toast.html" with messages=messages %}
 
     <div class="container mx-auto my-12 px-6">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">Report Preview</h1>
+        <div class="text-start mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Report Preview</h1>
         </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             <div class="flex justify-between mb-6">
-                <div class="font-bold text-xl text-slate-600">Preview</div>
+                <div class="flex font-bold items-center ml-3">Report Number : <span class="text-slate-400"> {{ report }}</span></div>
                 <div class="flex items-center">
                     <button class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" onclick="history.back();">Back</button>
-                    <a class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.docx">Download Report</a>
+                    <a class="inline-flex gap-2 bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.docx"><img src="{% static "images/download.png" %}" class="size-6" alt="" srcset=""> <span>Report</span></a>
                 </div>
             </div>
             <div class="">
-                <embed src="{{ pdf_path }}" type="application/pdf" class="w-full h-screen rounded-lg" />
+                <embed src="{{ pdf_path }}" type="application/pdf" class="w-full h-screen rounded-lg border" />
             </div>
             <div class="fixed bottom-10 right-10">
                 <div class="relative inline-flex">
@@ -33,7 +33,7 @@
     </div>
                                                                                                        
     <!-- Modal structure -->
-    <div id="chatPdfModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center animate- hidden">
+    <div id="chatPdfModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-1/2 ">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold">Chat with Document</h2>
@@ -43,9 +43,9 @@
                 <!-- Chat content will be dynamically added here -->
             </div>
             <div class="flex gap-4 items-center"> 
-                <input id="chatInput" type="text" class="border border-gray-300 rounded-lg w-full p-2" placeholder="Type your message here...">
-                <div id="sendMessage" class="hover:bg-gray-100 rounded-full">
-                    <img class="size-16" src="{% static 'images/sent.png' %}" alt="" srcset="">
+                <input id="chatInput" type="text" class="border border-gray-300 rounded-lg w-full" placeholder="Type your message here...">
+                <div id="sendMessage" class="hover:bg-gray-100 rounded-full p-2">
+                    <img class="" src="{% static 'images/send.png' %}" width="40" height="40" alt="" srcset="">
                 </div>
             </div>
         </div>
