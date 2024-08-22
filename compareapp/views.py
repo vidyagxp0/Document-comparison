@@ -27,6 +27,15 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 
 
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.core.mail import EmailMultiAlternatives
+from django.utils.encoding import force_bytes
+from django.template.loader import render_to_string
+from django.http import HttpResponseRedirect
+from django.contrib.auth.models import User
+from .forms import CustomPasswordResetForm
+
 def index(request):
     return render(request, "index.html")
 
@@ -52,6 +61,49 @@ def loginUser(request):
                 messages.error(request, "Please provide valid login credentials.")
             
     return render(request, "login.html")
+
+def userManagement(request):
+    return render(request, 'user-management/user-management.html')
+
+def analytics(request):
+    return render(request, 'analytics.html')
+
+def password_reset_request(request):
+    if request.method == "POST":
+        form = CustomPasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            users = User.objects.filter(email=email)
+            if users.exists():
+                for user in users:
+                    subject = "Password Reset Requested"
+                    email_template_name = "password_reset_email.html"
+                    context = {
+                        "email": user.email,
+                        "domain": request.META['HTTP_HOST'],
+                        "site_name": "Doc Comparison Pro",
+                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                        "user": user,
+                        "token": default_token_generator.make_token(user),
+                        "protocol": "http",
+                    }
+                    email_message = render_to_string(email_template_name, context)
+                    email = EmailMultiAlternatives(
+                        subject=subject,
+                        body=email_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[user.email]
+                    )
+                    email.attach_alternative(email_message, "text/html")
+                    email.send(fail_silently=False)
+                messages.success(request, "Password reset request has been sent.")
+            else:
+                messages.error(request, "The provided email is not registered.")
+            form = CustomPasswordResetForm()
+    else:
+        form = CustomPasswordResetForm()
+
+    return render(request, "password_reset_form.html", {"form": form})
 
 def dashboard(request):
     if not request.user.is_authenticated:
@@ -134,6 +186,12 @@ def formView(request):
         documents = Form.objects.filter(new=True)
         document_count = documents.count()
         formData = Form.objects.last()
+        last_report = ComparisonReport.objects.last()
+
+        if last_report:
+            new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
+        else:
+            new_report_number = "DCR1001"
 
         if formData:
             doc_id = formData.document_id + 1
@@ -149,7 +207,8 @@ def formView(request):
         'document_count': document_count,
         'documents': documents,
         'success': success,
-        'report_number': report_number
+        'report_number': report_number,
+        'new_report_number': new_report_number
     })
 
 def documentDetail(request, doc_id):

@@ -2,6 +2,9 @@ from django import forms
 from .models import Document
 from django.utils import timezone
 
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.models import User
+
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
@@ -20,3 +23,10 @@ class DocumentForm(forms.ModelForm):
         self.fields['doc_format'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
         self.fields['upload_document'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
         self.fields['comments'].widget.attrs.update({'class': 'form-textarea h-14 mt-1 rounded w-full mb-3'})
+
+class CustomPasswordResetForm(PasswordResetForm):
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if not User.objects.filter(email=email).exists():
+            raise forms.ValidationError("There is no account registered with this email address.")
+        return email

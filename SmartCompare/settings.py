@@ -78,7 +78,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',  # Or your database host
-        'PORT': '3307',       # Or your database port
+        'PORT': '3306',       # Or your database port
     }
 }
 
@@ -101,6 +101,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGIN_URL = 'login'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'adityapatel8912@gmail.com'
+EMAIL_HOST_PASSWORD = 'gqpibgqdoiutfews'
+DEFAULT_FROM_EMAIL = 'adityapatel8912@gmail.com'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

@@ -8,14 +8,23 @@
 
     {% include "toast.html" with messages=messages %}
     {% load static %}
+    
     <div class="container mx-auto my-12 px-6">
         <div class="text-start mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Upload Documents</h1>
         </div>
+        <div class="flex justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
+            <p class="text-gray-600 mt-2">Manage your documents and perform comparisons easily.</p>
+            <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                Dashboard
+            </a>
+        </div>
         <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
             <div class="flex-row md:flex gap-6">
                 <div class="w-full md:w-[70%]">
-                    <div class="mb-3 font-bold text-lg">Document ID : {{ doc_id }}</div>
+                    <div class="mb-3 text-slate-400 text-lg">
+                        Document Number :  <strong class="text-blue-600">{{ new_report_number|default:"DCR1001" }}<span class="text-xl font-normal text-slate-400">/</span>{{ doc_id }}</strong>
+                    </div>
                     <form method="post" enctype="multipart/form-data" class="border rounded-lg p-4 bg-slate-100">
                         <div class="text-slate-700 font-sans">
                             {% csrf_token %}

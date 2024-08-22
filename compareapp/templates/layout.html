@@ -31,10 +31,9 @@
             <div>
                 <a href="{% url "dashboard" %}" class="flex items-center gap-4">
                     <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo">
-                    <p class="hidden md:block bg-gradient-to-r from-red-900 from-[80%] to-white bg-clip-text text-transparent text-[20px] md:text-2xl font-bold"> Document Comparison Pro </p>
+                    <p class="hidden md:block text-white md:text-2xl font-semibold"> Document Comparison Pro </p>
                 </a>
             </div>
-            {% comment %} <p class="text-white text-[20px] md:text-2xl font-bold -ml-20 hidden md:block">Document Comparison Pro</p> {% endcomment %}
             <div class="flex gap-4 items-center relative">
                 <div class="relative">
                     <img src="{% static 'images/user.png' %}" alt="user" width="40" height="40">
@@ -44,11 +43,20 @@
                 </div>
                 <div class="relative">
                     <button id="dropdownButton" class="font-medium text-white bg-transparent" type="button">
-                        Admin
+                        {% if request.user.is_authenticated %}
+                            {{ request.user.get_full_name|default:request.user.username|title }}
+                        {% else %}
+                            Guest
+                        {% endif %}
                     </button>
                     <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md">
                         <div class="flex justify-center items-center px-5 py-2 gap-2 border-b">
-                            <img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> Admin
+                            <img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> 
+                            {% if request.user.is_authenticated %}
+                                {{ request.user.get_full_name|default:request.user.username|title }}
+                            {% else %}
+                                Guest
+                            {% endif %}
                         </div>
                         <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="#" id="aboutButton"><img class="size-6" src="{% static 'images/about.png' %}" alt="" srcset=""><span>About</span></a></div>
                         <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="https://vidyagxp.com/" target="_blank"><img class="size-6" src="{% static 'images/feedback.png' %}" alt="" srcset=""> <span>Feedback</span></a></div>

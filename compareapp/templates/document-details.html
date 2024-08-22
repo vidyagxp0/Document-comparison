@@ -16,7 +16,7 @@
             {% if document %}
                 <div class="flex justify-between items-center mb-4">
                     <div class="ml-3 text-slate-400">
-                        Location :  <strong class="text-blue-600">{{ document.report_number|default:"Initial Record" }}<span class="text-xl font-normal text-slate-400">/</span>{{ document.document_id }}</strong>
+                        Document Number :  <strong class="text-blue-600">{{ document.report_number|default:"Initial Record" }}<span class="text-xl font-normal text-slate-400">/</span>{{ document.document_id }}</strong>
                     </div>
                     <button class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" onclick="history.back();">Back</button>
                 </div>
