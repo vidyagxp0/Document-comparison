@@ -9,10 +9,14 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name="dashboard"),
 
     # User Management system
-    path('user-management/', views.userManagement, name="user-management"),
+    path('user-management/', views.userManagement, name='user-management'),
+    path('users/add/', views.add_user, name='add-user'),
+    path('users/edit/<int:user_id>/', views.edit_user, name='edit-user'),
+    path('users/delete/<int:user_id>/', views.delete_user, name='delete-user'),
+    path('users/profile/<int:user_id>/', views.user_profile, name='user-profile'),
 
     # View analytics
-    path('analytics', views.analytics, name="analytics"),
+    path('analytics', views.analytics, name="analytics"),   
 
 
     # For Document upload

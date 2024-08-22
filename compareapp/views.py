@@ -3,6 +3,7 @@ from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.contrib.auth import authenticate, login, logout
 from django.templatetags.static import static
@@ -26,15 +27,14 @@ from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 
-
+# mail configuration  
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
-from django.http import HttpResponseRedirect
 from django.contrib.auth.models import User
-from .forms import CustomPasswordResetForm
+from .forms import CustomPasswordResetForm, UserForm
 
 def index(request):
     return render(request, "index.html")
@@ -62,8 +62,64 @@ def loginUser(request):
             
     return render(request, "login.html")
 
+@login_required
 def userManagement(request):
-    return render(request, 'user-management/user-management.html')
+    query = request.GET.get('q')
+    filter_by = request.GET.get('filter')
+
+    users = User.objects.all()
+
+    if query:
+        users = users.filter(username__icontains=query)
+    if filter_by:
+        if filter_by == 'role':
+            users = users.filter(groups__name__icontains=query)
+        elif filter_by == 'status':
+            users = users.filter(is_active=True if query.lower() == 'active' else False)
+
+    return render(request, 'user-management/user-management.html', {'users': users})
+
+@login_required
+def add_user(request):
+    if request.method == 'POST':
+        form = UserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('user-management'))
+    else:
+        form = UserForm()
+
+    return render(request, 'user-management/user_form.html', {'form': form})
+
+# Edit User
+@login_required
+def edit_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('user-management'))
+    else:
+        form = UserForm(instance=user)
+
+    return render(request, 'user-management/user_form.html', {'form': form, 'user': user})
+
+# Delete User
+@login_required
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        user.delete()
+        return redirect(reverse('user-management'))
+    return render(request, 'user-management/confirm_delete.html', {'user': user})
+
+# User Profile View
+@login_required
+def user_profile(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'user-management/user_profile.html', {'user': user})
 
 def analytics(request):
     return render(request, 'analytics.html')

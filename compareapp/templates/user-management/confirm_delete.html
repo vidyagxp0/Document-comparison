@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Confirm Delete
+{% endblock %}
+
+{% block body %}
+<div class="container mx-auto my-12 px-6">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold mb-6 text-center text-red-600">Confirm Deletion</h2>
+        <p class="text-center text-gray-700">Are you sure you want to delete the user <strong>{{ user.username }}</strong>? This action cannot be undone.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="flex justify-between mt-6">
+                <a href="{% url 'user-management' %}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancel</a>
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,15 +1,88 @@
 {% extends "layout.html" %}
+{% load static %}
 
-{% block title %} 
-    Upload Process
+{% block title %}
+    User Management
 {% endblock title %}
 
 {% block body %}
+<div class="container mx-auto my-12 px-6">
+    <div class="text-start mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">User Management</h1>
+    </div>
 
-    {% include "toast.html" with messages=messages %}
-    {% load static %}
+    <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+        <div class="mb-5 flex justify-between items-center">
+            <form method="GET" action="" class="">
+                <div class="flex gap-4">
+                    <div class="relative flex items-center border rounded-lg overflow-hidden bg-white shadow-sm w-64">
+                        <input type="text" name="q" placeholder="Search users..." value="{{ request.GET.q }}" class="flex-grow py-2 px-4 border-none outline-none focus:ring-0" />
+                        <button type="submit" class="absolute right-0 top-0 bottom-0 flex items-center px-2 py-1 bg-slate-600 hover:bg-slate-500 rounded-r-lg">
+                            <img src="{% static 'images/search.png' %}" alt="Search" class="size-6 text-white" />
+                        </button>
+                    </div>
+                    <select name="status" class="border w-48 border-gray-300 rounded-lg py-2 px-4 bg-white text-gray-700 outline-none focus:ring-0 focus:border-blue-500">
+                        <option value="">Filter by</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </form>
+            <a href="{% url 'add-user' %}" class="flex gap-2 items-center bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg py-2 px-4">
+                <img src="{% static 'images/user.png' %}" class="size-6 inline-flex" alt="" srcset="">
+                 New User
+            </a>
+        </div>
 
-    <h1>UMS</h1>
-    
-    
+        {% if users %}
+            <div class="overflow-auto">
+                <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100 text-left">
+                    <thead>
+                        <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">ID</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Username</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Email</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Role</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Status</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200 text-blue-500"><a href="{% url "user-profile" user.id %}">{{ user.id }}</a></td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ user.username }}</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ user.email }}</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ user.role|default:"Not available" }}</td>
+                                <td class="px-5 py-3 border-b border-gray-200">
+                                    {% if user.is_active %}
+                                        <span class="text-green-600">Active</span>
+                                    {% else %}
+                                        <span class="text-red-600">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="flex px-5 py-3 border-b border-gray-200">
+                                    <a href="{% url 'edit-user' user.id %}" class="text-blue-600 hover:underline">
+                                        <img src="{% static 'images/edit-user.png' %}" class="size-9 p-2 rounded-full hover:bg-slate-200" alt="" srcset="">
+                                    </a>
+                                    <a href="{% url 'delete-user' user.id %}" class="text-red-600 hover:underline ml-3">
+                                        <img src="{% static 'images/delete.png' %}" class="size-9 p-2 rounded-full hover:bg-slate-200" alt="" srcset="">
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center mt-10 border rounded-lg p-6">
+                <p class="text-gray-700 mb-6 text-3xl font-semibold">No Users Found</p>
+                <p class="text-gray-500 mb-8">There are no users in the system. You can add a new user by clicking the button below.</p>
+                <a href="{% url 'add-user' %}" class="inline-flex items-center bg-green-600 hover:bg-green-500 text-white font-semibold rounded-lg py-2 px-3 transition duration-300 ease-in-out shadow-md hover:shadow-lg">
+                    Add New User
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock body %}

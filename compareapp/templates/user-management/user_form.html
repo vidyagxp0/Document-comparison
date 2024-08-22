@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {% if user %}Edit User{% else %}Add New User{% endif %}
+{% endblock title %}
+
+{% block body %}
+<div class="container mx-auto my-12 px-6">
+    <div class="text-start mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{% if user %}Edit User{% else %}Add New User{% endif %}</h1>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
+                {{ form.username}}
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
+                {{ form.email }}
+            </div>
+            <div class="mb-4">
+                <label for="role" class="block text-gray-700 font-medium mb-2">Role</label>
+                {{ form.role}}
+            </div>
+            <div class="mb-4">
+                <label for="status" class="block text-gray-700 font-medium mb-2">Status</label>
+                {{ form.is_active }}
+            </div>
+
+            <div class="flex justify-end gap-4">
+                <a href="{% url 'user-management' %}" class="bg-gray-600 hover:bg-gray-500 text-white rounded-lg py-2 px-4">Cancel</a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 px-4">{% if user %}Update User{% else %}Add User{% endif %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock body %}
