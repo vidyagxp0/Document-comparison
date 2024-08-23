@@ -7,11 +7,16 @@ urlpatterns = [
     path('login/', views.loginUser, name="login"),
     path('logout/', views.logoutUser, name="logout"),
     path('dashboard/', views.dashboard, name="dashboard"),
+    path('feedback/', views.submitFeedback, name="feedback"),
 
     # User Management system
     path('user-management/', views.userManagement, name='user-management'),
-    path('users/add/', views.add_user, name='add-user'),
-    path('users/edit/<int:user_id>/', views.edit_user, name='edit-user'),
+
+    # Route to add a new user
+    path('users/add/', views.add_edit_user, name='add-user'),
+
+    # Route to edit an existing user
+    path('users/edit/<int:user_id>/', views.add_edit_user, name='edit-user'),
     path('users/delete/<int:user_id>/', views.delete_user, name='delete-user'),
     path('users/profile/<int:user_id>/', views.user_profile, name='user-profile'),
 

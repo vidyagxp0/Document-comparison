@@ -25,6 +25,8 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
+    {% include "toast.html" with messages=messages %}
+
     <!-- Header -->
     <header>
         <div class="flex justify-between items-center px-10 py-2.5 bg-gray-800 bg-opacity-90 text-white">
@@ -49,7 +51,7 @@
                             Guest
                         {% endif %}
                     </button>
-                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md">
+                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-52 bg-white text-black shadow-lg rounded-md">
                         <div class="flex justify-center items-center px-5 py-2 gap-2 border-b">
                             <img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> 
                             {% if request.user.is_authenticated %}
@@ -58,9 +60,10 @@
                                 Guest
                             {% endif %}
                         </div>
-                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="#" id="aboutButton"><img class="size-6" src="{% static 'images/about.png' %}" alt="" srcset=""><span>About</span></a></div>
-                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="https://vidyagxp.com/" target="_blank"><img class="size-6" src="{% static 'images/feedback.png' %}" alt="" srcset=""> <span>Feedback</span></a></div>
-                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'logout' %}"><img class="size-6" src="{% static 'images/logout.png' %}" alt="" srcset=""> <span>Log Out</span></a></div>
+                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'user-management' %}"><img class="size-5 mr-0.5" src="{% static 'images/user-management.png' %}" alt="" srcset="">User management</a></div>
+                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" id="feedbackButton" href="#" ><img class="size-6" src="{% static 'images/feedback.png' %}" alt="" srcset="">Feedback</a></div>
+                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="#" id="aboutButton"><img class="size-6" src="{% static 'images/about.png' %}" alt="" srcset="">About</a></div>
+                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'logout' %}"><img class="size-6" src="{% static 'images/logout.png' %}" alt="" srcset="">Log Out</a></div>
                     </div>
                 </div>
             </div>
@@ -88,7 +91,45 @@
             <h3 class="text-xl font-semibold mb-2">Our Team</h3>
             <p class="text-lg mb-4">Our team is composed of dedicated professionals who are passionate about document management and technology. We are committed to providing the best tools and support to enhance your productivity.</p>
             <h3 class="text-xl font-semibold mb-2">Contact Us</h3>
-            <p class="text-lg">For more information or support, please contact us at <a href="mailto:quality@vidyagxp.com" class="text-blue-500 hover:underline">quality@vidyagxp.com</a>.</p>
+            <p class="text-lg">For more information or support, please contact us at <a href="mailto:quality@vidyagxp.com" class="text-blue-500 hover:underline">support@doccomparisonpro.com</a>.</p>
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal modal-closed fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 p-6 relative">
+            <button id="closeFeedbackModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-4xl">&times;</button>
+            <h2 class="text-2xl font-semibold mb-4">Feedback</h2>
+            <form id="feedbackForm" method="POST" action="{% url 'feedback' %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="feedback" class="block text-lg font-semibold mb-2">Give your valuable feedback</label>
+                    <textarea id="feedback" name="feedback" rows="5" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Enter your feedback..."></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="email" class="block text-lg font-semibold mb-2">Your Email (Optional)</label>
+                    <input type="email" id="email" name="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500" placeholder="Enter your email address...">
+                </div>
+                <div class="text-right">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal modal-closed fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 p-6 relative">
+            <button id="closeHelpModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-4xl">&times;</button>
+            <h2 class="text-2xl font-extrabold mb-4">Software Workflow Assistance</h2>
+            <p class="text-lg mb-4 text-slate-500">Here you can find answers to common questions and tips on how to use Doc Comparison Pro effectively.</p>
+            <h3 class="text-xl font-semibold mb-2">Q.1 How to Compare Documents?</h3>
+            <p class="text-lg mb-4 text-slate-500">Ans. To compare documents, simply upload your documents and follow the on-screen instructions. The tool will highlight differences and similarities.</p>
+            <h3 class="text-xl font-semibold mb-2">Q.2 What contains the Report?</h3>
+            <p class="text-lg mb-4 text-slate-500">Ans. The comparison report provides a detailed analysis of the differences and similarities between the documents. You can download or share the report as needed.</p>
+            <hr>
+            <h3 class="text-xl font-semibold my-2">Need Further Assistance?</h3>
+            <p class="text-lg text-slate-500">If you need further assistance, feel free to contact us at <a href="mailto:quality@vidyagxp.com" class="text-blue-500 hover:underline">support@doccomparisonpro.com</a>.</p>
         </div>
     </div>
 
@@ -96,52 +137,97 @@
         {% block body %}{% endblock body %}
     </div>
 
-    {% comment %} <footer class="bg-gray-800 bg-opacity-90 text-white p-4 fixed bottom-0 w-full ">
-        <div class="container mx-auto text-center">
-            <p>&copy; 2024 Doc Comparison Pro. All rights reserved.</p>
+    <!-- Footer -->
+    <footer class="text-white fixed bottom-0 right-0">
+        <div class="flex flex-col items-end">
+            <button id="helpButton" class="bg-emerald-700 hover:bg-emerald-600 rounded p-2 mr-2 w-24 text-center text-sm">Need Help?</button>
+            <p class="bg-slate-50 rounded p-2 m-2 text-slate-600 shadow-md">&copy; 2024 Doc Comparison Pro. All rights reserved.</p>
         </div>
-    </footer> {% endcomment %}
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('loader').classList.remove('hidden');
+            const loader = document.getElementById('loader');
             const dropdownButton = document.getElementById('dropdownButton');
             const dropdownMenu = document.getElementById('dropdownMenu');
             const aboutButton = document.getElementById('aboutButton');
             const aboutModal = document.getElementById('aboutModal');
             const closeModal = document.getElementById('closeModal');
+            const helpButton = document.getElementById('helpButton');
+            const helpModal = document.getElementById('helpModal');
+            const closeHelpModal = document.getElementById('closeHelpModal');
+            const feedbackButton = document.getElementById('feedbackButton');
+            const feedbackModal = document.getElementById('feedbackModal');
+            const closeFeedbackModal = document.getElementById('closeFeedbackModal');
 
+            // Toggle dropdown menu
             dropdownButton.addEventListener('click', function () {
                 dropdownMenu.classList.toggle('hidden');
             });
 
+            // Open about modal
             aboutButton.addEventListener('click', function () {
                 aboutModal.classList.remove('modal-closed');
                 aboutModal.classList.add('modal-open');
             });
 
+            // Close about modal
             closeModal.addEventListener('click', function () {
                 aboutModal.classList.remove('modal-open');
                 aboutModal.classList.add('modal-closed');
             });
 
+            // Open help modal
+            helpButton.addEventListener('click', function () {
+                helpModal.classList.remove('modal-closed');
+                helpModal.classList.add('modal-open');
+            });
+
+            // Close help modal
+            closeHelpModal.addEventListener('click', function () {
+                helpModal.classList.remove('modal-open');
+                helpModal.classList.add('modal-closed');
+            });
+
+            // Open feedback modal
+            feedbackButton.addEventListener('click', function () {
+                feedbackModal.classList.remove('modal-closed');
+                feedbackModal.classList.add('modal-open');
+            });
+
+            // Close feedback modal
+            closeFeedbackModal.addEventListener('click', function () {
+                feedbackModal.classList.remove('modal-open');
+                feedbackModal.classList.add('modal-closed');
+            });
+
+            // Close modals when clicking outside
             document.addEventListener('click', function (event) {
                 if (!dropdownButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
                     dropdownMenu.classList.add('hidden');
                 }
-            });
 
-            aboutModal.addEventListener('click', function (event) {
                 if (event.target === aboutModal) {
                     aboutModal.classList.remove('modal-open');
                     aboutModal.classList.add('modal-closed');
                 }
-            });
-        });
 
-        window.onload = function() {
-            document.getElementById('loader').classList.add('hidden');
-        };
+                if (event.target === helpModal) {
+                    helpModal.classList.remove('modal-open');
+                    helpModal.classList.add('modal-closed');
+                }
+
+                if (event.target === feedbackModal) {
+                    feedbackModal.classList.remove('modal-open');
+                    feedbackModal.classList.add('modal-closed');
+                }
+            });
+
+            // Hide loader on window load
+            window.onload = function() {
+                loader.classList.add('hidden');
+            };
+        });
     </script>
         
 </body>

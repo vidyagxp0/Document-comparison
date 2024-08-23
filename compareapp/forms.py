@@ -1,9 +1,10 @@
 from django import forms
-from .models import Document
+from .models import Document, Feedback
 from django.utils import timezone
 
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission
 
 class DocumentForm(forms.ModelForm):
     class Meta:
@@ -33,12 +34,30 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 class UserForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=Permission.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
+        required=False
+    )
+
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email']
+        fields = ['username', 'first_name', 'last_name', 'email', 'role', 'is_active', 'permissions']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'username': forms.TextInput(attrs={'class': 'form-input w-full'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-input w-full'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-input w-full'}),
+            'email': forms.EmailInput(attrs={'class': 'form-input w-full'}),
+            'role': forms.Select(attrs={'class': 'form-input w-full'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-checkbox h-4 w-4'}),
+            'permissions': forms.CheckboxSelectMultiple(attrs={'class': 'form-checkbox'}),
+        }
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        fields = ['feedback', 'email']
+        widgets = {
+            'feedback': forms.Textarea(attrs={'rows': 3}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Optional'}),
         }

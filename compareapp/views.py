@@ -34,7 +34,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
-from .forms import CustomPasswordResetForm, UserForm
+from .forms import CustomPasswordResetForm, UserForm, FeedbackForm
 
 def index(request):
     return render(request, "index.html")
@@ -62,49 +62,63 @@ def loginUser(request):
             
     return render(request, "login.html")
 
+def submitFeedback(request):
+    previous_url = request.META.get('HTTP_REFERER', '/')
+
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Thank you for your feedback!')
+        else:
+            messages.warning(request, 'Please provide valid feedback!')
+        return redirect(previous_url)
+        
+    else:
+        return redirect(previous_url)
+
 @login_required
 def userManagement(request):
     query = request.GET.get('q')
-    filter_by = request.GET.get('filter')
+    filter_by = request.GET.get('status')
 
     users = User.objects.all()
 
     if query:
         users = users.filter(username__icontains=query)
     if filter_by:
-        if filter_by == 'role':
-            users = users.filter(groups__name__icontains=query)
-        elif filter_by == 'status':
-            users = users.filter(is_active=True if query.lower() == 'active' else False)
+        if filter_by == 'active':
+            users = users.filter(is_active=True)
+        elif filter_by == 'inactive':
+            users = users.filter(is_active=False)
 
     return render(request, 'user-management/user-management.html', {'users': users})
 
 @login_required
-def add_user(request):
-    if request.method == 'POST':
-        form = UserForm(request.POST)
+def add_edit_user(request, user_id):
+    def get(self, request, user_id=None):
+        if user_id:
+            user = get_object_or_404(User, id=user_id)
+            form = UserForm(instance=user)
+        else:
+            form = UserForm()
+
+        return render(request, 'user_form.html', {'form': form, 'user': user})
+
+    def post(self, request, user_id=None):
+        if user_id:
+            user = get_object_or_404(User, id=user_id)
+            form = UserForm(request.POST, instance=user)
+        else:
+            form = UserForm(request.POST)
+
         if form.is_valid():
-            form.save()
-            return redirect(reverse('user-management'))
-    else:
-        form = UserForm()
+            user = form.save()
+            user.user_permissions.set(form.cleaned_data['permissions'])
+            return redirect('user-management')
 
-    return render(request, 'user-management/user_form.html', {'form': form})
+        return render(request, 'user_form.html', {'form': form, 'user': user})
 
-# Edit User
-@login_required
-def edit_user(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-
-    if request.method == 'POST':
-        form = UserForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('user-management'))
-    else:
-        form = UserForm(instance=user)
-
-    return render(request, 'user-management/user_form.html', {'form': form, 'user': user})
 
 # Delete User
 @login_required
@@ -285,10 +299,24 @@ def initialDocument(request):
         messages.warning(request, "Login Required!")
         return redirect('login')
     
+    query = request.GET.get('q', '')
+    filter_type = request.GET.get('filter', '')
+
     documents = Form.objects.filter(new=True)
-    
+
+    if query:
+        documents = documents.filter(
+            Q(document_id__icontains=query) |
+            Q(title__icontains=query) |
+            Q(author__icontains=query) |
+            Q(comments__icontains=query)
+        ).distinct()
+
+    if filter_type and filter_type != '':
+        documents = documents.filter(doc_format=filter_type)
+
     if not documents:
-        messages.info(request, "Please upload documents first.")
+        messages.info(request, "No documents found.")
     
     return render(request, 'initial-document.html', { 'documents': documents })
 

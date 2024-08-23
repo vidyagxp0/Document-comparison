@@ -176,3 +176,11 @@ class ComparisonReport(models.Model):
 
     def __str__(self):
         return self.comparison_reason
+
+class Feedback(models.Model):
+    feedback = models.TextField()
+    email = models.EmailField(blank=True, null=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback from {self.email or 'Anonymous'}"

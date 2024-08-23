@@ -6,29 +6,39 @@
 {% endblock title %}
 
 {% block body %}
-    {% include "toast.html" with messages=messages %}
 
     <div class="container mx-auto my-12 px-6">
         <div class="text-start mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Report Preview</h1>
         </div>
+        <div class="flex flex-col md:flex-row gap-5 justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
+            <p class="text-gray-600 mt-2">Preview your report and view it directly within the page; use the chat feature to interact with the document for detailed insights.</p>
+            <div class="flex gap-4 items-center">
+                <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                    Dashboard
+                </a>
+                <button onclick="history.back();" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                    Back
+                </button>
+            </div>
+        </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             <div class="flex justify-between mb-6">
-                <div class="flex font-bold items-center ml-3">Report Number : <span class="text-slate-400"> {{ report }}</span></div>
+                <div class="flex text-slate-500 items-center p-2 rounded bg-slate-200">Report Number : <span class="text-blue-600 font-bold"> {{ report }}</span></div>
                 <div class="flex items-center">
-                    <button class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" onclick="history.back();">Back</button>
                     <a class="inline-flex gap-2 bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.docx"><img src="{% static "images/download.png" %}" class="size-6" alt="" srcset=""> <span>Report</span></a>
                 </div>
             </div>
             <div class="">
                 <embed src="{{ pdf_path }}" type="application/pdf" class="w-full h-screen rounded-lg border" />
             </div>
-            <div class="fixed bottom-10 right-10">
-                <div class="relative inline-flex">
-                    <span class="animate-ping absolute inline-flex h-24 w-24 rounded-full bg-slate-900 opacity-75"></span>
-                    <img src="{% static 'images/mllogo.jpg' %}" alt="Chat PDF Button" id="chatPdfButton" class="w-24 h-24 rounded-full relative bg-sky-500 cursor-pointer">
-                </div>
-            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2">
+        <div class="relative inline-flex">
+            <span class="animate-ping absolute inline-flex h-24 w-24 rounded-full bg-slate-900 opacity-75"></span>
+            <img src="{% static 'images/mllogo.jpg' %}" alt="Chat PDF Button" id="chatPdfButton" class="w-24 h-24 rounded-full relative bg-sky-500 cursor-pointer">
         </div>
     </div>
                                                                                                        
