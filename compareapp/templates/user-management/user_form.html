@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "layout/base.html" %}
 
 {% block title %}
     {% if user %}Edit User{% else %}Add New User{% endif %}
@@ -12,49 +12,160 @@
     <div class="text-start mb-8">
         <h1 class="text-3xl font-bold text-gray-900">{% if user %}Edit User{% else %}Add New User{% endif %}</h1>
     </div>
-
+    <div class="flex flex-col md:flex-row gap-5 justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
+        <p class="text-gray-600 mt-2 text-lg">Here you can add or edit user information and manage their permissions.</p>
+        <div class="flex gap-4 justify-center items-center">
+            <a href="{% url 'dashboard' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                Dashboard
+            </a>
+            <a href="{% url 'user-management' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                Back
+            </a>
+        </div>
+    </div>
     <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="mb-4">
-                <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
-                {{ form.username}}
+            <div class="flex flex-wrap gap-6">
+                <div class="w-full md:w-1/4">
+                    <p class="text-slate-600 font-bold text-xl">Personal Information</p>
+                </div>
+                <div class="border rounded-lg p-6 w-full md:w-2/4 bg-slate-100">
+                    <div class="mb-6">
+                        <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
+                        <div class="w-full">{{ form.username }}</div>
+                        <p class="text-red-600 text-sm mt-1">{{ form.username.errors }}</p>
+                    </div>
+                    <div class="mb-6">
+                        <label for="first_name" class="block text-gray-700 font-medium mb-2">First Name</label>
+                        <div class="w-full">{{ form.first_name }}</div>
+                        <p class="text-red-600 text-sm mt-1">{{ form.first_name.errors }}</p>
+                    </div>
+                    <div class="mb-6">
+                        <label for="last_name" class="block text-gray-700 font-medium mb-2">Last Name</label>
+                        <div class="w-full">{{ form.last_name }}</div>
+                        <p class="text-red-600 text-sm mt-1">{{ form.last_name.errors }}</p>
+                    </div>
+                    <div class="mb-6">
+                        <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
+                        <div class="w-full">{{ form.email }}</div>
+                        <p class="text-red-600 text-sm mt-1">{{ form.email.errors }}</p>
+                    </div>
+                </div>
             </div>
-            <div class="mb-4">
-                <label for="first_name" class="block text-gray-700 font-medium mb-2">First Name</label>
-                {{ form.first_name }}
+            <div class="flex flex-wrap gap-6 mt-8">
+                <div class="w-full md:w-1/4">
+                    <p class="text-slate-600 font-bold text-xl">User Permissions</p>
+                </div>
+                <div class="border rounded-lg p-6 w-full">
+                    <div class="mb-6">
+                        <label for="permissions" class="block text-gray-700 font-medium mb-2">Permissions</label>
+                        <div class="flex items-center mb-4">
+                            <input type="checkbox" id="select-all" class="form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3">
+                            <label for="select-all" class="text-gray-700 font-medium">Select All</label>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="border p-4 rounded-lg w-full bg-slate-100">
+                                <h3 class="text-gray-600 font-bold mb-2">Available Permissions</h3>
+                                <div id="available-permissions">
+                                    {% for permission in form.permissions.field.queryset %}
+                                        <div>
+                                            <input type="checkbox" id="permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}"
+                                                {% if permission in form.permissions.value %}checked{% endif %}
+                                                class="form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
+                                            <label for="permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="border p-4 rounded-lg w-full bg-slate-100">
+                                <h3 class="text-gray-600 font-bold mb-2">Selected Permissions</h3>
+                                <div id="selected-permissions" class="flex flex-col">
+                                    <!-- Selected permissions will appear here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="text-red-600 text-sm mt-1">{{ form.permissions.errors }}</p>
+                    </div>
+                </div>
             </div>
-            <div class="mb-4">
-                <label for="last_name" class="block text-gray-700 font-medium mb-2">Last Name</label>
-                {{ form.last_name }}
-            </div>
-            <div class="mb-4">
-                <label for="email" class="block text-gray-700 font-medium mb-2">Email</label>
-                {{ form.email }}
-            </div>
-            <div class="mb-4">
-                <label for="permissions" class="block text-gray-700 font-medium mb-2">Permissions</label>
-                {{ form.permissions }}
-            </div>
-            <div class="mb-4">
-                <label for="role" class="block text-gray-700 font-medium mb-2">Role</label>
-                {{ form.role}}
-            </div>
-            <div class="mb-4">
-                <label for="status" class="block text-gray-700 font-medium mb-2">Status</label>
+            <div class="my-6 flex items-center gap-5">
+                <label for="status" class="text-lg text-gray-700 font-medium">Status:</label>
                 {{ form.is_active }}
             </div>
 
-            <div class="flex justify-end gap-4">
-                <a href="{% url 'user-management' %}" class="bg-slate-300 hover:bg-slate-200 text-white rounded-lg py-2 px-4">Cancel</a>
-                {% if can_create %}
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">{% if user %}Update User{% else %}Add User{% endif %}</button>
+            <div class="flex justify-end gap-4 mt-8">
+                <a href="{% url 'user-management' %}" class="bg-slate-300 hover:bg-slate-200 text-gray-700 font-bold rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                    Cancel
+                </a>
+                {% if perms.auth.add_user %}
+                    <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 font-bold text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                        {% if user %}Update User{% else %}Add User{% endif %}
+                    </button>
                 {% else %}
                     <p class="text-red-600 font-semibold">You do not have permission to add or update users.</p>
                 {% endif %}
             </div>
-            
         </form>
     </div>
 </div>
+
+<script>
+    // Function to move checked items to the Selected Permissions container
+    function moveSelectedPermissions() {
+        let checkboxes = document.querySelectorAll('#available-permissions input[type="checkbox"]');
+        let selectedContainer = document.getElementById('selected-permissions');
+
+        selectedContainer.innerHTML = '';
+
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                let clone = checkbox.parentNode.cloneNode(true);
+                selectedContainer.appendChild(clone);
+            }
+        });
+    }
+
+    // Run this function when the page loads to pre-select permissions
+    document.addEventListener('DOMContentLoaded', function() {
+        moveSelectedPermissions();
+    });
+
+    document.getElementById('select-all').onclick = function() {
+        let checkboxes = document.querySelectorAll('#available-permissions input[type="checkbox"]');
+        let selectedContainer = document.getElementById('selected-permissions');
+        selectedContainer.innerHTML = '';
+
+        for (let checkbox of checkboxes) {
+            checkbox.checked = this.checked;
+            if (this.checked) {
+                let clone = checkbox.parentNode.cloneNode(true);
+                selectedContainer.appendChild(clone);
+            }
+        }
+    };
+
+    // Add event listener to each permission checkbox
+    document.querySelectorAll('#available-permissions input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            let selectedContainer = document.getElementById('selected-permissions');
+            let permissionItem = this.parentNode.cloneNode(true);
+
+            if (this.checked) {
+                selectedContainer.appendChild(permissionItem);
+            } else {
+                let items = selectedContainer.querySelectorAll('input[type="checkbox"]');
+                items.forEach(item => {
+                    if (item.value === this.value) {
+                        item.parentNode.remove();
+                    }
+                });
+            }
+        });
+    });
+</script>
+
 {% endblock body %}

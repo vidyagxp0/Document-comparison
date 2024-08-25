@@ -10,7 +10,7 @@ from django.templatetags.static import static
 from docx.oxml.ns import qn
 from django.contrib import messages
 from docx import Document
-from .forms import DocumentForm
+from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm
 from .models import Document as Form, ComparisonReport
 from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -34,7 +34,6 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
-from .forms import CustomPasswordResetForm, UserForm, FeedbackForm
 
 def index(request):
     return render(request, "index.html")
@@ -92,34 +91,31 @@ def userManagement(request):
         elif filter_by == 'inactive':
             users = users.filter(is_active=False)
 
-    return render(request, 'user-management/user-management.html', {'users': users})
+    return render(request, 'user-management/users.html', {'users': users})
 
 @login_required
-def add_edit_user(request, user_id):
-    def get(self, request, user_id=None):
-        if user_id:
-            user = get_object_or_404(User, id=user_id)
-            form = UserForm(instance=user)
-        else:
-            form = UserForm()
+def add_edit_user(request, user_id=None):
+    if user_id:
+        user = get_object_or_404(User, id=user_id)
+        form = UserForm(request.POST or None, instance=user)
+        user_permissions = user.user_permissions.all()
+    else:
+        user = None
+        form = UserForm(request.POST or None)
+        user_permissions = []
 
-        return render(request, 'user_form.html', {'form': form, 'user': user})
-
-    def post(self, request, user_id=None):
-        if user_id:
-            user = get_object_or_404(User, id=user_id)
-            form = UserForm(request.POST, instance=user)
-        else:
-            form = UserForm(request.POST)
-
+    if request.method == 'POST':
         if form.is_valid():
             user = form.save()
             user.user_permissions.set(form.cleaned_data['permissions'])
             return redirect('user-management')
 
-        return render(request, 'user_form.html', {'form': form, 'user': user})
-
-
+    return render(request, 'user-management/user_form.html', {
+        'form': form,
+        'user': user,
+        'user_permissions': user_permissions,
+    })
+    
 # Delete User
 @login_required
 def delete_user(request, user_id):
@@ -132,8 +128,30 @@ def delete_user(request, user_id):
 # User Profile View
 @login_required
 def user_profile(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    return render(request, 'user-management/user_profile.html', {'user': user})
+    user = User.objects.get(id=user_id)
+    specific_permissions = [
+        "auth.add_user",
+        "auth.change_user",
+        "auth.delete_user",
+        "auth.view_user",
+        "compareapp.add_comparisonreport",
+        "compareapp.change_comparisonreport",
+        "compareapp.delete_comparisonreport",
+        "compareapp.view_comparisonreport",
+        "compareapp.add_document",
+        "compareapp.change_document",
+        "compareapp.delete_document",
+        "compareapp.view_document",
+        "compareapp.add_feedback",
+        "compareapp.change_feedback",
+        "compareapp.delete_feedback",
+        "compareapp.view_feedback",
+    ]
+    
+    return render(request, 'user-management/user_profile.html', {
+        'user': user,
+        'specific_permissions': specific_permissions,
+    })
 
 def analytics(request):
     return render(request, 'analytics.html')
@@ -147,7 +165,7 @@ def password_reset_request(request):
             if users.exists():
                 for user in users:
                     subject = "Password Reset Requested"
-                    email_template_name = "password_reset_email.html"
+                    email_template_name = "password-base/password_reset_email.html"
                     context = {
                         "email": user.email,
                         "domain": request.META['HTTP_HOST'],
@@ -173,7 +191,7 @@ def password_reset_request(request):
     else:
         form = CustomPasswordResetForm()
 
-    return render(request, "password_reset_form.html", {"form": form})
+    return render(request, "password-base/password_reset_form.html", {"form": form})
 
 def dashboard(request):
     if not request.user.is_authenticated:

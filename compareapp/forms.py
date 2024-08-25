@@ -34,23 +34,71 @@ class CustomPasswordResetForm(PasswordResetForm):
 
 
 class UserForm(forms.ModelForm):
+    DOCUMENT_PERMISSIONS = [
+        'add_document',
+        'change_document',
+        'delete_document',
+        'view_document',
+    ]
+    COMPARISON_REPORT_PERMISSIONS = [
+        'add_comparisonreport',
+        'change_comparisonreport',
+        'delete_comparisonreport',
+        'view_comparisonreport',
+    ]
+    USER_MANAGEMENT_PERMISSIONS = [
+        'add_user',
+        'change_user',
+        'delete_user',
+        'view_user',
+    ]
+    FEEDBACK_PERMISSIONS = [
+        'add_feedback',
+        'change_feedback',
+        'delete_feedback',
+        'view_feedback',
+    ]
+    
+    PERMISSIONS = (
+        DOCUMENT_PERMISSIONS +
+        COMPARISON_REPORT_PERMISSIONS +
+        USER_MANAGEMENT_PERMISSIONS +
+        FEEDBACK_PERMISSIONS
+    )
+
     permissions = forms.ModelMultipleChoiceField(
-        queryset=Permission.objects.all(),
+        queryset=Permission.objects.filter(codename__in=PERMISSIONS),
         widget=forms.CheckboxSelectMultiple,
-        required=False
+        required=True
     )
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'role', 'is_active', 'permissions']
+        fields = ['username', 'first_name', 'last_name', 'email', 'is_active', 'permissions']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-input w-full'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-input w-full'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-input w-full'}),
-            'email': forms.EmailInput(attrs={'class': 'form-input w-full'}),
-            'role': forms.Select(attrs={'class': 'form-input w-full'}),
-            'is_active': forms.CheckboxInput(attrs={'class': 'form-checkbox h-4 w-4'}),
-            'permissions': forms.CheckboxSelectMultiple(attrs={'class': 'form-checkbox'}),
+            'username': forms.TextInput(attrs={
+                'class': 'form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                'required': 'required',
+                'placeholder': 'Enter username',
+            }),
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                'required': 'required',
+                'placeholder': 'Enter first name',
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                'required': 'required',
+                'placeholder': 'Enter last name',
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                'required': 'required',
+                'placeholder': 'Enter email address',
+            }),
+            'is_active': forms.CheckboxInput(attrs={
+                'class': 'form-checkbox text-blue-600 focus:ring-blue-500 border-gray-300 rounded',
+            }),
         }
 
 class FeedbackForm(forms.ModelForm):
