@@ -153,8 +153,18 @@ def user_profile(request, user_id):
         'specific_permissions': specific_permissions,
     })
 
+# Comaprison analytics ---------------------------
 def analytics(request):
     return render(request, 'analytics.html')
+
+def chart_data(request):
+    data = {
+        'labels': ['Docxs', 'Pdfs', 'Presantations', 'Spreadsheets', 'Images', 'Audios', 'Videos', 'Text'],
+        'values': [10, 20, 30, 40, 50, 60, 70, 80]
+    }
+
+    return JsonResponse(data)
+
 
 def password_reset_request(request):
     if request.method == "POST":

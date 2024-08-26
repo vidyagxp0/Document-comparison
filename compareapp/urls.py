@@ -18,7 +18,8 @@ urlpatterns = [
 
     # View analytics
     path('analytics', views.analytics, name="analytics"),   
-
+    path('chart-data/', views.chart_data, name="chart-data"),
+    
     # For Document upload
     path('form/', views.formView, name="form"),
     path('form/view/<int:doc_id>/', views.documentDetail, name="view-document"),
