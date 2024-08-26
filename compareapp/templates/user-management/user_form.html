@@ -6,8 +6,6 @@
 
 {% block body %}
 
-{% include "toast.html" with messages=messages %}
-
 <div class="container mx-auto my-12 px-6">
     <div class="text-start mb-8">
         <h1 class="text-3xl font-bold text-gray-900">{% if user %}Edit User{% else %}Add New User{% endif %}</h1>
@@ -72,18 +70,24 @@
                                     {% for permission in form.permissions.field.queryset %}
                                         <div>
                                             <input type="checkbox" id="permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}"
-                                                {% if permission in form.permissions.value %}checked{% endif %}
+                                                {% if permission in user_permissions %}checked{% endif %}
                                                 class="form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
                                             <label for="permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
                                         </div>
                                     {% endfor %}
                                 </div>
                             </div>
-
+                        
                             <div class="border p-4 rounded-lg w-full bg-slate-100">
                                 <h3 class="text-gray-600 font-bold mb-2">Selected Permissions</h3>
                                 <div id="selected-permissions" class="flex flex-col">
                                     <!-- Selected permissions will appear here -->
+                                    {% for permission in user_permissions %}
+                                        <div>
+                                            <input type="checkbox" id="selected_permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}" checked class="form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
+                                            <label for="selected_permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
+                                        </div>
+                                    {% endfor %}
                                 </div>
                             </div>
                         </div>
@@ -97,7 +101,7 @@
                 {{ form.is_active }}
             </div>
 
-            <div class="flex justify-end gap-4 mt-8">
+            <div class="flex justify-end gap-4 mt-8 items-center">
                 <a href="{% url 'user-management' %}" class="bg-slate-300 hover:bg-slate-200 text-gray-700 font-bold rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                     Cancel
                 </a>
@@ -106,7 +110,7 @@
                         {% if user %}Update User{% else %}Add User{% endif %}
                     </button>
                 {% else %}
-                    <p class="text-red-600 font-semibold">You do not have permission to add or update users.</p>
+                    <p class="text-red-600 font-semibold bg-slate-100 rounded-lg py-2 px-4">You do not have permission to add or update users.</p>
                 {% endif %}
             </div>
         </form>

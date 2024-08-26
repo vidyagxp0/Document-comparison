@@ -108,6 +108,10 @@ def add_edit_user(request, user_id=None):
         if form.is_valid():
             user = form.save()
             user.user_permissions.set(form.cleaned_data['permissions'])
+            if user_id:
+                messages.success(request, 'User updated successfully.')
+            else:
+                messages.success(request, 'User created successfully.')
             return redirect('user-management')
 
     return render(request, 'user-management/user_form.html', {
@@ -122,8 +126,9 @@ def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     if request.method == 'POST':
         user.delete()
+        messages.success(request, f'User {user.username} was successfully deleted.')
         return redirect(reverse('user-management'))
-    return render(request, 'user-management/confirm_delete.html', {'user': user})
+    return render(request, 'user-management/user_management.html', {'users': User.objects.all()})
 
 # User Profile View
 @login_required
@@ -153,7 +158,7 @@ def user_profile(request, user_id):
         'specific_permissions': specific_permissions,
     })
 
-# Comaprison analytics ---------------------------
+# Comparison analytics ---------------------------
 def analytics(request):
     return render(request, 'analytics.html')
 

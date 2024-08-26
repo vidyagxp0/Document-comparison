@@ -8,7 +8,7 @@
 {% block body %}
 <div class="container mx-auto my-12 px-6">
     <div class="text-start mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">User Management/Users</h1>
+        <h1 class="text-3xl font-bold text-gray-900">User Management</h1>
     </div>
     <div class="flex flex-col md:flex-row gap-5 justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
         <p class="text-gray-600 mt-2">Here you can view and manage your users.</p>
@@ -38,7 +38,7 @@
                     </select>
                 </div>
             </form>
-            <a href="{% url 'add-user' %}" class="flex gap-2 items-center bg-green-600 hover:bg-green-500 text-white font-medium rounded-lg py-2 px-4">
+            <a href="{% url 'add-user' %}" class="flex gap-2 items-center bg-green-700 hover:bg-green-600 text-white font-medium rounded-lg py-2 px-4">
                 <img src="{% static 'images/user.png' %}" class="size-6 inline-flex" alt="" srcset="">
                  New User
             </a>
@@ -52,7 +52,6 @@
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">ID</th>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Username</th>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Email</th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Role</th>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Status</th>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Actions</th>
                         </tr>
@@ -63,7 +62,6 @@
                                 <td class="px-5 py-3 border-b border-gray-200 text-blue-500"><a href="{% url "user-profile" user.id %}">{{ user.id }}</a></td>
                                 <td class="px-5 py-3 border-b border-gray-200">{{ user.username }}</td>
                                 <td class="px-5 py-3 border-b border-gray-200">{{ user.email }}</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ user.role|default:"Not available" }}</td>
                                 <td class="px-5 py-3 border-b border-gray-200">
                                     {% if user.is_active %}
                                         <span class="bg-green-600 rounded py-1.5 px-3 text-white">Active</span>
@@ -71,11 +69,11 @@
                                         <span class="bg-red-600 rounded py-1.5 px-3 text-white">Inactive</span>
                                     {% endif %}
                                 </td>
-                                <td class="flex px-5 py-3 border-b border-gray-200">
+                                <td class="flex px-5 py-3 border-b border-gray-200 z-50">
                                     <a href="{% url 'edit-user' user.id %}" class="text-blue-600 hover:underline">
                                         <img src="{% static 'images/edit-user.png' %}" class="size-9 p-2 rounded-full hover:bg-slate-200" alt="" srcset="">
                                     </a>
-                                    <a href="{% url 'delete-user' user.id %}" class="text-red-600 hover:underline ml-3">
+                                    <a href="#" onclick="showModal('{{ user.id }}')" class="text-red-600 hover:underline ml-3">
                                         <img src="{% static 'images/delete.png' %}" class="size-9 p-2 rounded-full hover:bg-slate-200" alt="" srcset="">
                                     </a>
                                 </td>
@@ -88,11 +86,44 @@
             <div class="text-center mt-10 border rounded-lg p-6">
                 <p class="text-gray-700 mb-6 text-3xl font-semibold">No Users Found</p>
                 <p class="text-gray-500 mb-8">There are no users in the system. You can add a new user by clicking the button below.</p>
-                <a href="{% url 'add-user' %}" class="inline-flex items-center bg-green-600 hover:bg-green-500 text-white font-semibold rounded-lg py-2 px-3 transition duration-300 ease-in-out shadow-md hover:shadow-lg">
+                <a href="{% url 'add-user' %}" class="inline-flex items-center bg-green-700 hover:bg-green-500 text-white font-semibold rounded-lg py-2 px-3 transition duration-300 ease-in-out shadow-md hover:shadow-lg">
                     Add New User
                 </a>
             </div>
         {% endif %}
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Delete User</h2>
+        <p class="text-gray-600 mb-6">Are you sure you want to delete this user? This action cannot be undone.</p>
+        <div class="flex justify-end gap-4">
+            <button onclick="hideModal()" class="bg-gray-500 hover:bg-gray-400 text-white font-bold py-2 px-4 rounded">
+                Cancel
+            </button>
+            <form id="deleteForm" method="post" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showModal(userId) {
+        const modal = document.getElementById('deleteModal');
+        const form = document.getElementById('deleteForm');
+        form.action = "{% url 'delete-user' 0 %}".replace("0", userId);
+        modal.classList.remove('hidden');
+    }
+
+    function hideModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.add('hidden');
+    }
+</script>
 {% endblock body %}
