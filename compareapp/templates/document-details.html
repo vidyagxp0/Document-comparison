@@ -23,77 +23,87 @@
             </div>
         </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-            {% if document %}
-                <div class="flex justify-between items-center mb-4">
-                    <div class="ml-3 text-slate-400">
-                        Document Number :  <strong class="text-blue-600">{{ document.report_number|default:"Initial Record" }}<span class="text-xl font-normal text-slate-400">/</span>{{ document.document_id }}</strong>
+            <div class="flex justify-between items-center mb-4">
+                <div class="ml-3 text-slate-400">
+                    Document Number :  <strong class="text-blue-600">{{ document.report_number|default:"Initial Record" }}<span class="text-xl font-normal text-slate-400">/</span>{{ document.document_id }}</strong>
+                </div>
+            </div>
+            {% if perms.compareapp.view_document %}
+                {% if document %}
+                    <div class="overflow-auto">
+                        <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
+                            <thead>
+                                <tr>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Attribute</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Document ID</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.document_id }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Title</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.title }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Author</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.author }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Creation Date</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.creation_date }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Document Type</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_type }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Document Format</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_format }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Language</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.language }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Version</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.version }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Comments</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.comments }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-5 py-3 border-b border-gray-200">Action</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">
+                                        <a href="{{ document.upload_document.url }}" class="hover:bg-slate-200 rounded-full">
+                                            <img src="{% static 'images/download.png' %}" class="size-8" title="Download" alt="">
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-                <div class="overflow-auto">
-                    <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
-                        <thead>
-                            <tr>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Attribute</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Document ID</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.document_id }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Title</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.title }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Author</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.author }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Creation Date</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.creation_date }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Document Type</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_type }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Document Format</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_format }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Language</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.language }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Version</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.version }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Comments</td>
-                                <td class="px-5 py-3 border-b border-gray-200">{{ document.comments }}</td>
-                            </tr>
-                            <tr>
-                                <td class="px-5 py-3 border-b border-gray-200">Action</td>
-                                <td class="px-5 py-3 border-b border-gray-200">
-                                    <a href="{{ document.upload_document.url }}" class="hover:bg-slate-200 rounded-full">
-                                        <img src="{% static 'images/download.png' %}" class="size-8" title="Download" alt="">
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                {% else %}
+                    <div class="flex flex-col items-center justify-center">
+                        <img src="{% static 'images/no-documents.png' %}" alt="No documents found" class="size-32 mb-8 opacity-75">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-4">Document Not Found</h2>
+                        <p class="text-gray-500 mb-8">That document is not available please provide valid identity</p>
+                        <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-3 px-6 text-lg font-medium shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg" href="{% url 'dashboard' %}">
+                            Go Back
+                        </a>
+                    </div>
+                {% endif %}
             {% else %}
-                <div class="flex flex-col items-center justify-center">
-                    <img src="{% static 'images/no-documents.png' %}" alt="No documents found" class="size-32 mb-8 opacity-75">
-                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">Document Not Found</h2>
-                    <p class="text-gray-500 mb-8">That document is not available please provide valid identity</p>
-                    <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-3 px-6 text-lg font-medium shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg" href="{% url 'dashboard' %}">
-                        Go Back
-                    </a>
+            <div class="text-center mt-5 border rounded-lg p-5 bg-slate-100">
+                <div class="flex justify-center">
+                    <img src="{% static 'images/permission-error.png' %}" class="mx-auto my-3" width="100" height="100" alt="Permission Denied">
                 </div>
+                <p class="text-red-700 mb-6 text-3xl font-semibold">Permission Denied</p>
+                <p class="text-gray-500 mb-8">You do not have permission to view documents. Please contact your administrator if you believe this is an error.</p>
+            </div>
             {% endif %}
         </div>
     </div>

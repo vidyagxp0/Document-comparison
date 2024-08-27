@@ -30,17 +30,28 @@
                 </div>
             </div>
             <div class="">
-                <embed src="{{ pdf_path }}" type="application/pdf" class="w-full h-screen rounded-lg border" />
+                {% if perms.compareapp.view_comparisonreport %}
+                    <embed src="{{ pdf_path }}" type="application/pdf" class="w-full h-screen rounded-lg border" />
+                {% else %}
+                    <div class="text-center mt-5 border rounded-lg p-5 bg-slate-100">
+                        <div class="flex justify-center">
+                            <img src="{% static 'images/permission-error.png' %}" class="mx-auto my-3" width="100" height="100" alt="Permission Denied">
+                        </div>
+                        <p class="text-red-700 mb-6 text-3xl font-semibold">Permission Denied</p>
+                        <p class="text-gray-500 mb-8">You do not have permission to view comparison reports. Please contact your administrator if you believe this is an error.</p>
+                    </div>
+            {% endif %}
             </div>
         </div>
     </div>
-
-    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2">
-        <div class="relative inline-flex">
-            <span class="animate-ping absolute inline-flex h-24 w-24 rounded-full bg-slate-900 opacity-75"></span>
-            <img src="{% static 'images/mllogo.jpg' %}" alt="Chat PDF Button" id="chatPdfButton" class="w-24 h-24 rounded-full relative bg-sky-500 cursor-pointer">
+    {% if perms.compareapp.view_comparisonreport %}
+        <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2">
+            <div class="relative inline-flex">
+                <span class="animate-ping absolute inline-flex h-24 w-24 rounded-full bg-slate-900 opacity-75"></span>
+                <img src="{% static 'images/mllogo.jpg' %}" alt="Chat PDF Button" id="chatPdfButton" class="w-24 h-24 rounded-full relative bg-sky-500 cursor-pointer">
+            </div>
         </div>
-    </div>
+    {% endif %}
                                                                                                        
     <!-- Modal structure -->
     <div id="chatPdfModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">

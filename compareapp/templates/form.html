@@ -30,7 +30,11 @@
                             {% csrf_token %}
                             {{ form.as_p }}
                         </div>
-                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
+                        {% if perms.compareapp.add_document %}
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
+                        {% else %}
+                            <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload documents.</div>
+                        {% endif %}
                     </form>
                 </div>
                 
@@ -71,24 +75,38 @@
 
     <div id="comparisonModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
-            <h2 class="text-2xl font-bold mb-4">Reason for Comparison</h2>
-            <form id="comparisonForm">
-                <div class="mb-4">
-                    <label for="reason" class="block text-md font-medium text-gray-700">Reason <span class="text-red-700 font-bold">*</span></label>
-                    <textarea id="reason" maxlength="150" placeholder="Enter a valid reason for comparison" name="reason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required></textarea>
+            {% if perms.compareapp.add_comparisonreport %}
+                <h2 class="text-2xl font-bold mb-4">Reason for Comparison</h2>
+                <form id="comparisonForm">
+                    <div class="mb-4">
+                        <label for="reason" class="block text-md font-medium text-gray-700">Reason <span class="text-red-700 font-bold">*</span></label>
+                        <textarea id="reason" maxlength="150" placeholder="Enter a valid reason for comparison" name="reason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required></textarea>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-4">Submit</button>
+                    </div>
+                </form>
+            {% else %}
+                <h2 class="text-2xl font-bold text-red-700 mb-4">Permission Error</h2>
+
+                <div class="text-center mt-5 border rounded-lg p-5 bg-slate-100">
+                    <div class="flex justify-center">
+                        <img src="{% static 'images/permission-error.png' %}" class="mx-auto my-3" width="50" height="50" alt="Permission Denied">
+                    </div>
+                    <p class="text-red-700 mb-6 text-2xl font-semibold">Permission Denied</p>
+                    <p class="text-gray-500 mb-8">You do not have permission to perform comparison. Please contact to administrator.</p>
                 </div>
-                <div class="flex justify-end">
-                    <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-4">Submit</button>
-                </div>
-            </form>
+                <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeModal()">Cancel</button>
+            {% endif %}
         </div>
     </div>
 
     <div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-xl w-full">
             <h2 class="text-2xl font-bold mb-4">Delete Document</h2>
             <form id="deleteForm">
+                {% if perms.compareapp.delete_document %}
                 <div class="mb-4">
                     <h5>Are you sure, want to delete the document?</h5>
                 </div>
@@ -96,6 +114,18 @@
                     <button type="button" class="bg-slate-400 hover:bg-slate-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeDeleteModal()">Cancel</button>
                     <button type="submit" class="bg-red-800 hover:bg-red-700 text-white rounded-lg py-2 px-4 mr-2">Delete</button>
                 </div>
+                {% else %}
+                <div class="text-center mt-5 border rounded-lg p-5 bg-slate-100">
+                    <div class="flex justify-center">
+                        <img src="{% static 'images/permission-error.png' %}" class="mx-auto my-3" width="50" height="50" alt="Permission Denied">
+                    </div>
+                    <p class="text-red-700 mb-6 text-2xl font-semibold">Permission Denied</p>
+                    <p class="text-gray-500 mb-8">You do not have permission to delete users. Please contact to administrator.</p>
+                </div>
+                <button type="button" onclick="closeDeleteModal()" class="bg-gray-300 mt-3 float-end hover:bg-gray-200 text-white font-bold py-2 px-4 rounded">
+                    Back
+                </button>
+                {% endif %}
             </form>
         </div>
     </div>

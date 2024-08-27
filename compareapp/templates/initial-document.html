@@ -44,54 +44,62 @@
                         <option value="txt">Text</option>
                     </select>
                 </form>
-                {% comment %} {% if documents %}
-                    <a class="bg-cyan-700 hover:bg-cyan-600 text-white font-medium rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">Back</a>
-                {% endif %} {% endcomment %}
             </div>
-            {% if documents %}
-                <div class="text-end mb-4">
-                    {% if documents.count > 1 %}
-                        <button onclick="openModal()" class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4">Perform Comparison</button>
-                    {% endif %}
-                </div>
-                <div class="overflow-auto">
-                    <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
-                        <thead>
-                            <tr>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc ID</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Title</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Author</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc Type</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comments</th>
-                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for document in documents %}
+
+            {% if perms.compareapp.view_document %}
+                {% if documents %}
+                    <div class="text-end mb-4">
+                        {% if documents.count > 1 %}
+                            <button onclick="openModal()" class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4">Perform Comparison</button>
+                        {% endif %}
+                    </div>
+                    <div class="overflow-auto">
+                        <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
+                            <thead>
                                 <tr>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.title }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.author }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comments }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm flex gap-4">
-                                        <a href="{{ document.upload_document.url }}" target="_blank" class="hover:bg-slate-200 rounded-full px-2.5 py-2"><img src="{% static 'images/get.png' %}" class="h-5 w-4" title="Download" alt=""></a>
-                                        <button onclick="openDeleteModal({{ document.document_id }})" class="ml-2 hover:bg-slate-200 rounded-full px-2.5 py-2"><img src="{% static 'images/delete.png' %}" alt="" class="h-4 w-4" title="Delete"></button>
-                                    </td>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc ID</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Title</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Author</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc Type</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comments</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Action</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {% for document in documents %}
+                                    <tr>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.title }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.author }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comments }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm flex gap-4">
+                                            <a href="{{ document.upload_document.url }}" target="_blank" class="hover:bg-slate-200 rounded-full px-2.5 py-2"><img src="{% static 'images/get.png' %}" class="h-5 w-4" title="Download" alt=""></a>
+                                            <button onclick="openDeleteModal({{ document.document_id }})" class="ml-2 hover:bg-slate-200 rounded-full px-2.5 py-2"><img src="{% static 'images/delete.png' %}" alt="" class="h-4 w-4" title="Delete"></button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="flex flex-col items-center justify-center border rounded-lg p-5 bg-slate-100">
+                        <img src="{% static 'images/no-documents.png' %}" alt="No documents found" class="size-32 mb-8 opacity-75">
+                        <h2 class="text-2xl font-semibold text-gray-700 mb-4">No Documents Available</h2>
+                        <p class="text-gray-500 mb-8">It looks like you haven't uploaded any documents yet. Start by uploading a document to get started.</p>
+                        <a class="bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg py-3 px-6 text-lg font-medium shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg" href="{% url 'form' %}">
+                            Upload Documents
+                        </a>
+                    </div>
+                {% endif %}
             {% else %}
-                <div class="flex flex-col items-center justify-center border rounded-lg p-5 bg-slate-100">
-                    <img src="{% static 'images/no-documents.png' %}" alt="No documents found" class="size-32 mb-8 opacity-75">
-                    <h2 class="text-2xl font-semibold text-gray-700 mb-4">No Documents Available</h2>
-                    <p class="text-gray-500 mb-8">It looks like you haven't uploaded any documents yet. Start by uploading a document to get started.</p>
-                    <a class="bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg py-3 px-6 text-lg font-medium shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg" href="{% url 'form' %}">
-                        Upload Documents
-                    </a>
+            <div class="text-center mt-5 border rounded-lg p-5 bg-slate-100">
+                <div class="flex justify-center">
+                    <img src="{% static 'images/permission-error.png' %}" class="mx-auto my-3" width="100" height="100" alt="Permission Denied">
                 </div>
+                <p class="text-red-700 mb-6 text-3xl font-semibold">Permission Denied</p>
+                <p class="text-gray-500 mb-8">You do not have permission to view documents. Please contact your administrator if you believe this is an error.</p>
+            </div>
             {% endif %}
         </div>
     </div>

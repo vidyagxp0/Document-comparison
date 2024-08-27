@@ -54,9 +54,6 @@ class UserForm(forms.ModelForm):
     ]
     FEEDBACK_PERMISSIONS = [
         'add_feedback',
-        'change_feedback',
-        'delete_feedback',
-        'view_feedback',
     ]
     
     PERMISSIONS = (

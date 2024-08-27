@@ -111,7 +111,12 @@
                     <input type="email" id="email" name="email" class="form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your email address...">
                 </div>
                 <div class="text-right">
-                    <button type="submit" class="bg-cyan-600 font-bold text-white px-4 py-2 rounded-lg hover:bg-cyan-500">Submit</button>
+                    {% if perms.compareapp.delete_user %}
+                        <button type="submit" class="bg-cyan-600 font-bold text-white px-4 py-2 rounded-lg hover:bg-cyan-500">Submit</button>
+                    {% else %}
+                    <button type="button" id="backFeedbackModal" class="bg-cyan-600 font-bold text-white px-4 py-2 mr-4 rounded-lg hover:bg-cyan-500">Back</button>
+                    <div class="bg-slate-300 font-bold text-red-700 px-4 py-2 rounded-lg inline-block">Permission Denied</div>
+                    {% endif %}
                 </div>
             </form>
         </div>
@@ -199,6 +204,12 @@
             closeFeedbackModal.addEventListener('click', function () {
                 feedbackModal.classList.remove('modal-open');
                 feedbackModal.classList.add('modal-closed');
+            });
+
+            // Close the modal when clicking the "Back" button
+            document.getElementById('backFeedbackModal').addEventListener('click', function() {
+                document.getElementById('feedbackModal').classList.add('modal-closed');
+                document.getElementById('feedbackModal').classList.remove('modal-open');
             });
 
             // Close modals when clicking outside
