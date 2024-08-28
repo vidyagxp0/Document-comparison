@@ -160,16 +160,37 @@ def user_profile(request, user_id):
 
 # Comparison analytics ---------------------------
 def analytics(request):
-    return render(request, 'analytics.html')
+    
+    docx = len(Form.objects.filter(doc_format = 'docx'))
+    pdf = len(Form.objects.filter(doc_format = 'pdf'))
+    spreadsheet = len(Form.objects.filter(doc_format = 'xlsx'))
+    prasentation = len(Form.objects.filter(doc_format = 'ppt'))
+    visio=len(Form.objects.filter(doc_format = 'vsd'))
+    audio=len(Form.objects.filter(doc_format = 'mp3'))
+    video=len(Form.objects.filter(doc_format = 'mp4'))
+    image=len(Form.objects.filter(doc_format = 'png'))
+    text=len(Form.objects.filter(doc_format = 'txt'))
+    other=len(Form.objects.filter(doc_format = 'other'))
 
-def chart_data(request):
-    data = {
-        'labels': ['Docxs', 'Pdfs', 'Presantations', 'Spreadsheets', 'Images', 'Audios', 'Videos', 'Text'],
-        'values': [10, 20, 30, 40, 50, 60, 70, 80]
+    total_comparision = len(ComparisonReport.objects.all())
+    total_users=len(User.objects.all())
+    
+    all_comparision = {
+        'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
+        'values': [pdf, docx, spreadsheet, prasentation, visio, audio, video, image, text, other]
     }
 
-    return JsonResponse(data)
+    chart_data = {
+        'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
+        'values': [pdf, total_comparision, spreadsheet, prasentation, visio, audio, video, image, text, other]
+    }
+    
+    report_data={
+        'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
+        'values': [pdf, docx, spreadsheet, prasentation, visio, audio, video, image, text, other]
+    }
 
+    return render(request, 'analytics.html', { 'total_users':total_users, 'chart_data': chart_data, 'report_data':report_data , 'total_comparision':total_comparision , 'all_comparision':all_comparision})
 
 def password_reset_request(request):
     if request.method == "POST":
