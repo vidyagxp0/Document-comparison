@@ -24,7 +24,7 @@
         </div>
         <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
             <div class="flex justify-between mb-6">
-                <div class="flex text-slate-500 items-center p-2 rounded bg-slate-200">Report Number : <span class="text-blue-600 font-bold"> {{ report }}</span></div>
+                <div class="flex text-slate-500 items-center p-2 rounded bg-slate-100">Report Number : <span class="text-blue-600 font-bold"> {{ report }}</span></div>
                 <div class="flex items-center">
                     <a class="inline-flex gap-2 bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.docx"><img src="{% static "images/download.png" %}" class="size-6" alt="" srcset=""> <span>Report</span></a>
                 </div>

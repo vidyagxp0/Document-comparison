@@ -11,6 +11,7 @@
         <div class="text-start mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Upload Documents</h1>
         </div>
+        remove console errors
         <div class="flex justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
             <p class="text-gray-600 mt-2">Upload your documents and manage them efficiently. If you have at least two documents, you can start a comparison.</p>
             <div class="flex items-center gap-4">
@@ -47,7 +48,11 @@
                         
                         <div class="mt-4">
                             {% if document_count >= 2 %}
-                                <button onclick="openModal()" class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3">Perform Comparison</button>
+                                {% if perms.compareapp.add_comparisonreport %}
+                                    <button onclick="openModal()" class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3">Perform Comparison</button>
+                                {% else %}
+                                    <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to perform comparison.</div>
+                                {% endif %}
                             {% endif %}  
                         </div>
                     </div>
@@ -128,7 +133,7 @@
                 {% endif %}
             </form>
         </div>
-    </div>
+    </div> 
 
     <div id="comparisonSuccess" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 {% if success %}{% else %}hidden{% endif %}">
         <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
@@ -145,6 +150,31 @@
         </div>
     </div>
 
+    <div id="comparisonTypeModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg p-5 max-w-xl w-full">
+            <h1 class="text-2xl font-extrabold mb-3">Welcome to Files Comparison</h1>
+            <p class="text-slate-600 mb-3 text-lg">Please select the <strong>Files Type</strong> you would like to compare.</p>
+            <label for="comparison_between" class="font-semibold mb-2 block">Choose Files Type :</label>
+            <select name="comparison_between" id="comparison_between" class="border rounded-lg p-2 w-full">
+                <option value="">Select files type</option>
+                <option value="pdf">PDF</option>
+                <option value="docx">Word Document (.docx)</option>
+                <option value="xlsx">Spreadsheet</option>
+                <option value="ppt">Presentation</option>
+                <option value="vsd">Visio File</option>
+                <option value="mp3">Audio (.mp3)</option>
+                <option value="mp4">Video (.mp4)</option>
+                <option value="png">Image File</option>
+                <option value="txt">Text File</option>
+                <option value="other">Other</option>
+            </select>
+            <div class="text-end mt-3">
+                <button type="button" onclick="closeComparisonTypeModal()" class="rounded text-white font-bold px-3 py-2 bg-cyan-700">Done</button>
+            </div>
+        </div>
+    </div>
+    
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Modal and form elements
@@ -155,8 +185,22 @@
             const deleteModal = document.getElementById("deleteModal");
             let deleteForm = document.getElementById("deleteForm");
 
+            let comparisonTypeModal = document.getElementById("comparisonTypeModal");
+            const comparisonSelect = document.getElementById("comparison_between");
+
             const comparisonSuccessModal = document.getElementById("comparisonSuccess");
-            
+
+            let isTrue = {{ success }};
+            if (isTrue) {
+                localStorage.removeItem('comparisonTypeSelected');
+            }
+
+            if (!localStorage.getItem("comparisonTypeSelected")) {
+                setTimeout(() => {
+                    comparisonTypeModal.classList.remove("hidden");
+                }, 1500);
+            }
+
             // Open comparison modal
             window.openModal = function() {
                 modal.classList.remove("hidden");
@@ -176,6 +220,17 @@
             // Close delete modal
             window.closeDeleteModal = function() {
                 deleteModal.classList.add("hidden");
+            };
+
+            // Close comparison type modal
+            window.closeComparisonTypeModal = function() {
+                const selectedType = comparisonSelect.value;
+                if (selectedType) {
+                    comparisonTypeModal.classList.add("hidden");
+                    localStorage.setItem("comparisonTypeSelected", selectedType);
+                } else {
+                    alert("Please select a comparison type before proceeding.");
+                }
             };
 
             // Handle comparison form submission

@@ -28,7 +28,7 @@
                 <div class="w-full md:w-1/4">
                     <p class="text-slate-600 font-bold text-xl">Personal Information</p>
                 </div>
-                <div class="border rounded-lg p-6 w-full md:w-2/4 bg-slate-100">
+                <div class="border rounded-lg p-6 w-full md:w-4/4 bg-slate-100">
                     <div class="mb-6">
                         <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
                         <div class="w-full">{{ form.username }}</div>
@@ -55,7 +55,7 @@
                 <div class="w-full md:w-1/4">
                     <p class="text-slate-600 font-bold text-xl">User Permissions</p>
                 </div>
-                <div class="border rounded-lg p-6 w-full">
+                <div class="border rounded-lg p-6 w-full bg-slate-100">
                     <div class="mb-6">
                         <label for="permissions" class="block text-gray-700 font-medium mb-2">Permissions</label>
                         <div class="flex items-center mb-4">
@@ -64,27 +64,27 @@
                         </div>
 
                         <div class="flex flex-col md:flex-row gap-6">
-                            <div class="border p-4 rounded-lg w-full bg-slate-100">
+                            <div class="p-4 rounded-lg w-full bg-white">
                                 <h3 class="text-gray-600 font-bold mb-2">Available Permissions</h3>
                                 <div id="available-permissions">
                                     {% for permission in form.permissions.field.queryset %}
                                         <div>
                                             <input type="checkbox" id="permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}"
                                                 {% if permission in user_permissions %}checked{% endif %}
-                                                class="form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
+                                                class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
                                             <label for="permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
                                         </div>
                                     {% endfor %}
                                 </div>
                             </div>
                         
-                            <div class="border p-4 rounded-lg w-full bg-slate-100">
+                            <div class="p-4 rounded-lg w-full bg-white">
                                 <h3 class="text-gray-600 font-bold mb-2">Selected Permissions</h3>
                                 <div id="selected-permissions" class="flex flex-col">
                                     <!-- Selected permissions will appear here -->
                                     {% for permission in user_permissions %}
                                         <div>
-                                            <input type="checkbox" id="selected_permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}" checked class="form-checkbox h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
+                                            <input type="checkbox" id="selected_permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}" checked class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
                                             <label for="selected_permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
                                         </div>
                                     {% endfor %}

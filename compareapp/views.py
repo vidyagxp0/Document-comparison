@@ -347,9 +347,6 @@ def initialDocument(request):
 
     if filter_type and filter_type != '':
         documents = documents.filter(doc_format=filter_type)
-
-    if not documents:
-        messages.info(request, "No documents found.")
     
     return render(request, 'initial-document.html', { 'documents': documents })
 

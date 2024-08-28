@@ -161,6 +161,7 @@ class Document(models.Model):
     similarity_score = models.FloatField(null=True, blank=True)
     report_number = models.CharField(max_length=255, null=True, blank=True)
     new = models.BooleanField(default=True)
+    comparison_between = models.CharField(max_length=255, default=None)
 
     def __str__(self):
         return self.title
@@ -173,6 +174,8 @@ class ComparisonReport(models.Model):
     comparison_date = models.DateField(default=timezone.now)
     compared_by = models.CharField(max_length=255)
     report_path = models.TextField()
+    comparison_between = models.CharField(max_length=255, default=None)
+
 
     def __str__(self):
         return self.comparison_reason

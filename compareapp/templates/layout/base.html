@@ -48,7 +48,7 @@
                         {% if request.user.is_authenticated %}
                             {{ request.user.get_full_name|default:request.user.username|title }}
                         {% else %}
-                            Guest
+                            Guest User
                         {% endif %}
                     </button>
                     <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-52 bg-white text-black shadow-lg rounded-md">
@@ -57,7 +57,7 @@
                             {% if request.user.is_authenticated %}
                                 {{ request.user.get_full_name|default:request.user.username|title }}
                             {% else %}
-                                Guest
+                                Guest User
                             {% endif %}
                         </div>
                         <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'user-management' %}"><img class="size-5 mr-0.5" src="{% static 'images/user-management.png' %}" alt="" srcset="">User management</a></div>
@@ -143,10 +143,14 @@
     </div>
 
     <!-- Footer -->
-    <footer class="text-white fixed bottom-0 right-0">
+    <div class="text-white fixed bottom-14 right-0">
         <div class="flex flex-col items-end">
             <button id="helpButton" class="bg-emerald-700 hover:bg-emerald-600 rounded p-2 mr-2 w-16 text-center">Help?</button>
-            <p class="bg-slate-50 rounded p-2 m-2 text-slate-600 shadow-md">&copy; 2024 Doc Comparison Pro. All rights reserved.</p>
+        </div>
+    </div>
+    <footer class="text-white fixed bottom-0 right-0">
+        <div class="flex flex-col items-end">
+            <p class="bg-slate-50 rounded p-2 mr-2 mb-2 text-slate-600 shadow-md">&copy; 2024 Doc Comparison Pro. All rights reserved.</p>
         </div>
     </footer>
 
