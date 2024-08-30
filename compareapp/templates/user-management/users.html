@@ -60,7 +60,7 @@
                         <tbody>
                             {% for user in users %}
                                 <tr>
-                                    <td class="px-5 py-3 border-b border-gray-200 text-blue-500"><a href="{% url "user-profile" user.id %}">{{ user.id }}</a></td>
+                                    <td class="px-5 py-3 border-b border-gray-200 text-blue-500 font-bold"><a href="{% url "user-profile" user.id %}">{{ user.id }}</a></td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ user.username }}</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ user.email }}</td>
                                     <td class="px-5 py-3 border-b border-gray-200">

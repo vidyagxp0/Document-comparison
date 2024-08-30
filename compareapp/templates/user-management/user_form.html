@@ -21,14 +21,14 @@
             </button>
         </div>
     </div>
-    <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+    <div class="bg-white shadow-lg rounded-lg p-8">
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="flex flex-wrap gap-6">
                 <div class="w-full md:w-1/4">
                     <p class="text-slate-600 font-bold text-xl">Personal Information</p>
                 </div>
-                <div class="border rounded-lg p-6 w-full md:w-4/4 bg-slate-100">
+                <div class="border rounded-lg p-6 w-full md:w-4/4 ">
                     <div class="mb-6">
                         <label for="username" class="block text-gray-700 font-medium mb-2">Username</label>
                         <div class="w-full">{{ form.username }}</div>
