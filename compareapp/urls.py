@@ -17,7 +17,10 @@ urlpatterns = [
     path('user-management/users/profile/<int:user_id>/', views.user_profile, name='user-profile'),
 
     # View analytics
-    path('analytics', views.analytics, name="analytics"),   
+    path('analytics/', views.analytics, name="analytics"),  
+
+    # Resetting the upload processs
+    path('form/reset', views.uploadReset, name="reset"),  
     
     # For Document upload
     path('form/', views.formView, name="form"),

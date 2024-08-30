@@ -27,6 +27,9 @@ from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 
+import re
+from PyPDF2 import PdfReader
+
 # mail configuration  
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -158,7 +161,8 @@ def user_profile(request, user_id):
         'specific_permissions': specific_permissions,
     })
 
-# Comparison analytics ---------------------------
+# Comparison analytics 
+@login_required
 def analytics(request):
     
     docx = len(Form.objects.filter(doc_format = 'docx'))
@@ -235,18 +239,25 @@ def dashboard(request):
         return redirect('login')
     
     query = request.GET.get('q', '')
+    filter_by = request.GET.get('filter')
+    
+    reports = ComparisonReport.objects.all()
+    
+    if filter_by:
+        valid_filters = ['docx', 'pdf', 'xlsx', 'ppt', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
+        if filter_by in valid_filters:
+            reports = reports.filter(comparison_between__icontains=filter_by)
 
+    # Apply search query filter
     if query:
-        reports = ComparisonReport.objects.filter(
+        reports = reports.filter(
             Q(report_number__icontains=query) |
             Q(comparison_reason__icontains=query) |
             Q(compared_documents__name__icontains=query) |
             Q(comparison_date__icontains=query) |
             Q(compared_by__icontains=query)
         ).distinct()
-    else:
-        reports = ComparisonReport.objects.all()
-
+    
     return render(request, 'dashboard.html', { "reports": reports })
 
 def viewComparison(request, report_id):
@@ -272,20 +283,28 @@ def viewComparison(request, report_id):
     })
 
 def formView(request):
+    # Check if the user is authenticated
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
 
+    # Get optional query parameters
+    report_number = request.GET.get('report_number')
+    success = request.GET.get('success')
+
+    # Initialize the form and document-related variables
+    documents = Form.objects.filter(new=True)
+    document_count = documents.count()
+    formData = Form.objects.last()
+
+    if formData:
+        doc_id = formData.document_id + 1
+    else:
+        doc_id = 1
+
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
-        documents = Form.objects.filter(new=True)
-        document_count = documents.count()
-        formData = Form.objects.last()
-
-        if formData:
-            doc_id = formData.document_id + 1
-        else:
-            doc_id = 1
+        comparison_between = request.POST.get("files")
 
         if form.is_valid():
             doc_format = form.cleaned_data.get('doc_format')
@@ -294,37 +313,50 @@ def formView(request):
             if upload_document and doc_format:
                 file_extension = os.path.splitext(upload_document.name)[1].lstrip('.').lower()
 
-                # Check if format is 'other' or the file extension matches the selected format
+                # Validate file extension against selected format
                 if doc_format != 'other' and doc_format != file_extension:
                     messages.warning(request, f"Please upload the file with the selected format '{doc_format}'.")
-                    return render(request, "form.html", {'form': form, 'doc_id': doc_id, 'document_count': document_count, 'documents': documents})
+                    return render(request, "form.html", {
+                        'form': form,
+                        'doc_id': doc_id,
+                        'document_count': document_count,
+                        'success': success,
+                        'report_number': report_number,
+                        'documents': documents
+                    })
 
-            form.save()
+            # Validate comparison format
+            if comparison_between != doc_format:
+                messages.error(request, f"Please upload '{comparison_between}' files only for comparison.")
+                return render(request, "form.html", {
+                    'form': form,
+                    'doc_id': doc_id,
+                    'document_count': document_count,
+                    'success': success,
+                    'report_number': report_number,
+                    'documents': documents
+                })
+
+            # Save the document with additional fields
+            document_instance = form.save(commit=False)
+            document_instance.comparison_between = comparison_between
+            document_instance.save()
+
             messages.success(request, "Document added successfully.")
             return redirect('form')
         else:
-            messages.warning(request, "All the fields are required to fill!")
-
+            messages.warning(request, "All fields are required to be filled!")
     else:
         form = DocumentForm()
-        documents = Form.objects.filter(new=True)
-        document_count = documents.count()
-        formData = Form.objects.last()
         last_report = ComparisonReport.objects.last()
 
+        # Generate new report number
         if last_report:
             new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
         else:
             new_report_number = "DCR1001"
 
-        if formData:
-            doc_id = formData.document_id + 1
-        else:
-            doc_id = 1
-
-    report_number = request.GET.get('report_number', None)
-    success = request.GET.get('success', None)
-
+    # Render the form page
     return render(request, "form.html", {
         'form': form,
         'doc_id': doc_id,
@@ -334,6 +366,16 @@ def formView(request):
         'report_number': report_number,
         'new_report_number': new_report_number
     })
+
+# Resetting upload process
+@login_required
+def uploadReset(request):
+    documents = Form.objects.filter(new=True)
+    if documents:
+        documents.delete()
+
+    messages.success(request, "The upload process was successfully reset.")
+    return redirect('form')
 
 def documentDetail(request, doc_id):
     if not request.user.is_authenticated:
@@ -396,6 +438,7 @@ def comparison(request: HttpRequest):
     comparedBy = request.user.username.upper()
     documents = Form.objects.filter(new=True)
     last_report = ComparisonReport.objects.last()
+    comparison_between = documents[0].doc_format
 
     if last_report:
         new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
@@ -409,7 +452,14 @@ def comparison(request: HttpRequest):
     data = {}
     for doc in documents:
         file_path = doc.upload_document.path
-        sections = read_docx(file_path)
+        if doc.doc_format == 'docx':
+            sections = read_docx(file_path)
+        elif doc.doc_format == 'pdf':
+            sections = read_pdf(file_path)
+        else:
+            messages.error(request, "Can't perform comparison due to invalid file format.")
+            return redirect('form')
+
         data[doc.document_id] = sections
 
     result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison-reports')
@@ -483,7 +533,8 @@ def comparison(request: HttpRequest):
             compared_documents = compared_documents,
             comparison_summary = comparison_details,
             compared_by = comparedBy,
-            report_path = result_path
+            report_path = result_path,
+            comparison_between = comparison_between
         )
         comparison_report.save()
         return redirect(f'{reverse("form")}?success=True&report_number={new_report_number}')
@@ -548,6 +599,35 @@ def read_docx(file_path):
             else:
                 current_content.append(text)
 
+    if current_section:
+        sections[current_section] = '\n'.join(current_content)
+
+    return sections
+
+def read_pdf(file_path):
+    reader = PdfReader(file_path)
+    sections = {}
+    current_section = None
+    current_content = []
+
+    # Loop through all the pages in the PDF
+    for page in reader.pages:
+        text = page.extract_text()
+        lines = text.splitlines()
+
+        for line in lines:
+            line = line.strip()
+            if line:
+                # Check if the line starts with a number followed by a dot (e.g., "1." or "1.1.")
+                if re.match(r'^\d+(\.\d+)*\s+', line):
+                    if current_section:
+                        sections[current_section] = '\n'.join(current_content)
+                    current_section = line
+                    current_content = []
+                else:
+                    current_content.append(line)
+
+    # Add the last section
     if current_section:
         sections[current_section] = '\n'.join(current_content)
 

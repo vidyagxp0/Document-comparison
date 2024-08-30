@@ -11,7 +11,6 @@
         <div class="text-start mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Upload Documents</h1>
         </div>
-        remove console errors
         <div class="flex justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
             <p class="text-gray-600 mt-2">Upload your documents and manage them efficiently. If you have at least two documents, you can start a comparison.</p>
             <div class="flex items-center gap-4">
@@ -23,14 +22,18 @@
         <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
             <div class="flex-row md:flex gap-6">
                 <div class="w-full md:w-[70%]">
-                    <div class="mb-3 text-slate-400 text-lg">
+                    <div class="mb-3 text-slate-400 text-lg font-bold">
                         Document Number :  <strong class="text-blue-600">{{ new_report_number|default:"DCR1001" }}<span class="text-xl font-normal text-slate-400">/</span>{{ doc_id }}</strong>
                     </div>
                     <form method="post" enctype="multipart/form-data" class="border rounded-lg p-4 bg-slate-100">
                         <div class="text-slate-700 font-sans">
+
                             {% csrf_token %}
                             {{ form.as_p }}
+                            
+                            <input type="hidden" name="files" id="comparison_between_hidden">
                         </div>
+
                         {% if perms.compareapp.add_document %}
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
                         {% else %}
@@ -38,18 +41,23 @@
                         {% endif %}
                     </form>
                 </div>
-                
+                 
                 <div class="mt-4 md:mt-0 w-full md:w-[30%] flex flex-col md:items-center">
-                    <div class="my-10 border p-4 rounded-lg bg-slate-100">
-                        <div class="border rounded-lg bg-slate-200 py-2 px-4 text-slate-700 font-bold text-center">
-                            <p class="my-3"> Documents Count </p>
-                            <a href="{% url "initial-document" %}" title="View all documents ready for the comparison" class=" text-red-900 font-extrabold text-4xl">{{ document_count }}</a>
+                    <div class="mt-10 text-start font-bold w-full mb-3">Files Insights</div>
+                    <div class="border p-4 rounded-lg bg-slate-100 w-full">
+                        <div class="">
+                            <div class="border rounded-lg bg-cyan-400 py-2 px-4 text-slate-700 font-bold text-center">
+                                <p class="my-3 text-white text-xl"> Files Count </p>
+                                <a href="{% url "initial-document" %}" title="View all documents ready for the comparison" class=" text-yellow-500 font-extrabold text-4xl">{{ document_count }}</a>
+                            </div>
                         </div>
                         
-                        <div class="mt-4">
+                        <div class="mt-4 flex justify-between">
+                            <button onclick="openCTModal()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg py-2 px-3">Change Files Type</button>
+
                             {% if document_count >= 2 %}
                                 {% if perms.compareapp.add_comparisonreport %}
-                                    <button onclick="openModal()" class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3">Perform Comparison</button>
+                                    <button onclick="openModal()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg py-2 px-3">Perform Comparison</button>
                                 {% else %}
                                     <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to perform comparison.</div>
                                 {% endif %}
@@ -57,9 +65,9 @@
                         </div>
                     </div>
 
-                    {% if documents %}
-                        <div class="text-start font-bold w-full mb-3">Uploaded Documents</div>
-                        <div class="w-full h-full border rounded-lg bg-slate-100 p-4">
+                    <div class="text-start font-bold w-full my-3">Uploaded Documents</div>
+                    <div class="w-full h-full border rounded-lg bg-slate-100 p-4 overflow-y-auto">
+                        {% if documents %}
                             {% for doc in documents %}  
                                 <div class="relative inline-block border rounded-lg bg-white text-center px-3 py-2 mb-3 mr-2">
                                     <div class="absolute -top-1 -right-1">
@@ -70,9 +78,10 @@
                                     <a href="{% url "view-document" doc.document_id %}" class="text-blue-700 font-bold">{{ doc.title }}</a>
                                 </div>
                             {% endfor %}
-                        </div>
-                    {% endif %}
-                   
+                        {% else %}
+                        <div class="size-full flex items-center justify-center font-semibold text-slate-400">There are no files uploaded yet!</div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,7 +177,8 @@
                 <option value="txt">Text File</option>
                 <option value="other">Other</option>
             </select>
-            <div class="text-end mt-3">
+            <p id="comparisonTypeError" class="text-red-700 mb-3"></p>
+            <div class="text-end">
                 <button type="button" onclick="closeComparisonTypeModal()" class="rounded text-white font-bold px-3 py-2 bg-cyan-700">Done</button>
             </div>
         </div>
@@ -181,83 +191,100 @@
             const modal = document.getElementById("comparisonModal");
             const form = document.getElementById("comparisonForm");
             const reasonTextarea = document.getElementById("reason");
-
+        
             const deleteModal = document.getElementById("deleteModal");
             let deleteForm = document.getElementById("deleteForm");
-
+        
             let comparisonTypeModal = document.getElementById("comparisonTypeModal");
             const comparisonSelect = document.getElementById("comparison_between");
-
+            const error = document.getElementById("comparisonTypeError");
+        
             const comparisonSuccessModal = document.getElementById("comparisonSuccess");
-
-            let isTrue = {{ success }};
-            if (isTrue) {
-                localStorage.removeItem('comparisonTypeSelected');
-            }
-
-            if (!localStorage.getItem("comparisonTypeSelected")) {
+        
+            // Retrieve the comparison type from localStorage and set it in the hidden input field
+            const comparisonTypeSelected = localStorage.getItem("comparisonTypeSelected");
+            if (comparisonTypeSelected) {
+                document.getElementById("comparison_between_hidden").value = comparisonTypeSelected;
+            } else {
                 setTimeout(() => {
-                    comparisonTypeModal.classList.remove("hidden");
-                }, 1500);
+                    openCTModal();
+                }, 1000);
             }
+        
+            // Handle form submission
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                const reason = reasonTextarea.value.trim();
+                if (reason) {
+                    // Proceed to the comparison page with the reason
+                    window.location.href = "{% url 'compare' %}?reason=" + encodeURIComponent(reason);
+                }
+            });
 
+            // Open comparison modal
+            window.openCTModal = function() {
+                comparisonTypeModal.classList.remove("hidden");
+            };
+        
             // Open comparison modal
             window.openModal = function() {
                 modal.classList.remove("hidden");
             };
-
+        
             // Close comparison modal
             window.closeModal = function() {
                 modal.classList.add("hidden");
                 reasonTextarea.value = ""; // Clear the textarea
             };
-
+        
             // Close comparison success modal
             window.closeComparisonSuccessModal = function() {
                 comparisonSuccessModal.classList.add("hidden");
             };
-
+        
             // Close delete modal
             window.closeDeleteModal = function() {
                 deleteModal.classList.add("hidden");
             };
-
+        
             // Close comparison type modal
             window.closeComparisonTypeModal = function() {
                 const selectedType = comparisonSelect.value;
                 if (selectedType) {
+                    alert("Make sure this action will reset all the files.")
                     comparisonTypeModal.classList.add("hidden");
                     localStorage.setItem("comparisonTypeSelected", selectedType);
+                    document.getElementById("comparison_between_hidden").value = selectedType;
+                    error.innerText = "";
+                    window.location.href = "{% url 'reset' %}";
+
                 } else {
-                    alert("Please select a comparison type before proceeding.");
+                    error.innerText = "This field is required.";
                 }
             };
-
-            // Handle comparison form submission
-            form.addEventListener("submit", function(event) {
-                event.preventDefault();
-                const reason = reasonTextarea.value.trim();
-                if (reason) {
-                    // If a valid reason is provided, proceed to the comparison page
-                    window.location.href = "{% url 'compare' %}?reason=" + encodeURIComponent(reason);
-                }
-            });
-
+        
             // Open delete modal
             window.openDeleteModal = function(id) {
                 deleteModal.classList.remove("hidden");
-
+        
                 // Remove previous event listeners to prevent multiple bindings
                 deleteForm.replaceWith(deleteForm.cloneNode(true));
                 deleteForm = document.getElementById("deleteForm");
-
+        
                 deleteForm.addEventListener("submit", function(event) {
                     event.preventDefault();
                     const url = `{% url 'remove-doc' 0 %}`.replace('0', id);
                     window.location.href = url;
                 });
             };
+        
+            // If comparison was successful, reset the comparison type in localStorage
+            const isTrue = {{ success|yesno:"true,false" }};
+            if (isTrue) {
+                localStorage.removeItem('comparisonTypeSelected');
+            }
         });
+        
     </script>
 
 {% endblock body %}
