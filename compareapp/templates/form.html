@@ -9,10 +9,10 @@
     
     <div class="container mx-auto my-12 px-6">
         <div class="text-start mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Upload Documents</h1>
+            <h1 class="text-3xl font-bold text-white">Upload Process</h1>
         </div>
         <div class="flex justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
-            <p class="text-gray-600 mt-2">Upload your documents and manage them efficiently. If you have at least two documents, you can start a comparison.</p>
+            <p class="text-gray-600 mt-2">Upload your files and manage them efficiently. If you have at least two files, you can start a comparison.</p>
             <div class="flex items-center gap-4">
                 <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
                     Dashboard
@@ -37,7 +37,7 @@
                         {% if perms.compareapp.add_document %}
                             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
                         {% else %}
-                            <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload documents.</div>
+                            <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload files.</div>
                         {% endif %}
                     </form>
                 </div>
@@ -48,7 +48,7 @@
                         <div class="">
                             <div class="border rounded-lg bg-cyan-400 py-2 px-4 text-slate-700 font-bold text-center">
                                 <p class="my-3 text-white text-xl"> Files Count </p>
-                                <a href="{% url "initial-document" %}" title="View all documents ready for the comparison" class=" text-yellow-500 font-extrabold text-4xl">{{ document_count }}</a>
+                                <a href="{% url "initial-document" %}" title="View all files ready for the comparison" class=" text-yellow-500 font-extrabold text-4xl">{{ document_count }}</a>
                             </div>
                         </div>
                         
@@ -65,7 +65,7 @@
                         </div>
                     </div>
 
-                    <div class="text-start font-bold w-full my-3">Uploaded Documents</div>
+                    <div class="text-start font-bold w-full my-3">Uploaded files</div>
                     <div class="w-full h-full border rounded-lg bg-slate-100 p-4 overflow-y-auto">
                         {% if documents %}
                             {% for doc in documents %}  
@@ -149,7 +149,7 @@
             <div class="text-center">
                 <img src="{% static 'images/success.png' %}" class="mx-auto mb-4" width="80" height="80" alt="Success">
                 <h2 class="text-2xl font-bold mb-4 text-green-700">Comparison Successful</h2>
-                <p class="text-gray-700 mb-4">The documents have been successfully compared.</p>
+                <p class="text-gray-700 mb-4">Files have been compared successfully.</p>
                 <p class="font-semibold text-gray-900">Report Number: <strong>{{ report_number }}</strong></p>
                 <div class="flex justify-center mt-6 gap-4">
                     <a href="{% url 'view-comparison' report_number %}" class="bg-pink-600 hover:bg-pink-500 text-white font-semibold rounded-lg py-2 px-6 transition-colors">View Report</a>

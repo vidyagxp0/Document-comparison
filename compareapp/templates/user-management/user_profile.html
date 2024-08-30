@@ -8,7 +8,7 @@
 {% block body %}
 <div class="container mx-auto my-12 px-6">
     <div class="text-start mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">{{ user.username|title }}'s Profile</h1>
+        <h1 class="text-3xl font-bold text-white">{{ user.username|title }}'s Profile</h1>
     </div>
     <div class="flex flex-col md:flex-row gap-5 justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
         <p class="text-gray-600 mt-2 text-lg">Here you can view user information and their permissions.</p>
@@ -43,14 +43,14 @@
             <h3 class="text-xl font-bold text-gray-900 mb-4">Permissions</h3>
             {% for perm in user.get_all_permissions %}
                 {% if perm in specific_permissions %}
-                    <li>{{ perm|capfirst }}</li>
+                    <p class="ml-3"><strong class="mx-3">🔸</strong>{{ perm|capfirst }}</p>
                 {% endif %}
             {% endfor %}
         </div>
 
         <div class="mt-6">
             <a href="{% url 'edit-user' user.id %}" class="bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-lg py-2 px-4">Edit Profile</a>
-            <a href="{% url 'user-management' %}" class="ml-4 bg-gray-300 hover:bg-gray-200 text-white font-medium rounded-lg py-2 px-4">Back to User Management</a>
+            <a href="{% url 'user-management' %}" class="ml-4 bg-gray-300 hover:bg-gray-200 text-white font-medium rounded-lg py-2 px-4">Close</a>
         </div>
     </div>
 </div>

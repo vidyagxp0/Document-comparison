@@ -8,111 +8,78 @@
 
     {% include "toast.html" with messages=messages %}
     {% load static %}
-
-    <div class="container mx-auto my-12 px-6">
-        <div class="text-start mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Analytics</h1>
+        <div class="flex justify-center  py-3 px-6">
+            <p class="text-gray-300 font-semibold mt-2">Here you can view the graphical representation of all comparisons.</p>
+        </div>
+        <div class="container mx-auto mb-12 px-6">
+        <div class="text-start mb-24 flex justify-between">
+            <div>
+                <h1 class="text-4xl font-semibold text-white">Analytics</h1>
+            </div>
+            <div>
+                <a href="{% url 'dashboard' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                    Back
+                </a>
+            </div>
         </div>
         <div class="flex flex-col gap-4">
-            <div class="flex justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
-                <p class="text-gray-600 mt-2">Here you can view the graphical representation of all comparisons.</p>
-                <div class="flex items-center gap-4">
-                    <a href="{% url 'dashboard' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
-                        Back
-                    </a>
+        <!-- Chart Containers -->
+            <div class="flex justify-between">
+                <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-yellow-500">
+                    <p class="text-2xl text-center font-bold mb-2 text-white">Total Comparisons</p>
+                    <div >
+                        <div class="text-center font-extrabold text-3xl text-white">{{total_comparision}}</div>
+                    </div>
+                </div>
+                <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-green-700">
+                    <p class="text-2xl text-center font-bold mb-2 text-white">All Users</p>
+                    <div >
+                        <div class="text-center font-extrabold text-3xl text-white">{{total_users}}</div>
+                    </div>
+                </div>
+                <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-pink-700">
+                    <p class="text-2xl text-center font-bold mb-2 text-white">Verified Reports</p>
+                    <div >
+                        <div class="text-center font-extrabold text-3xl text-white">{{total_comparision}}</div>
+                    </div>
+                </div>
+                <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-cyan-500">
+                    <p class="text-2xl text-center font-bold mb-2 text-white">Feedbacks</p>
+                    <div >
+                        <div class="text-center font-extrabold text-3xl text-white">{{user_feedbacks}}</div>
+                    </div>
                 </div>
             </div>
-            <!-- Chart Containers -->
-            <div class="flex flex-col gap-4 bg-gray-00 shadow-lg rounded-lg p-8 border border-gray-200">
-                <div class="flex justify-between">
-                    <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-yellow-500">
-                        <p class="text-2xl text-center font-bold mb-2 text-white">Total Comparisons</p>
-                        <div >
-                            <div class="text-center font-extrabold text-3xl text-red-800">{{total_comparision}}</div>
-                        </div>
-                    </div>
-                    <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-green-500">
-                        <p class="text-2xl text-center font-bold mb-2 text-white">All Users</p>
-                        <div >
-                            <div class="text-center font-extrabold text-3xl text-gray-700">{{total_users}}</div>
-                        </div>
-                    </div>
-                    <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-pink-500">
-                        <p class="text-2xl text-center font-bold mb-2 text-white">Verified Reports</p>
-                        <div >
-                            <div class="text-center font-extrabold text-3xl text-green-800">247</div>
-                        </div>
-                    </div>
-                    <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-cyan-500">
-                        <p class="text-2xl text-center font-bold mb-2 text-white">Feedbacks</p>
-                        <div >
-                            <div class="text-center font-extrabold text-3xl text-red-800">21</div>
-                        </div>
-                    </div>
+            <div class="flex gap-4">
+                <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Total Files</p>
+                    <canvas id="myChartBar"></canvas>
                 </div>
-                <div class="flex gap-4">
-                    <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Total Files</p>
-                        <canvas id="myChartBar"></canvas>
-                    </div>
-                    <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">All Comparisions</p>
-                        <canvas id="myChartLine"></canvas>
-                    </div>
+                <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">All Comparisions</p>
+                    <canvas id="myChartBubble"></canvas>
                 </div>
-                <div class="flex gap-4">
-                    <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Comparision Reports</p>
-                        <canvas id="myChartRadar"></canvas>
-                    </div>
-                    <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Comparision Status</p>
-                        <canvas id="myChartPolar"></canvas>
-                    </div>
-                    <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Comparision Reports</p>
-                        <canvas id="myChartRadar1"></canvas>
-                    </div>
-                    <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Comparision Status</p>
-                        <canvas id="myChartPolar1"></canvas>
-                    </div>
+            </div>
+            <div class="flex gap-4">
+                <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Comparision Reports</p>
+                    <canvas id="myChartPie"></canvas>
                 </div>
-                <div class="flex gap-4">
-                    <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Approved Reports</p>
-                        <canvas id="myChartBubble"></canvas>
-                    </div>
-                    <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Document Types</p>
-                        <canvas id="myChartScatter"></canvas>
-                    </div>
+                <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Comparision Status</p>
+                    <canvas id="myChartPolar"></canvas>
                 </div>
-                <div class="flex gap-4">
-                    <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">User</p>
-                        <canvas id="myChartMixed"></canvas>
-                    </div>
-                    <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Approved Reports</p>
-                        <canvas id="myChartStackedBar"></canvas>
-                    </div>
+                <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Comparision Reports</p>
+                    <canvas id="myDoughnutChart"></canvas>
                 </div>
-                <div class="flex gap-4">
-                    <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Approved Reports</p>
-                        <canvas id="myChartStackedLine"></canvas>
-                    </div>
-                    <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                        <p class="text-lg font-bold mb-3">Approved Reports</p>
-                        <canvas id="myChartHorizontalBar"></canvas>
-                    </div>
+                <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Comparision Status</p>
+                    <canvas id="myChartRadar"></canvas>
                 </div>
             </div>
         </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -176,16 +143,32 @@
                     }
                 }
             });
-            // Line Chart
-            var ctxLine = document.getElementById('myChartLine').getContext('2d');
-            new Chart(ctxLine, {
-                type: 'line',
+
+            var ctxBubble = document.getElementById('myChartBubble').getContext('2d');
+            new Chart(ctxBubble, {
+                type: 'bubble',
                 data: {
-                    labels: allcomparison_data.labels,
+                    labels: {{ chart_data.labels|safe }},  // Labels for the x-axis
                     datasets: [{
-                        label: 'All Comparison',
-                        data: allcomparison_data.values,
+                        label: 'Approved Reports',
+                        data: {{ chart_data.values|safe }}.map((value, index) => ({
+                            x: index,  // Use index as the x position
+                            y: value,
+                            r: 10  // Bubble radius
+                        })),
                         backgroundColor: [
+                            'rgba(224, 60, 49, 0.3)',
+                            'rgba(0, 120, 215, 0.3)',
+                            'rgba(66, 133, 33, 0.3)',
+                            'rgba(234, 67, 53, 0.3)',
+                            'rgba(12, 0, 128, 0.3)',
+                            'rgba(128, 18, 12, 0.3)',
+                            'rgba(128, 0, 128, 0.3)',
+                            'rgba(135, 206, 235, 0.3)',
+                            'rgba(112, 128, 144, 0.3)',
+                            'rgba(255, 255, 0, 0.3)'
+                        ],
+                        borderColor: [
                             'rgba(224, 60, 49, 1)',
                             'rgba(0, 120, 215, 1)',
                             'rgba(66, 133, 33, 1)',
@@ -195,13 +178,9 @@
                             'rgba(128, 0, 128, 1)',
                             'rgba(135, 206, 235, 1)',
                             'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
-                        borderColor: [
-                            'rgba(112, 128, 144, 0.3)',
-                            ],
-                        borderWidth: 2,
-                        fill: false
+                            'rgba(255, 255, 0, 1)'
+                        ],
+                        borderWidth: 1
                     }]
                 },
                 options: {
@@ -210,14 +189,16 @@
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'Categories' }
+                            type: 'category',  // Set x-axis to use categories
+                            labels: {{ chart_data.labels|safe }},  // Use the labels from your data
+                            title: { display: true, text: 'Categories' }  // Adjust the title if needed
                         },
                         y: {
                             beginAtZero: true,
                             title: { display: true, text: 'Values' },
                             ticks: {
                                 callback: function(value) {
-                                    return Math.round(value); // Rounds to the nearest integer
+                                    return Math.round(value);  // Round values to integers
                                 },
                                 stepSize: 1
                             }
@@ -225,16 +206,29 @@
                     }
                 }
             });
+
             
-            var ctxRadar = document.getElementById('myChartRadar').getContext('2d');
-            new Chart(ctxRadar, {
-                type: 'radar',
+            var ctxPie = document.getElementById('myChartPie').getContext('2d');
+            new Chart(ctxPie, {
+                type: 'pie',
                 data: {
-                    labels: data.labels,
+                    labels: data.labels,  // Labels for each segment
                     datasets: [{
                         label: 'Comparison Reports',
-                        data: data.values,
+                        data: data.values,  // Data values for each segment
                         backgroundColor: [
+                            'rgba(224, 60, 49, 0.7)',
+                            'rgba(0, 120, 215, 0.7)',
+                            'rgba(66, 133, 33, 0.7)',
+                            'rgba(234, 67, 53, 0.7)',
+                            'rgba(12, 0, 128, 0.7)',
+                            'rgba(128, 18, 12, 0.7)',
+                            'rgba(128, 0, 128, 0.7)',
+                            'rgba(135, 206, 235, 0.7)',
+                            'rgba(112, 128, 144, 0.7)',
+                            'rgba(255, 255, 0, 0.7)',
+                        ],
+                        borderColor: [
                             'rgba(224, 60, 49, 1)',
                             'rgba(0, 120, 215, 1)',
                             'rgba(66, 133, 33, 1)',
@@ -244,52 +238,27 @@
                             'rgba(128, 0, 128, 1)',
                             'rgba(135, 206, 235, 1)',
                             'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 2,
-                        fill: false
+                            'rgba(255, 255, 0, 1)',
+                        ],
+                        borderWidth: 1
                     }]
                 },
                 options: {
+                    responsive: true,
                     plugins: {
-                        legend: { display: false }
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw;
+                                }
+                            }
+                        }
                     }
                 }
             });
-
-            var ctxRadar = document.getElementById('myChartRadar1').getContext('2d');
-            new Chart(ctxRadar, {
-                type: 'radar',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Comparison Reports',
-                        data: data.values,
-                        backgroundColor: [
-                            'rgba(224, 60, 49, 1)',
-                            'rgba(0, 120, 215, 1)',
-                            'rgba(66, 133, 33, 1)',
-                            'rgba(234, 67, 53, 1)',
-                            'rgba(12, 0, 128, 1)',
-                            'rgba(128, 18, 12, 1)',
-                            'rgba(128, 0, 128, 1)',
-                            'rgba(135, 206, 235, 1)',
-                            'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 2,
-                        fill: false
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-
             // Polar Area Chart
             var ctxPolar = document.getElementById('myChartPolar').getContext('2d');
             new Chart(ctxPolar, {
@@ -332,14 +301,15 @@
                     }
                 }
             });
+
             // Polar Area Chart
-            var ctxPolar = document.getElementById('myChartPolar1').getContext('2d');
-            new Chart(ctxPolar, {
-                type: 'polarArea',
+            var ctxDoughnut = document.getElementById('myDoughnutChart').getContext('2d');
+            new Chart(ctxDoughnut, {
+                type: 'doughnut',
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        label: 'Comperison Status',
+                        label: 'Comparison Status',
                         data: data.values,
                         backgroundColor: [
                             'rgba(224, 60, 49, 0.3)',
@@ -351,8 +321,8 @@
                             'rgba(128, 0, 128, 0.3)',
                             'rgba(135, 206, 235, 0.3)',
                             'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
-                            ],
+                            'rgba(255, 255, 0, 0.3)'
+                        ],
                         borderColor: [
                             'rgba(224, 60, 49, 1)',
                             'rgba(0, 120, 215, 1)',
@@ -363,152 +333,38 @@
                             'rgba(128, 0, 128, 1)',
                             'rgba(135, 206, 235, 1)',
                             'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
+                            'rgba(255, 255, 0, 1)'
+                        ],
                         borderWidth: 1
                     }]
                 },
                 options: {
                     plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-            // Bubble Chart
-            var ctxBubble = document.getElementById('myChartBubble').getContext('2d');
-            new Chart(ctxBubble, {
-                type: 'bubble',
-                data: {
-                    datasets: [{
-                        label: 'Approved Reports',
-                        data: data.values.map((value, index) => ({ x: index * 10, y: value, r: 10 })),
-                        backgroundColor:[
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
-                            ],
-                        borderColor: [
-                            'rgba(224, 60, 49, 1)',
-                            'rgba(0, 120, 215, 1)',
-                            'rgba(66, 133, 33, 1)',
-                            'rgba(234, 67, 53, 1)',
-                            'rgba(12, 0, 128, 1)',
-                            'rgba(128, 18, 12, 1)',
-                            'rgba(128, 0, 128, 1)',
-                            'rgba(135, 206, 235, 1)',
-                            'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'X Axis' }
+                        legend: {
+                            position: 'top',
+                            display: true
                         },
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Values' },
-                            ticks: {
-                                callback: function(value) {
-                                    return Math.round(value); // Rounds to the nearest integer
-                                },
-                                stepSize: 1
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    return tooltipItem.label + ': ' + tooltipItem.raw;
+                                }
                             }
                         }
-                    }
-                }
-            });
-            // Scatter Chart
-            var ctxScatter = document.getElementById('myChartScatter').getContext('2d');
-            new Chart(ctxScatter, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: '',
-                        data: data.values.map((value, index) => ({ x: index * 10, y: value })),
-                        backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
-                            ],
-                        borderColor: [
-                            'rgba(224, 60, 49, 1)',
-                            'rgba(0, 120, 215, 1)',
-                            'rgba(66, 133, 33, 1)',
-                            'rgba(234, 67, 53, 1)',
-                            'rgba(12, 0, 128, 1)',
-                            'rgba(128, 18, 12, 1)',
-                            'rgba(128, 0, 128, 1)',
-                            'rgba(135, 206, 235, 1)',
-                            'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
                     },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'X Axis' }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Values' },
-                            ticks: {
-                                callback: function(value) {
-                                    return Math.round(value); // Rounds to the nearest integer
-                                },
-                                stepSize: 1
-                            }
-                        }
-                    }
+                    responsive: true
                 }
             });
-            // Mixed Chart
-            var ctxMixed = document.getElementById('myChartMixed').getContext('2d');
-            new Chart(ctxMixed, {
-                type: 'mixed',
+
+            var ctxRadar = document.getElementById('myChartRadar').getContext('2d');
+            new Chart(ctxRadar, {
+                type: 'radar',
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        type: 'bar',
-                        label: 'User',
+                        label: 'Comparison Reports',
                         data: data.values,
                         backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
-                            ],
-                        borderColor: [
                             'rgba(224, 60, 49, 1)',
                             'rgba(0, 120, 215, 1)',
                             'rgba(66, 133, 33, 1)',
@@ -520,217 +376,17 @@
                             'rgba(112, 128, 144, 1)',
                             'rgba(255, 255, 0, 1)', 
                             ],
-                        borderWidth: 1
-                    }, {
-                        type: 'line',
-                        label: 'Mixed Line Chart',
-                        data: data.values,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2,
                         fill: false
                     }]
                 },
                 options: {
                     plugins: {
                         legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Categories' }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Values' },
-                            ticks: {
-                                callback: function(value) {
-                                    return Math.round(value); // Rounds to the nearest integer
-                                },
-                                stepSize: 1
-                            }
-                        }
                     }
                 }
             });
-
-            // Stacked Bar Chart
-            var ctxStackedBar = document.getElementById('myChartStackedBar').getContext('2d');
-            new Chart(ctxStackedBar, {
-                type: 'line',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Approved Reports',
-                        data: data.values,
-                        backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
-                            ],
-                        borderColor: [
-                            'rgba(224, 60, 49, 1)',
-                            'rgba(0, 120, 215, 1)',
-                            'rgba(66, 133, 33, 1)',
-                            'rgba(234, 67, 53, 1)',
-                            'rgba(12, 0, 128, 1)',
-                            'rgba(128, 18, 12, 1)',
-                            'rgba(128, 0, 128, 1)',
-                            'rgba(135, 206, 235, 1)',
-                            'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            stacked: true,
-                            title: { display: true, text: 'Categories' }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Values' },
-                            ticks: {
-                                callback: function(value) {
-                                    return Math.round(value); // Rounds to the nearest integer
-                                },
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Stacked Line Chart
-            var ctxStackedLine = document.getElementById('myChartStackedLine').getContext('2d');
-            new Chart(ctxStackedLine, {
-                type: 'line',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Approved Reports',
-                        data: data.values,
-                        backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
-                            ],
-                        borderColor: [
-                            'rgba(224, 60, 49, 1)',
-                            'rgba(0, 120, 215, 1)',
-                            'rgba(66, 133, 33, 1)',
-                            'rgba(234, 67, 53, 1)',
-                            'rgba(12, 0, 128, 1)',
-                            'rgba(128, 18, 12, 1)',
-                            'rgba(128, 0, 128, 1)',
-                            'rgba(135, 206, 235, 1)',
-                            'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
-                        borderWidth: 1,
-                        fill: true
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Categories' }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Values' },
-                            ticks: {
-                                callback: function(value) {
-                                    return Math.round(value); // Rounds to the nearest integer
-                                },
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Horizontal Bar Chart
-            var ctxHorizontalBar = document.getElementById('myChartHorizontalBar').getContext('2d');
-            new Chart(ctxHorizontalBar, {
-                type: 'bar',
-                data: {
-                    labels: data.labels,
-                    datasets: [{
-                        label: 'Approved Reports',
-                        data: data.values,
-                        backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
-                            ],
-                        borderColor: [
-                            'rgba(224, 60, 49, 1)',
-                            'rgba(0, 120, 215, 1)',
-                            'rgba(66, 133, 33, 1)',
-                            'rgba(234, 67, 53, 1)',
-                            'rgba(12, 0, 128, 1)',
-                            'rgba(128, 18, 12, 1)',
-                            'rgba(128, 0, 128, 1)',
-                            'rgba(135, 206, 235, 1)',
-                            'rgba(112, 128, 144, 1)',
-                            'rgba(255, 255, 0, 1)', 
-                            ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Values' }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Values' },
-                            ticks: {
-                                callback: function(value) {
-                                    return Math.round(value); // Rounds to the nearest integer
-                                },
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
-        });      
+        });
     </script>
-
-{% endblock body %}
+{% endblock body %}       
