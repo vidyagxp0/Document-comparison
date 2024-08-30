@@ -23,13 +23,13 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="relative h-screen flex flex-col" style="background-image: url({% static 'images/welcome.jpg' %}); background-size: cover; background-attachment: fixed; background-position: center;">
 
     {% include "toast.html" with messages=messages %}
 
     <!-- Header -->
     <header>
-        <div class="flex justify-between items-center px-10 py-2.5 bg-gray-800 bg-opacity-90 text-white">
+        <div class="flex justify-between items-center px-10 py-2.5 bg-cyan-950 bg-opacity-75 text-white">
             <div>
                 <a href="{% url "dashboard" %}" class="flex items-center gap-4">
                     <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo">
@@ -37,6 +37,9 @@
                 </a>
             </div>
             <div class="flex gap-4 items-center relative">
+                <div class="flex items-center border-r h-10 border-white">
+                    <a href="mailto:support@vidyagxp.com" class="px-3 text-blue-700">Support@doccomparisonpro.com</a>
+                </div>
                 <div class="relative">
                     <img src="{% static 'images/user.png' %}" alt="user" width="40" height="40">
                     <span class="absolute top-0 right-0 p-1 bg-green-500 rounded-full">
@@ -138,7 +141,7 @@
         </div>
     </div>
 
-    <div class="">
+    <div class="content">
         {% block body %}{% endblock body %}
     </div>
 

@@ -11,7 +11,7 @@ from docx.oxml.ns import qn
 from django.contrib import messages
 from docx import Document
 from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm
-from .models import Document as Form, ComparisonReport
+from .models import Document as Form, ComparisonReport, Feedback
 from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
@@ -174,6 +174,7 @@ def analytics(request):
 
     total_comparision = len(ComparisonReport.objects.all())
     total_users=len(User.objects.all())
+    user_feedback=len(Feedback.objects.all())
     
     all_comparision = {
         'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
@@ -184,13 +185,8 @@ def analytics(request):
         'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
         'values': [pdf, total_comparision, spreadsheet, prasentation, visio, audio, video, image, text, other]
     }
-    
-    report_data={
-        'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
-        'values': [pdf, docx, spreadsheet, prasentation, visio, audio, video, image, text, other]
-    }
 
-    return render(request, 'analytics.html', { 'total_users':total_users, 'chart_data': chart_data, 'report_data':report_data , 'total_comparision':total_comparision , 'all_comparision':all_comparision})
+    return render(request, 'analytics.html', { 'user_feedback':user_feedback, 'total_users':total_users, 'chart_data': chart_data, 'total_comparision':total_comparision , 'all_comparision':all_comparision})
 
 def password_reset_request(request):
     if request.method == "POST":
