@@ -29,7 +29,7 @@
 
     <!-- Header -->
     <header>
-        <div class="flex justify-between items-center px-10 py-2.5 bg-cyan-950 bg-opacity-90 text-white">
+        <div class="z-40 flex w-full justify-between items-center px-10 py-2.5 backdrop-blur-3xl bg-cyan-950 bg-opacity-75 text-white fixed">
             <div>
                 <a href="{% url "dashboard" %}" class="flex items-center gap-4">
                     <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo">
@@ -142,7 +142,7 @@
         </div>
     </div>
 
-    <div class="content">
+    <div class="content mt-14">
         {% block body %}{% endblock body %}
     </div>
 
