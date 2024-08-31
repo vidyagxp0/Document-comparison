@@ -164,37 +164,48 @@ def user_profile(request, user_id):
 @login_required
 def analytics(request):
     
-    docx = len(Form.objects.filter(doc_format = 'docx'))
-    pdf = len(Form.objects.filter(doc_format = 'pdf'))
-    spreadsheet = len(Form.objects.filter(doc_format = 'xlsx'))
-    prasentation = len(Form.objects.filter(doc_format = 'ppt'))
-    visio=len(Form.objects.filter(doc_format = 'vsd'))
-    audio=len(Form.objects.filter(doc_format = 'mp3'))
-    video=len(Form.objects.filter(doc_format = 'mp4'))
-    image=len(Form.objects.filter(doc_format = 'png'))
-    text=len(Form.objects.filter(doc_format = 'txt'))
-    other=len(Form.objects.filter(doc_format = 'other'))
+    total_docx = len(Form.objects.filter(doc_format = 'docx'))
+    total_pdf = len(Form.objects.filter(doc_format = 'pdf'))
+    total_spreadsheet = len(Form.objects.filter(doc_format = 'xlsx'))
+    total_prasentation = len(Form.objects.filter(doc_format = 'ppt'))
+    total_visio=len(Form.objects.filter(doc_format = 'vsd'))
+    total_audio=len(Form.objects.filter(doc_format = 'mp3'))
+    total_video=len(Form.objects.filter(doc_format = 'mp4'))
+    total_image=len(Form.objects.filter(doc_format = 'png'))
+    total_text=len(Form.objects.filter(doc_format = 'txt'))
+    total_other=len(Form.objects.filter(doc_format = 'other'))
 
-    total_comparision = len(ComparisonReport.objects.all())
+    all_docx = len(ComparisonReport.objects.filter(comparison_between = 'docx'))
+    all_pdf = len(ComparisonReport.objects.filter(comparison_between = 'pdf'))
+    all_spreadsheet = len(ComparisonReport.objects.filter(comparison_between = 'xlsx'))
+    all_prasentation = len(ComparisonReport.objects.filter(comparison_between = 'ppt'))
+    all_visio=len(ComparisonReport.objects.filter(comparison_between = 'vsd'))
+    all_audio=len(ComparisonReport.objects.filter(comparison_between = 'mp3'))
+    all_video=len(ComparisonReport.objects.filter(comparison_between = 'mp4'))
+    all_image=len(ComparisonReport.objects.filter(comparison_between = 'png'))
+    all_text=len(ComparisonReport.objects.filter(comparison_between = 'txt'))
+    all_other=len(ComparisonReport.objects.filter(comparison_between = 'other'))
+
+    total_comparisons = len(ComparisonReport.objects.all())
     total_users=len(User.objects.all())
     user_feedbacks = len(Feedback.objects.all())
     
-    all_comparision = {
+    all_comparisons = {
         'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
-        'values': [pdf, docx, spreadsheet, prasentation, visio, audio, video, image, text, other]
+        'values': [all_pdf, all_docx, all_spreadsheet, all_prasentation, all_visio, all_audio, all_video, all_image, all_text, all_other]
     }
 
-    chart_data = {
+    total_files = {
         'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
-        'values': [pdf, total_comparision, spreadsheet, prasentation, visio, audio, video, image, text, other]
+        'values': [total_pdf, total_docx, total_spreadsheet, total_prasentation, total_visio, total_audio, total_video, total_image, total_text, total_other]
     }
     
     report_data={
         'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
-        'values': [pdf, docx, spreadsheet, prasentation, visio, audio, video, image, text, other]
+        'values': [total_pdf, total_docx, total_spreadsheet, total_prasentation, total_visio, total_audio, total_video, total_image, total_text, total_other]
     }
 
-    return render(request, 'analytics.html', { 'total_users':total_users, 'chart_data': chart_data, 'report_data':report_data , 'user_feedbacks': user_feedbacks, 'total_comparision':total_comparision , 'all_comparision':all_comparision})
+    return render(request, 'analytics.html', { 'total_users':total_users, 'total_files': total_files, 'report_data':report_data , 'user_feedbacks': user_feedbacks, 'total_comparisons':total_comparisons , 'all_comparisons':all_comparisons})
 
 def password_reset_request(request):
     if request.method == "POST":
