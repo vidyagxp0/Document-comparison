@@ -11,22 +11,22 @@
         <div class="text-start mb-8">
             <h1 class="text-3xl font-bold text-white">Upload Process</h1>
         </div>
-        <div class="flex justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
-            <p class="text-gray-600 mt-2">Upload your files and manage them efficiently. If you have at least two files, you can start a comparison.</p>
+        <div class="flex justify-between mb-4 backdrop-blur-3xl border border-cyan-900 bg-cyan-950 rounded-lg py-3 px-6">
+            <p class="text-emerald-500 mt-2">Upload your files and manage them efficiently. If you have at least two files, you can start a comparison.</p>
             <div class="flex items-center gap-4">
                 <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
                     Dashboard
                 </a>
             </div>
         </div>
-        <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
+        <div class="shadow-2xl rounded-lg p-6 backdrop-blur-3xl border border-cyan-900 bg-cyan-950">
             <div class="flex-row md:flex gap-6">
                 <div class="w-full md:w-[70%]">
-                    <div class="mb-3 text-slate-400 text-lg font-bold">
-                        Document Number :  <strong class="text-blue-600">{{ new_report_number|default:"DCR1001" }}<span class="text-xl font-normal text-slate-400">/</span>{{ doc_id }}</strong>
+                    <div class="mb-3 text-slate-400 text-lg font-semibold">
+                        File Number :  <span class="text-blue-500 font-medium">{{ new_report_number|default:"DCR1001" }}<span class="text-xl font-normal text-slate-400">/</span>{{ doc_id }}</span>
                     </div>
-                    <form method="post" enctype="multipart/form-data" class="border rounded-lg p-4 bg-slate-100">
-                        <div class="text-slate-700 font-sans">
+                    <form method="post" enctype="multipart/form-data" class="rounded-lg p-4 border border-cyan-900 bg-cyan-800">
+                        <div class="text-slate-200 font-semibold">
 
                             {% csrf_token %}
                             {{ form.as_p }}
@@ -35,7 +35,7 @@
                         </div>
 
                         {% if perms.compareapp.add_document %}
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
+                            <button type="submit" class="bg-blue-600 shadow-2xl hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
                         {% else %}
                             <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload files.</div>
                         {% endif %}
@@ -43,17 +43,17 @@
                 </div>
                  
                 <div class="mt-4 md:mt-0 w-full md:w-[30%] flex flex-col md:items-center">
-                    <div class="mt-10 text-start font-bold w-full mb-3">Files Insights</div>
-                    <div class="border p-4 rounded-lg bg-slate-100 w-full">
+                    <div class="mt-10 text-start font-bold w-full mb-3 text-slate-400">Files Insights</div>
+                    <div class="p-4 rounded-lg bg-cyan-800 w-full">
                         <div class="">
-                            <div class="border rounded-lg bg-cyan-400 py-2 px-4 text-slate-700 font-bold text-center">
+                            <div class="rounded-lg bg-cyan-400 py-2 px-4 text-slate-700 font-bold text-center">
                                 <p class="my-3 text-white text-xl"> Files Count </p>
-                                <a href="{% url "initial-document" %}" title="View all files ready for the comparison" class=" text-yellow-500 font-extrabold text-4xl">{{ document_count }}</a>
+                                <a href="{% url "initial-document" %}" title="View all files ready for the comparison" class="text-blue-500 font-extrabold text-4xl">{{ document_count }}</a>
                             </div>
                         </div>
                         
                         <div class="mt-4 flex justify-between">
-                            <button onclick="openCTModal()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg py-2 px-3">Change Files Type</button>
+                            <button onclick="openCTModal()" class="bg-red-800 hover:bg-red-700 text-white font-bold rounded-lg py-2 px-3">Reset Process</button>
 
                             {% if document_count >= 2 %}
                                 {% if perms.compareapp.add_comparisonreport %}
@@ -65,14 +65,14 @@
                         </div>
                     </div>
 
-                    <div class="text-start font-bold w-full my-3">Uploaded files</div>
-                    <div class="w-full h-full border rounded-lg bg-slate-100 p-4 overflow-y-auto">
+                    <div class="text-start text-slate-400 font-bold w-full my-3">Uploaded files</div>
+                    <div class="w-full h-full rounded-lg bg-cyan-800 p-4 overflow-y-auto">
                         {% if documents %}
                             {% for doc in documents %}  
                                 <div class="relative inline-block border rounded-lg bg-white text-center px-3 py-2 mb-3 mr-2">
                                     <div class="absolute -top-1 -right-1">
                                         <button onclick="openDeleteModal({{ doc.document_id }})" title="Delete Document">
-                                            <img class="size-4" src="{% static 'images/cross.png' %}" alt="" srcset="">
+                                            <img class="size-5" src="{% static 'images/cross.png' %}" alt="" srcset="">
                                         </button>
                                     </div>
                                     <a href="{% url "view-document" doc.document_id %}" class="text-blue-700 font-bold">{{ doc.title }}</a>
@@ -167,7 +167,7 @@
             <select name="comparison_between" id="comparison_between" class="border rounded-lg p-2 w-full">
                 <option value="">Select files type</option>
                 <option value="pdf">PDF</option>
-                <option value="docx">Word Document (.docx)</option>
+                <option value="docx">Word Document</option>
                 <option value="xlsx">Spreadsheet</option>
                 <option value="ppt">Presentation</option>
                 <option value="vsd">Visio File</option>
@@ -179,7 +179,8 @@
             </select>
             <p id="comparisonTypeError" class="text-red-700 mb-3"></p>
             <div class="text-end">
-                <button type="button" onclick="closeComparisonTypeModal()" class="rounded text-white font-bold px-3 py-2 bg-cyan-700">Done</button>
+                <button type="button" onclick="closeComparisonTypeModal('cancel')" class="rounded text-white font-bold px-3 py-2 mr-3 bg-slate-700">Cancel</button>
+                <button type="button" onclick="closeComparisonTypeModal('')" class="rounded text-white font-bold px-3 py-2 bg-cyan-700">Done</button>
             </div>
         </div>
     </div>
@@ -198,6 +199,7 @@
             let comparisonTypeModal = document.getElementById("comparisonTypeModal");
             const comparisonSelect = document.getElementById("comparison_between");
             const error = document.getElementById("comparisonTypeError");
+            const docFormatField = document.getElementById("id_doc_format");
         
             const comparisonSuccessModal = document.getElementById("comparisonSuccess");
         
@@ -205,6 +207,7 @@
             const comparisonTypeSelected = localStorage.getItem("comparisonTypeSelected");
             if (comparisonTypeSelected) {
                 document.getElementById("comparison_between_hidden").value = comparisonTypeSelected;
+                docFormatField.value = comparisonTypeSelected
             } else {
                 setTimeout(() => {
                     openCTModal();
@@ -248,18 +251,24 @@
             };
         
             // Close comparison type modal
-            window.closeComparisonTypeModal = function() {
+            window.closeComparisonTypeModal = function(op) {
                 const selectedType = comparisonSelect.value;
-                if (selectedType) {
-                    alert("Make sure this action will reset all the files.")
+                if (op === 'cancel' && selectedType) {
                     comparisonTypeModal.classList.add("hidden");
-                    localStorage.setItem("comparisonTypeSelected", selectedType);
-                    document.getElementById("comparison_between_hidden").value = selectedType;
-                    error.innerText = "";
-                    window.location.href = "{% url 'reset' %}";
-
-                } else {
-                    error.innerText = "This field is required.";
+                }
+                else {
+                    if (selectedType) {
+                        alert("Make sure this action will reset all the files.")
+                        comparisonTypeModal.classList.add("hidden");
+                        localStorage.setItem("comparisonTypeSelected", selectedType);
+                        document.getElementById("comparison_between_hidden").value = selectedType;
+                        docFormatField.value = selectedType
+                        error.innerText = "";
+                        window.location.href = "{% url 'reset' %}";
+    
+                    } else {
+                        error.innerText = "This field is required.";
+                    }
                 }
             };
         

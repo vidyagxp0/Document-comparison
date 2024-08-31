@@ -27,8 +27,7 @@ from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
 
-import re
-from PyPDF2 import PdfReader
+import fitz
 
 # mail configuration  
 from django.contrib.auth.tokens import default_token_generator
@@ -310,6 +309,17 @@ def formView(request):
         if form.is_valid():
             doc_format = form.cleaned_data.get('doc_format')
             upload_document = request.FILES.get('upload_document')
+
+            if not comparison_between:
+                messages.warning(request, f"Please select the files type to intialise the upload process.")
+                return render(request, "form.html", {
+                    'form': form,
+                    'doc_id': doc_id,
+                    'document_count': document_count,
+                    'success': success,
+                    'report_number': report_number,
+                    'documents': documents
+                })
 
             if upload_document and doc_format:
                 file_extension = os.path.splitext(upload_document.name)[1].lstrip('.').lower()
@@ -606,21 +616,20 @@ def read_docx(file_path):
     return sections
 
 def read_pdf(file_path):
-    reader = PdfReader(file_path)
+    doc = fitz.open(file_path)
     sections = {}
     current_section = None
     current_content = []
 
-    # Loop through all the pages in the PDF
-    for page in reader.pages:
-        text = page.extract_text()
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        text = page.get_text("text").strip()
         lines = text.splitlines()
 
         for line in lines:
             line = line.strip()
             if line:
-                # Check if the line starts with a number followed by a dot (e.g., "1." or "1.1.")
-                if re.match(r'^\d+(\.\d+)*\s+', line):
+                if line[0].isdigit() and (line[1] == '.' or (line[1].isdigit() and line[2] == '.')):
                     if current_section:
                         sections[current_section] = '\n'.join(current_content)
                     current_section = line
@@ -628,7 +637,6 @@ def read_pdf(file_path):
                 else:
                     current_content.append(line)
 
-    # Add the last section
     if current_section:
         sections[current_section] = '\n'.join(current_content)
 

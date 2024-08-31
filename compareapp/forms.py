@@ -11,19 +11,19 @@ class DocumentForm(forms.ModelForm):
         model = Document
         fields = ['title', 'author', 'creation_date', 'version', 'language', 'doc_type', 'doc_format', 'upload_document', 'comments']
         widgets = {
-            'creation_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input mt-1 rounded w-full mb-3'}),
+            'creation_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'}),
         }
 
     def __init__(self, *args, **kwargs):
         super(DocumentForm, self).__init__(*args, **kwargs)
-        self.fields['title'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
-        self.fields['author'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
-        self.fields['version'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
-        self.fields['language'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full mb-3'})
-        self.fields['doc_type'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full mb-3'})
-        self.fields['doc_format'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
-        self.fields['upload_document'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full mb-3'})
-        self.fields['comments'].widget.attrs.update({'class': 'form-textarea h-14 mt-1 rounded w-full mb-3'})
+        self.fields['title'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document title'})
+        self.fields['author'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document author'})
+        self.fields['version'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document version'})
+        self.fields['language'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
+        self.fields['doc_type'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
+        self.fields['doc_format'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
+        self.fields['upload_document'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
+        self.fields['comments'].widget.attrs.update({'class': 'form-textarea h-14 mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter comments here'})
 
 class CustomPasswordResetForm(PasswordResetForm):
     def clean_email(self):
@@ -74,27 +74,27 @@ class UserForm(forms.ModelForm):
         fields = ['username', 'first_name', 'last_name', 'email', 'is_active', 'permissions']
         widgets = {
             'username': forms.TextInput(attrs={
-                'class': 'form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
                 'required': 'required',
                 'placeholder': 'Enter username',
             }),
             'first_name': forms.TextInput(attrs={
-                'class': 'form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
                 'required': 'required',
                 'placeholder': 'Enter first name',
             }),
             'last_name': forms.TextInput(attrs={
-                'class': 'form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
                 'required': 'required',
                 'placeholder': 'Enter last name',
             }),
             'email': forms.EmailInput(attrs={
-                'class': 'form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500',
+                'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
                 'required': 'required',
                 'placeholder': 'Enter email address',
             }),
             'is_active': forms.CheckboxInput(attrs={
-                'class': 'form-checkbox text-blue-600 focus:ring-blue-500 border-gray-300 rounded',
+                'class': 'form-checkbox text-cyan-600 focus:ring-cyan-500 border-cyan-300 rounded',
             }),
         }
 

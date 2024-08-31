@@ -48,11 +48,6 @@
 
             {% if perms.compareapp.view_document %}
                 {% if documents %}
-                    <div class="text-end mb-4">
-                        {% if documents.count > 1 %}
-                            <button onclick="openModal()" class="bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4">Perform Comparison</button>
-                        {% endif %}
-                    </div>
                     <div class="overflow-auto">
                         <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
                             <thead>
@@ -106,22 +101,6 @@
      
     <!-- Modals -->
 
-    <div id="comparisonModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
-            <h2 class="text-2xl font-bold mb-4">Reason for Comparison</h2>
-            <form id="comparisonForm">
-                <div class="mb-4">
-                    <label for="reason" class="block text-md font-medium text-gray-700">Reason <span class="text-red-700 font-bold">*</span></label>
-                    <textarea id="reason" maxlength="150" placeholder="Enter a valid reason for comparison" name="reason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required></textarea>
-                </div>
-                <div class="flex justify-end">
-                    <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-4">Submit</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
             <h2 class="text-2xl font-bold mb-4">Delete Document</h2>
@@ -139,38 +118,12 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Get the modal and form elements
-            const modal = document.getElementById("comparisonModal");
-            const form = document.getElementById("comparisonForm");
-            const reasonTextarea = document.getElementById("reason");
-
             const deleteModal = document.getElementById("deleteModal");
             let deleteForm = document.getElementById("deleteForm");
-
-            // Function to open the modal
-            window.openModal = function() {
-                modal.classList.remove("hidden");
-            };
-
-            // Function to close the modal
-            window.closeModal = function() {
-                modal.classList.add("hidden");
-                reasonTextarea.value = ""; // Clear the textarea
-            };
 
             window.closeDeleteModal = function() {
                 deleteModal.classList.add("hidden");
             };
-
-            // Handle comparison form submission
-            form.addEventListener("submit", function(event) {
-                event.preventDefault();
-                const reason = reasonTextarea.value.trim();
-                if (reason) {
-                    // If a valid reason is provided, proceed to the comparison page
-                    window.location.href = "{% url 'compare' %}?reason=" + encodeURIComponent(reason);
-                }
-            });
 
             // Function to open the delete modal
             window.openDeleteModal = function(id) {

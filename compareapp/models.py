@@ -154,7 +154,7 @@ class Document(models.Model):
     language = models.CharField(max_length=255, choices=LANGUAGE_CHOICES, default='en')
     version = models.CharField(max_length=255, default='1.0.0')
     doc_type = models.CharField(max_length=255, choices=DOC_TYPE_CHOICES, default='stp')
-    doc_format = models.CharField(max_length=255, choices=DOC_FORMAT_CHOICES, default='docx')
+    doc_format = models.CharField(max_length=255, choices=DOC_FORMAT_CHOICES)
     comments = models.TextField()
     comparison_status = models.CharField(max_length=255, null=True, blank=True)
     summary = models.CharField(max_length=255, null=True, blank=True)
