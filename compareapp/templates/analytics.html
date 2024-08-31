@@ -12,23 +12,23 @@
             <p class="text-gray-300 font-semibold mt-2">Here you can view the graphical representation of all comparisons.</p>
         </div>
         <div class="container mx-auto mb-12 px-6">
-        <div class="text-start mb-24 flex justify-between">
-            <div>
-                <h1 class="text-4xl font-semibold text-white">Analytics</h1>
-            </div>
-            <div>
-                <a href="{% url 'dashboard' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+            <div class="text-start mb-24 flex justify-between">
+                <div>
+                    <h1 class="text-4xl font-semibold text-white">Analytics</h1>
+                </div>
+                <div>
+                    <a href="{% url 'dashboard' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
                     Back
                 </a>
+                </div>
             </div>
-        </div>
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 backdrop-blur-3xl p-8 rounded-lg bg-cyan-950">
         <!-- Chart Containers -->
             <div class="flex justify-between">
                 <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-yellow-500">
                     <p class="text-2xl text-center font-bold mb-2 text-white">Total Comparisons</p>
                     <div >
-                        <div class="text-center font-extrabold text-3xl text-white">{{total_comparision}}</div>
+                        <div class="text-center font-extrabold text-3xl text-white">{{total_comparisons}}</div>
                     </div>
                 </div>
                 <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-green-700">
@@ -40,7 +40,7 @@
                 <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-pink-700">
                     <p class="text-2xl text-center font-bold mb-2 text-white">Verified Reports</p>
                     <div >
-                        <div class="text-center font-extrabold text-3xl text-white">{{total_comparision}}</div>
+                        <div class="text-center font-extrabold text-3xl text-white">{{total_comparisons}}</div>
                     </div>
                 </div>
                 <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-cyan-500">
@@ -78,13 +78,33 @@
                     <canvas id="myChartRadar"></canvas>
                 </div>
             </div>
+            <div class="flex gap-4">
+                <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Area Chart</p>
+                    <canvas id="lollipopChart"></canvas>
+                </div>
+                <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Mixed Chart</p>
+                    <canvas id="myChartMixed"></canvas>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Bubble Chart</p>
+                    <canvas id="myChartBubbleExtended"></canvas>
+                </div>
+                <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
+                    <p class="text-lg font-bold mb-3">Horizontal Bar Chart</p>
+                    <canvas id="myChartHorizontalBar"></canvas>
+                </div>
+            </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            let data = {{all_comparision|safe}};
-            let allcomparison_data = {{chart_data|safe}};
+            let data = {{total_files|safe}};
+            let allcomparison_data = {{total_files|safe}};
 
             // Bar Chart
             var ctxBar = document.getElementById('myChartBar').getContext('2d');
@@ -148,10 +168,10 @@
             new Chart(ctxBubble, {
                 type: 'bubble',
                 data: {
-                    labels: {{ chart_data.labels|safe }},  // Labels for the x-axis
+                    labels: {{ all_comparisons.labels|safe }},  // Labels for the x-axis
                     datasets: [{
-                        label: 'Approved Reports',
-                        data: {{ chart_data.values|safe }}.map((value, index) => ({
+                        label: 'All Compared Reports',
+                        data: {{ all_comparisons.values|safe }}.map((value, index) => ({
                             x: index,  // Use index as the x position
                             y: value,
                             r: 10  // Bubble radius
@@ -190,7 +210,7 @@
                     scales: {
                         x: {
                             type: 'category',  // Set x-axis to use categories
-                            labels: {{ chart_data.labels|safe }},  // Use the labels from your data
+                            labels: {{ all_comparisons.labels|safe }},  // Use the labels from your data
                             title: { display: true, text: 'Categories' }  // Adjust the title if needed
                         },
                         y: {
@@ -217,16 +237,16 @@
                         label: 'Comparison Reports',
                         data: data.values,  // Data values for each segment
                         backgroundColor: [
-                            'rgba(224, 60, 49, 0.7)',
-                            'rgba(0, 120, 215, 0.7)',
-                            'rgba(66, 133, 33, 0.7)',
-                            'rgba(234, 67, 53, 0.7)',
-                            'rgba(12, 0, 128, 0.7)',
-                            'rgba(128, 18, 12, 0.7)',
-                            'rgba(128, 0, 128, 0.7)',
-                            'rgba(135, 206, 235, 0.7)',
-                            'rgba(112, 128, 144, 0.7)',
-                            'rgba(255, 255, 0, 0.7)',
+                            'rgba(224, 60, 49, 0.3)',
+                            'rgba(0, 120, 215, 0.3)',
+                            'rgba(66, 133, 33, 0.3)',
+                            'rgba(234, 67, 53, 0.3)',
+                            'rgba(12, 0, 128, 0.3',
+                            'rgba(128, 18, 12, 03)',
+                            'rgba(128, 0, 128, 03)',
+                            'rgba(135, 206, 235, 3.3)',
+                            'rgba(112, 128, 144, 0.3)',
+                            'rgba(255, 255, 0, 0.3)',
                         ],
                         borderColor: [
                             'rgba(224, 60, 49, 1)',
@@ -297,7 +317,7 @@
                 },
                 options: {
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: true }
                     }
                 }
             });
@@ -384,6 +404,268 @@
                 options: {
                     plugins: {
                         legend: { display: false }
+                    }
+                }
+            });
+
+            // ----------------------------------------------------------------------
+
+            // Scatter Chart
+            var ctx = document.getElementById('lollipopChart').getContext('2d');
+        var lollipopChart = new Chart(ctx, {
+            type: 'bar',  // Base type to be used for lollipop lines
+            data: {
+                labels: data.labels,  // Labels for each data point
+                datasets: [
+                    {
+                        type: 'bar',  // For the lollipop lines
+                        data: data.values,  // Y values of the lollipop lines
+                        backgroundColor: [
+                            'rgba(224, 60, 49, 0.5)',
+                            'rgba(0, 120, 215, 0.5)',
+                            'rgba(66, 133, 33, 0.5)',
+                            'rgba(234, 67, 53, 0.5)',
+                            'rgba(12, 0, 128, 0.5)',
+                            'rgba(128, 18, 12, 0.5)',
+                            'rgba(128, 0, 128, 0.5)',
+                            'rgba(135, 206, 235, 0.5)',
+                            'rgba(112, 128, 144, 0.5)',
+                            'rgba(255, 255, 0, 0.5)'
+                        ],
+                        barThickness: 5,  // Thickness of the lollipop lines
+                        categoryPercentage: 1.0,
+                        barPercentage: 1.0,
+                        datalabels: { // Optional: to show values on the lines
+                            display: false
+                        }
+                    },
+                    {
+                        type: 'scatter',  // For the lollipop tops
+                        data: data.values,  // Data points for the lollipop tops
+                        backgroundColor: [
+                            'rgba(224, 60, 49, 1)',
+                            'rgba(0, 120, 215, 1)',
+                            'rgba(66, 133, 33, 1)',
+                            'rgba(234, 67, 53, 1)',
+                            'rgba(12, 0, 128, 1)',
+                            'rgba(128, 18, 12, 1)',
+                            'rgba(128, 0, 128, 1)',
+                            'rgba(135, 206, 235, 1)',
+                            'rgba(112, 128, 144, 1)',
+                            'rgba(255, 255, 0, 1)'
+                        ],
+                        borderWidth: 1,
+                        radius: 10,  // Size of the points
+                        pointStyle: 'circle',  // Shape of the points
+                        datalabels: { // Optional: to show values on the points
+                            display: true,
+                            color: 'black'
+                        }
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Categories'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Values'
+                        },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false,
+                        position: 'top'
+                    },
+                    datalabels: { // Optional: to show labels on top of each lollipop
+                        color: 'black',
+                        display: true,
+                        anchor: 'end',
+                        align: 'top',
+                        formatter: function(value) {
+                            return value;
+                        }
+                    }
+                }
+            }
+        });
+
+            // Area Chart
+            var ctxArea = document.getElementById('myChartMixed').getContext('2d');
+            new Chart(ctxArea, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        //label: 'Area Chart Data',
+                        data: data.values,
+                        fill: false,
+                        backgroundColor: [
+                            'rgba(224, 60, 49, 1)',
+                            'rgba(0, 120, 215, 1)',
+                            'rgba(66, 133, 33, 1)',
+                            'rgba(234, 67, 53, 1)',
+                            'rgba(12, 0, 128, 1)',
+                            'rgba(128, 18, 12, 1)',
+                            'rgba(128, 0, 128, 1)',
+                            'rgba(135, 206, 235, 1)',
+                            'rgba(112, 128, 144, 1)',
+                            'rgba(255, 255, 0, 1)'
+                        ],
+                        borderColor: 'rgba(10, 150, 150, 0.5)', 
+                        borderWidth: 6,
+                        radius: 2   ,  // Size of the points
+                        pointStyle: 'circle',  // Shape of the points
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Categories' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Values' },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Mixed Chart
+            var ctxMixed = document.getElementById('myChartBubbleExtended').getContext('2d');
+            new Chart(ctxMixed, {
+                type: 'mixed',
+                data: {
+                    datasets: [
+                        {
+                            type: 'line',
+                            data: data.values,
+                            borderColor:'rgba(2, 2, 2, 0.5)',
+                            backgroundColor: [
+                                'rgba(224, 60, 49, 1)',
+                                'rgba(0, 120, 215, 1)',
+                                'rgba(66, 133, 33, 1)',
+                                'rgba(234, 67, 53, 1)',
+                                'rgba(12, 0, 128, 1)',
+                                'rgba(128, 18, 12, 1)',
+                                'rgba(128, 0, 128, 1)',
+                                'rgba(135, 206, 235, 1)',
+                                'rgba(112, 128, 144, 1)',
+                                'rgba(255, 255, 0, 1)'
+                            ],
+                            fill: false
+                        },
+                        {
+                            type: 'bar',
+                            data: data.values,
+                            backgroundColor:  [
+                                'rgba(224, 60, 49, 1)',
+                                'rgba(0, 120, 215, 1)',
+                                'rgba(66, 133, 33, 1)',
+                                'rgba(234, 67, 53, 1)',
+                                'rgba(12, 0, 128, 1)',
+                                'rgba(128, 18, 12, 1)',
+                                'rgba(128, 0, 128, 1)',
+                                'rgba(135, 206, 235, 1)',
+                                'rgba(112, 128, 144, 1)',
+                                'rgba(255, 255, 0, 1)'
+                            ],
+                            borderColor:[
+                                'rgba(224, 60, 49, 1)',
+                                'rgba(0, 120, 215, 1)',
+                                'rgba(66, 133, 33, 1)',
+                                'rgba(234, 67, 53, 1)',
+                                'rgba(12, 0, 128, 1)',
+                                'rgba(128, 18, 12, 1)',
+                                'rgba(128, 0, 128, 1)',
+                                'rgba(135, 206, 235, 1)',
+                                'rgba(112, 128, 144, 1)',
+                                'rgba(255, 255, 0, 1)'
+                            ],
+                            borderWidth: 1
+                        }
+                    ],
+                    labels: data.labels
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Categories' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Values' },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Horizontal Bar Chart
+            var ctxHorizontalBar = document.getElementById('myChartHorizontalBar').getContext('2d');
+            new Chart(ctxHorizontalBar, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        //label: 'Horizontal Bar Chart',
+                        data: data.values,
+                        backgroundColor: [
+                            'rgba(224, 60, 49, 1)',
+                            'rgba(0, 120, 215, 1)',
+                            'rgba(66, 133, 33, 1)',
+                            'rgba(234, 67, 53, 1)',
+                            'rgba(12, 0, 128, 1)',
+                            'rgba(128, 18, 12, 1)',
+                            'rgba(128, 0, 128, 1)',
+                            'rgba(135, 206, 235, 1)',
+                            'rgba(112, 128, 144, 1)',
+                            'rgba(255, 255, 0, 1)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Values' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Categories' },
+                            beginAtZero: true
+                        }
                     }
                 }
             });
