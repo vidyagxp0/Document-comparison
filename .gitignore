@@ -3,6 +3,7 @@
 __pycache__/
 
 # Ignore virtual environments
+media/
 venv/
 env/
 
