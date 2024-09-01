@@ -460,18 +460,18 @@ def comparison(request: HttpRequest):
     comparedBy = request.user.username.upper()
     documents = Form.objects.filter(new=True)
     last_report = ComparisonReport.objects.last()
-    comparison_between = documents[0].doc_format
 
+    if not documents:
+        messages.error(request, "No files found for comparison!")
+        return redirect('form')
+    
     if last_report:
         new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
     else:
         new_report_number = "DCR1001"
     
-    if not documents:
-        messages.info(request, "Please upload documents first.")
-        return redirect('form')
-    
     data = {}
+    comparison_between = documents[0].doc_format
     for doc in documents:
         file_path = doc.upload_document.path
         if doc.doc_format == 'docx':
