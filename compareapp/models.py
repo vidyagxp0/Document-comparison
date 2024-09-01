@@ -126,7 +126,7 @@ class Document(models.Model):
         ('pdf', 'PDF'),
         ('docx', 'Word Document (.docx)'),
         ('xlsx', 'Spreadsheet'),
-        ('ppt', 'Presentation'),
+        ('pptx', 'Presentation'),
         ('vsd', 'Visio File'),
         ('mp3', 'Audio (.mp3)'),
         ('mp4', 'Video (.mp4)'),
@@ -140,7 +140,7 @@ class Document(models.Model):
             'pdf': 'documents/pdf/',
             'docx': 'documents/docx/',
             'xlsx': 'documents/excel/',
-            'ppt': 'documents/ppt/',
+            'pptx': 'documents/ppt/',
             'txt': 'documents/text/',
             'other': 'documents/other/',
         }

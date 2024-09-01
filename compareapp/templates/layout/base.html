@@ -114,7 +114,7 @@
                     <input type="email" id="email" name="email" class="form-input w-full rounded-lg border-gray-300 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your email address...">
                 </div>
                 <div class="text-right">
-                    {% if perms.compareapp.delete_user %}
+                    {% if perms.compareapp.add_feedback %}
                         <button type="button" id="backFeedbackModal" class="bg-cyan-600 font-bold text-white px-4 py-2 mr-2 rounded-lg hover:bg-cyan-500">Back</button>
                         <button type="submit" class="bg-cyan-600 font-bold text-white px-4 py-2 rounded-lg hover:bg-cyan-500">Submit</button>
                     {% else %}

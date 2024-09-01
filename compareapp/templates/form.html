@@ -169,7 +169,7 @@
                 <option value="pdf">PDF</option>
                 <option value="docx">Word Document</option>
                 <option value="xlsx">Spreadsheet</option>
-                <option value="ppt">Presentation</option>
+                <option value="pptx">Presentation</option>
                 <option value="vsd">Visio File</option>
                 <option value="mp3">Audio (.mp3)</option>
                 <option value="mp4">Video (.mp4)</option>
@@ -253,7 +253,7 @@
             // Close comparison type modal
             window.closeComparisonTypeModal = function(op) {
                 const selectedType = comparisonSelect.value;
-                if (op === 'cancel' && selectedType) {
+                if (op === 'cancel') {
                     comparisonTypeModal.classList.add("hidden");
                 }
                 else {

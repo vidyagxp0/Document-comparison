@@ -21,7 +21,7 @@ class DocumentForm(forms.ModelForm):
         self.fields['version'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document version'})
         self.fields['language'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
         self.fields['doc_type'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
-        self.fields['doc_format'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
+        self.fields['doc_format'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'disabled': 'disabled'})
         self.fields['upload_document'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
         self.fields['comments'].widget.attrs.update({'class': 'form-textarea h-14 mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter comments here'})
 

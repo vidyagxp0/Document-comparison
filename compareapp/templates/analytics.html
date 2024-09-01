@@ -5,24 +5,21 @@
 {% endblock title %}
 
 {% block body %}
+{% load static %}
 
-    {% include "toast.html" with messages=messages %}
-    {% load static %}
-        <div class="flex justify-center  py-3 px-6">
-            <p class="text-gray-300 font-semibold mt-2">Here you can view the graphical representation of all comparisons.</p>
+    <div class="container mx-auto my-12 px-6">
+        <div class="text-start mb-8">
+            <h1 class="text-3xl font-bold text-white">Analytics</h1>
         </div>
-        <div class="container mx-auto mb-12 px-6">
-            <div class="text-start mb-24 flex justify-between">
-                <div>
-                    <h1 class="text-4xl font-semibold text-white">Analytics</h1>
-                </div>
-                <div>
-                    <a href="{% url 'dashboard' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+        <div class="flex justify-between mb-4 backdrop-blur-3xl border border-cyan-900 bg-cyan-950 rounded-lg py-3 px-6">
+            <p class="text-emerald-500 mt-2">Here you can view the graphical representation of all comparisons.</p>
+            <div class="flex items-center gap-4">
+                <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
                     Back
                 </a>
-                </div>
             </div>
-        <div class="flex flex-col gap-4 backdrop-blur-3xl p-8 rounded-lg bg-cyan-950">
+        </div>
+        <div class="shadow-2xl border-cyan-900 flex flex-col gap-4 backdrop-blur-3xl p-8 rounded-lg bg-cyan-950">
         <!-- Chart Containers -->
             <div class="flex justify-between">
                 <div class="w-80 px-8 py-4 rounded-lg shadow-md bg-yellow-500">
@@ -62,11 +59,11 @@
             </div>
             <div class="flex gap-4">
                 <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
-                    <p class="text-lg font-bold mb-3">Comparision Reports</p>
+                    <p class="text-lg font-bold mb-3">Verified Reports</p>
                     <canvas id="myChartPie"></canvas>
                 </div>
                 <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
-                    <p class="text-lg font-bold mb-3">Comparision Status</p>
+                    <p class="text-lg font-bold mb-3">Successfull Comparison</p>
                     <canvas id="myChartPolar"></canvas>
                 </div>
                 <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
@@ -74,13 +71,13 @@
                     <canvas id="myDoughnutChart"></canvas>
                 </div>
                 <div class="w-[25%] border p-4 rounded-lg shadow-md bg-white">
-                    <p class="text-lg font-bold mb-3">Comparision Status</p>
+                    <p class="text-lg font-bold mb-3">Compared Reports</p>
                     <canvas id="myChartRadar"></canvas>
                 </div>
             </div>
             <div class="flex gap-4">
                 <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
-                    <p class="text-lg font-bold mb-3">Area Chart</p>
+                    <p class="text-lg font-bold mb-3">Compared Documents</p>
                     <canvas id="lollipopChart"></canvas>
                 </div>
                 <div class="w-[50%] border p-4 rounded-lg shadow-md bg-white">
@@ -113,19 +110,19 @@
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        label: 'Total Files',
+                        label: 'Files',
                         data: data.values,
                         backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
+                            'rgba(224, 60, 49, 0.5)',
+                            'rgba(0, 120, 215, 0.5)',
+                            'rgba(66, 133, 33, 0.5)',
+                            'rgba(234, 67, 53, 0.5)',
+                            'rgba(12, 0, 128, 0.5)',
+                            'rgba(128, 18, 12, 0.5)',
+                            'rgba(128, 0, 128, 0.5)',
+                            'rgba(135, 206, 235, 0.5)',
+                            'rgba(112, 128, 144, 0.5)',
+                            'rgba(255, 255, 0, 0.5)', 
                             ],
                         borderColor: [
                             'rgba(224, 60, 49, 1)',
@@ -139,7 +136,7 @@
                             'rgba(112, 128, 144, 1)',
                             'rgba(255, 255, 0, 1)', 
                             ],
-                        borderWidth: 1
+                        borderWidth: 2
                     }]
                 },
                 options: {
@@ -148,11 +145,11 @@
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'Categories' }
+                            title: { display: true, text: 'File Types' }
                         },
                         y: {
                             beginAtZero: true,
-                            title: { display: true, text: 'Values' },
+                            title: { display: true, text: 'Files' },
                             ticks: {
                                 callback: function(value) {
                                     return Math.round(value); // Rounds to the nearest integer
@@ -170,23 +167,23 @@
                 data: {
                     labels: {{ all_comparisons.labels|safe }},  // Labels for the x-axis
                     datasets: [{
-                        label: 'All Compared Reports',
+                        //label: 'All Comparisions',
                         data: {{ all_comparisons.values|safe }}.map((value, index) => ({
                             x: index,  // Use index as the x position
                             y: value,
-                            r: 10  // Bubble radius
+                            r: 10 // Bubble radius
                         })),
                         backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)'
+                            'rgba(224, 60, 49, 0.5)',
+                            'rgba(0, 120, 215, 0.5)',
+                            'rgba(66, 133, 33, 0.5)',
+                            'rgba(234, 67, 53, 0.5)',
+                            'rgba(12, 0, 128, 0.5)',
+                            'rgba(128, 18, 12, 0.5)',
+                            'rgba(128, 0, 128, 0.5)',
+                            'rgba(135, 206, 235, 0.5)',
+                            'rgba(112, 128, 144, 0.5)',
+                            'rgba(255, 255, 0, 0.5)', 
                         ],
                         borderColor: [
                             'rgba(224, 60, 49, 1)',
@@ -211,11 +208,11 @@
                         x: {
                             type: 'category',  // Set x-axis to use categories
                             labels: {{ all_comparisons.labels|safe }},  // Use the labels from your data
-                            title: { display: true, text: 'Categories' }  // Adjust the title if needed
+                            title: { display: true, text: 'File Types' }  // Adjust the title if needed
                         },
                         y: {
                             beginAtZero: true,
-                            title: { display: true, text: 'Values' },
+                            title: { display: true, text: 'Comparisons' },
                             ticks: {
                                 callback: function(value) {
                                     return Math.round(value);  // Round values to integers
@@ -232,21 +229,21 @@
             new Chart(ctxPie, {
                 type: 'pie',
                 data: {
-                    labels: data.labels,  // Labels for each segment
+                    labels: {{ all_comparisons.labels|safe }},  // Labels for each segment
                     datasets: [{
-                        label: 'Comparison Reports',
-                        data: data.values,  // Data values for each segment
+                        label: 'Verified Reports',
+                        data: {{ all_comparisons.values|safe }},  // Data values for each segment
                         backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3',
-                            'rgba(128, 18, 12, 03)',
-                            'rgba(128, 0, 128, 03)',
-                            'rgba(135, 206, 235, 3.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)',
+                            'rgba(224, 60, 49, 0.5)',
+                            'rgba(0, 120, 215, 0.5)',
+                            'rgba(66, 133, 33, 0.5)',
+                            'rgba(234, 67, 53, 0.5)',
+                            'rgba(12, 0, 128, 0.5)',
+                            'rgba(128, 18, 12, 0.5)',
+                            'rgba(128, 0, 128, 0.5)',
+                            'rgba(135, 206, 235, 0.5)',
+                            'rgba(112, 128, 144, 0.5)',
+                            'rgba(255, 255, 0, 0.5)', 
                         ],
                         borderColor: [
                             'rgba(224, 60, 49, 1)',
@@ -260,22 +257,12 @@
                             'rgba(112, 128, 144, 1)',
                             'rgba(255, 255, 0, 1)',
                         ],
-                        borderWidth: 1
+                        borderWidth: 2
                     }]
                 },
                 options: {
-                    responsive: true,
                     plugins: {
-                        legend: {
-                            position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    return tooltipItem.label + ': ' + tooltipItem.raw;
-                                }
-                            }
-                        }
+                        legend: { display: true }
                     }
                 }
             });
@@ -284,21 +271,21 @@
             new Chart(ctxPolar, {
                 type: 'polarArea',
                 data: {
-                    labels: data.labels,
+                    labels: {{ all_comparisons.labels|safe }},
                     datasets: [{
-                        label: 'Comperison Status',
-                        data: data.values,
+                        label: 'Successfull Comperison',
+                        data: {{ all_comparisons.values|safe }},
                         backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)', 
+                            'rgba(224, 60, 49, 0.5)',
+                            'rgba(0, 120, 215, 0.5)',
+                            'rgba(66, 133, 33, 0.5)',
+                            'rgba(234, 67, 53, 0.5)',
+                            'rgba(12, 0, 128, 0.5)',
+                            'rgba(128, 18, 12, 0.5)',
+                            'rgba(128, 0, 128, 0.5)',
+                            'rgba(135, 206, 235, 0.5)',
+                            'rgba(112, 128, 144, 0.5)',
+                            'rgba(255, 255, 0, 0.5)', 
                             ],
                         borderColor: [
                             'rgba(224, 60, 49, 1)',
@@ -312,7 +299,7 @@
                             'rgba(112, 128, 144, 1)',
                             'rgba(255, 255, 0, 1)', 
                             ],
-                        borderWidth: 1
+                        borderWidth: 2
                     }]
                 },
                 options: {
@@ -327,21 +314,21 @@
             new Chart(ctxDoughnut, {
                 type: 'doughnut',
                 data: {
-                    labels: data.labels,
+                    labels: {{ all_comparisons.labels|safe }},
                     datasets: [{
-                        label: 'Comparison Status',
-                        data: data.values,
+                        label: 'Comparison reports',
+                        data: {{ all_comparisons.values|safe }},
                         backgroundColor: [
-                            'rgba(224, 60, 49, 0.3)',
-                            'rgba(0, 120, 215, 0.3)',
-                            'rgba(66, 133, 33, 0.3)',
-                            'rgba(234, 67, 53, 0.3)',
-                            'rgba(12, 0, 128, 0.3)',
-                            'rgba(128, 18, 12, 0.3)',
-                            'rgba(128, 0, 128, 0.3)',
-                            'rgba(135, 206, 235, 0.3)',
-                            'rgba(112, 128, 144, 0.3)',
-                            'rgba(255, 255, 0, 0.3)'
+                            'rgba(224, 60, 49, 0.5)',
+                            'rgba(0, 120, 215, 0.5)',
+                            'rgba(66, 133, 33, 0.5)',
+                            'rgba(234, 67, 53, 0.5)',
+                            'rgba(12, 0, 128, 0.5)',
+                            'rgba(128, 18, 12, 0.5)',
+                            'rgba(128, 0, 128, 0.5)',
+                            'rgba(135, 206, 235, 0.5)',
+                            'rgba(112, 128, 144, 0.5)',
+                            'rgba(255, 255, 0, 0.5)', 
                         ],
                         borderColor: [
                             'rgba(224, 60, 49, 1)',
@@ -355,24 +342,13 @@
                             'rgba(112, 128, 144, 1)',
                             'rgba(255, 255, 0, 1)'
                         ],
-                        borderWidth: 1
+                        borderWidth: 2
                     }]
                 },
                 options: {
                     plugins: {
-                        legend: {
-                            position: 'top',
-                            display: true
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(tooltipItem) {
-                                    return tooltipItem.label + ': ' + tooltipItem.raw;
-                                }
-                            }
-                        }
-                    },
-                    responsive: true
+                        legend: { display: true }
+                    }
                 }
             });
 
@@ -380,10 +356,10 @@
             new Chart(ctxRadar, {
                 type: 'radar',
                 data: {
-                    labels: data.labels,
+                    labels: {{ all_comparisons.labels|safe }},
                     datasets: [{
-                        label: 'Comparison Reports',
-                        data: data.values,
+                        label: 'Compared Reports',
+                        data: {{ all_comparisons.values|safe }},
                         backgroundColor: [
                             'rgba(224, 60, 49, 1)',
                             'rgba(0, 120, 215, 1)',
@@ -470,7 +446,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: 'Categories'
+                            text: 'File Types'
                         }
                     },
                     y: {
@@ -483,8 +459,8 @@
                 },
                 plugins: {
                     legend: {
-                        display: false,
-                        position: 'top'
+                        display: false  ,
+                        //position: 'top'
                     },
                     datalabels: { // Optional: to show labels on top of each lollipop
                         color: 'black',
@@ -534,7 +510,7 @@
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'Categories' }
+                            title: { display: true, text: 'File Types' }
                         },
                         y: {
                             title: { display: true, text: 'Values' },
@@ -553,7 +529,7 @@
                         {
                             type: 'line',
                             data: data.values,
-                            borderColor:'rgba(2, 2, 2, 0.5)',
+                            borderColor:'rgba(100, 100, 100, 0.5)',
                             backgroundColor: [
                                 'rgba(224, 60, 49, 1)',
                                 'rgba(0, 120, 215, 1)',
@@ -607,7 +583,7 @@
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'Categories' }
+                            title: { display: true, text: 'File Types' }
                         },
                         y: {
                             title: { display: true, text: 'Values' },
@@ -660,15 +636,17 @@
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'Values' }
+                            title: { display: true, text: 'File Types' }
                         },
                         y: {
-                            title: { display: true, text: 'Categories' },
+                            title: { display: true, text: 'Values' },
                             beginAtZero: true
                         }
                     }
                 }
             });
         });
+
     </script>
-{% endblock body %}       
+
+{% endblock body %}
