@@ -107,14 +107,14 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'quality@vidyagxp.com'
-# EMAIL_HOST_PASSWORD = 'ubhe xiui mhsp gjng'
-# DEFAULT_FROM_EMAIL = 'Document Comparison Coordinator'
+EMAIL_HOST_USER = 'quality@vidyagxp.com'
+EMAIL_HOST_PASSWORD = 'ubhe xiui mhsp gjng'
+DEFAULT_FROM_EMAIL = 'Document Comparison Coordinator'
 
 
-EMAIL_HOST_USER = 'adityapatel8912@gmail.com'
-EMAIL_HOST_PASSWORD = 'gqpibgqdoiutfews'
-DEFAULT_FROM_EMAIL = 'adityapatel8912@gmail.com'
+# EMAIL_HOST_USER = 'adityapatel8912@gmail.com'
+# EMAIL_HOST_PASSWORD = 'gqpibgqdoiutfews'
+# DEFAULT_FROM_EMAIL = 'adityapatel8912@gmail.com'
 
 
 # Internationalization
