@@ -163,7 +163,7 @@ def user_profile(request, user_id):
 # Comparison analytics 
 @login_required
 def analytics(request):
-    
+    # Accessing data values from DATABASE
     total_docx = len(Form.objects.filter(doc_format = 'docx'))
     total_pdf = len(Form.objects.filter(doc_format = 'pdf'))
     total_spreadsheet = len(Form.objects.filter(doc_format = 'xlsx'))
@@ -307,6 +307,13 @@ def formView(request):
     documents = Form.objects.filter(new=True)
     document_count = documents.count()
     formData = Form.objects.last()
+    last_report = ComparisonReport.objects.last()
+
+    # Generate new report number
+    if last_report:
+        new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
+    else:
+        new_report_number = "DCR1001"
 
     if formData:
         doc_id = formData.document_id + 1
@@ -370,13 +377,6 @@ def formView(request):
             messages.warning(request, "All fields are required to be filled!")
     else:
         form = DocumentForm()
-        last_report = ComparisonReport.objects.last()
-
-        # Generate new report number
-        if last_report:
-            new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
-        else:
-            new_report_number = "DCR1001"
 
     # Render the form page
     return render(request, "form.html", {
