@@ -86,7 +86,14 @@ def userManagement(request):
     users = User.objects.all()
 
     if query:
-        users = users.filter(username__icontains=query)
+        users = users.filter(
+            Q(id__icontains=query) |
+            Q(username__icontains=query) |
+            Q(email__icontains=query)
+            # Q(comparison_date__icontains=query) |
+            # Q(compared_by__icontains=query)
+        ).distinct()
+    
     if filter_by:
         if filter_by == 'active':
             users = users.filter(is_active=True)
@@ -255,7 +262,7 @@ def dashboard(request):
     reports = ComparisonReport.objects.all()
     
     if filter_by:
-        valid_filters = ['docx', 'pdf', 'xlsx', 'ppt', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
+        valid_filters = ['docx', 'pdf', 'xlsx', 'pptx', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
         if filter_by in valid_filters:
             reports = reports.filter(comparison_between__icontains=filter_by)
 
@@ -264,7 +271,7 @@ def dashboard(request):
         reports = reports.filter(
             Q(report_number__icontains=query) |
             Q(comparison_reason__icontains=query) |
-            Q(compared_documents__name__icontains=query) |
+            Q(comparison_between__icontains=query) |
             Q(comparison_date__icontains=query) |
             Q(compared_by__icontains=query)
         ).distinct()
@@ -294,22 +301,18 @@ def viewComparison(request, report_id):
     })
 
 def formView(request):
-    # Check if the user is authenticated
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
 
-    # Get optional query parameters
     report_number = request.GET.get('report_number')
     success = request.GET.get('success')
 
-    # Initialize the form and document-related variables
     documents = Form.objects.filter(new=True)
     document_count = documents.count()
     formData = Form.objects.last()
     last_report = ComparisonReport.objects.last()
 
-    # Generate new report number
     if last_report:
         new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
     else:
@@ -366,7 +369,6 @@ def formView(request):
                     'documents': documents
                 })
 
-            # Save the document with additional fields
             document_instance = form.save(commit=False)
             document_instance.comparison_between = comparison_between
             document_instance.save()
@@ -378,7 +380,6 @@ def formView(request):
     else:
         form = DocumentForm()
 
-    # Render the form page
     return render(request, "form.html", {
         'form': form,
         'doc_id': doc_id,
