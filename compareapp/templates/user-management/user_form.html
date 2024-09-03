@@ -33,22 +33,38 @@
                         <div class="mb-6">
                             <label for="username" class="block text-white font-medium mb-2">Username</label>
                             <div class="w-full">{{ form.username }}</div>
-                            <p class="text-red-600 text-sm mt-1">{{ form.username.errors }}</p>
+                            {% if form.username.errors %}
+                                <div class="text-red-500 font-semibold">
+                                    {{ form.username.errors }}    
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="mb-6">
                             <label for="first_name" class="block text-white font-medium mb-2">First Name</label>
                             <div class="w-full">{{ form.first_name }}</div>
-                            <p class="text-red-600 text-sm mt-1">{{ form.first_name.errors }}</p>
+                            {% if form.first_name.errors %}
+                                <div class="text-red-500 font-semibold">
+                                    {{ form.first_name.errors }}    
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="mb-6">
                             <label for="last_name" class="block text-white font-medium mb-2">Last Name</label>
                             <div class="w-full">{{ form.last_name }}</div>
-                            <p class="text-red-600 text-sm mt-1">{{ form.last_name.errors }}</p>
+                            {% if form.last_name.errors %}
+                                <div class="text-red-500 font-semibold">
+                                    {{ form.last_name.errors }}    
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="mb-6">
                             <label for="email" class="block text-white font-medium mb-2">Email</label>
                             <div class="w-full">{{ form.email }}</div>
-                            <p class="text-red-600 text-sm mt-1">{{ form.email.errors }}</p>
+                            {% if form.email.errors %}
+                                <div class="text-red-500 font-semibold">
+                                    {{ form.email.errors }}    
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -116,7 +132,11 @@
                             </div>
                         </div>
 
-                        <p class="text-red-600 text-sm mt-1">{{ form.permissions.errors }}</p>
+                        {% if form.permissions.errors %}
+                            <div class="text-red-500 font-semibold">
+                                {{ form.permissions.errors }}    
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
