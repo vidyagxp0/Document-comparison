@@ -458,10 +458,15 @@ def comparison(request: HttpRequest):
         return redirect('login')
 
     reason = request.GET.get('reason', '')
-    comparedBy = request.user.username.upper()
     documents = Form.objects.filter(new=True)
     last_report = ComparisonReport.objects.last()
+    user_full_name = request.user.get_full_name().title()
 
+    if not user_full_name:
+        comparedBy = request.user.username.title()
+    else:
+        comparedBy = user_full_name
+    
     if not documents:
         messages.error(request, "No files found for comparison!")
         return redirect('form')

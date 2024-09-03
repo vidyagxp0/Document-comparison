@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
+from django.core.exceptions import ValidationError
 
 class DocumentForm(forms.ModelForm):
     class Meta:
@@ -100,6 +101,13 @@ class UserForm(forms.ModelForm):
                 'class': 'form-checkbox text-cyan-600 focus:ring-cyan-500 border-cyan-300 rounded',
             }),
         }
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            if User.objects.filter(email=email).exclude(id=self.instance.id).exists():
+                raise ValidationError("A user with that email already exists. please use another one!")
+        return email
 
 class FeedbackForm(forms.ModelForm):
     class Meta:
