@@ -6,6 +6,8 @@
 
 {% block body %}
 
+{% load static %}
+
 <div class="container mx-auto my-12 px-6">
     <div class="text-start mb-8">
         <h1 class="text-3xl font-bold text-white">{% if user %}Edit User{% else %}Add New User{% endif %}</h1>
@@ -22,138 +24,156 @@
         </div>
     </div>
     <div class="bg-cyan-900 shadow-lg rounded-lg p-8">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="flex gap-6">
-                <div class="flex flex-wrap gap-6 w-full">
-                    <div class="w-full">
-                        <p class="text-white font-bold text-xl">Personal Information</p>
+        {% if perms.auth.add_user or perms.auth.change_user %}
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="flex gap-6">
+                    <div class="flex flex-wrap gap-6 w-full">
+                        <div class="w-full">
+                            <p class="text-white font-bold text-xl">Personal Information</p>
+                        </div>
+                        <div class="bg-cyan-800 rounded-lg p-6 w-full">
+                            <div class="mb-6">
+                                <label for="username" class="block text-white font-medium mb-2">Username</label>
+                                <div class="w-full">{{ form.username }}</div>
+                                {% if form.username.errors %}
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.username.errors }}    
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-6">
+                                <label for="first_name" class="block text-white font-medium mb-2">First Name</label>
+                                <div class="w-full">{{ form.first_name }}</div>
+                                {% if form.first_name.errors %}
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.first_name.errors }}    
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-6">
+                                <label for="last_name" class="block text-white font-medium mb-2">Last Name</label>
+                                <div class="w-full">{{ form.last_name }}</div>
+                                {% if form.last_name.errors %}
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.last_name.errors }}    
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-6">
+                                <label for="email" class="block text-white font-medium mb-2">Email</label>
+                                <div class="w-full">{{ form.email }}</div>
+                                {% if form.email.errors %}
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.email.errors }}    
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-6 w-full h-full">
+                        <div class="w-full">
+                            <p class="text-white font-bold text-xl">User Status</p>
+                        </div>
+                        <div class="bg-cyan-800 rounded-lg p-6 w-full">
+                            <div class="mb-6">
+                                <label for="superuser_status" class="block text-white font-medium mb-2">User Type</label>
+                                <div class="flex items-center">
+                                    {{ form.is_superuser }}
+                                    <span class="ml-2 text-white">Superuser</span>
+                                </div>
+                            </div>
+                            <div class="mb-6">
+                                <label for="status" class="block text-white font-medium mb-2">Status</label>
+                                <div class="flex items-center">
+                                    {{ form.is_active }}
+                                    <span class="ml-2 text-white">Active</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-6 mt-8">
+                    <div class="w-full md:w-1/4">
+                        <p class="text-white font-bold text-xl">User Permissions</p>
                     </div>
                     <div class="bg-cyan-800 rounded-lg p-6 w-full">
                         <div class="mb-6">
-                            <label for="username" class="block text-white font-medium mb-2">Username</label>
-                            <div class="w-full">{{ form.username }}</div>
-                            {% if form.username.errors %}
-                                <div class="text-red-500 font-semibold">
-                                    {{ form.username.errors }}    
+                            <label for="permissions" class="block text-white font-medium mb-2">Permissions</label>
+                            <div class="flex items-center mb-4">
+                                <input type="checkbox" id="select-all" class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3">
+                                <label for="select-all" class="text-gray-800 font-medium">Select All</label>
+                            </div>
+
+                            <div class="flex flex-col md:flex-row gap-6">
+                                <div class="p-4 rounded-lg w-full bg-white">
+                                    <h3 class="text-gray-600 font-bold mb-2">Available Permissions</h3>
+                                    <div id="available-permissions">
+                                        {% for permission in form.permissions.field.queryset %}
+                                            <div>
+                                                <input type="checkbox" id="permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}"
+                                                    {% if permission in user_permissions %}checked{% endif %}
+                                                    class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
+                                                <label for="permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-6">
-                            <label for="first_name" class="block text-white font-medium mb-2">First Name</label>
-                            <div class="w-full">{{ form.first_name }}</div>
-                            {% if form.first_name.errors %}
-                                <div class="text-red-500 font-semibold">
-                                    {{ form.first_name.errors }}    
+                            
+                                <div class="p-4 rounded-lg w-full bg-white">
+                                    <h3 class="text-gray-600 font-bold mb-2">Selected Permissions</h3>
+                                    <div id="selected-permissions" class="flex flex-col">
+                                        <!-- Selected permissions will appear here -->
+                                        {% for permission in user_permissions %}
+                                            <div>
+                                                <input type="checkbox" id="selected_permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}" checked class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
+                                                <label for="selected_permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-6">
-                            <label for="last_name" class="block text-white font-medium mb-2">Last Name</label>
-                            <div class="w-full">{{ form.last_name }}</div>
-                            {% if form.last_name.errors %}
+                            </div>
+
+                            {% if form.permissions.errors %}
                                 <div class="text-red-500 font-semibold">
-                                    {{ form.last_name.errors }}    
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="mb-6">
-                            <label for="email" class="block text-white font-medium mb-2">Email</label>
-                            <div class="w-full">{{ form.email }}</div>
-                            {% if form.email.errors %}
-                                <div class="text-red-500 font-semibold">
-                                    {{ form.email.errors }}    
+                                    {{ form.permissions.errors }}    
                                 </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-                <div class="flex flex-wrap gap-6 w-full h-full">
-                    <div class="w-full">
-                        <p class="text-white font-bold text-xl">User Status</p>
-                    </div>
-                    <div class="bg-cyan-800 rounded-lg p-6 w-full">
-                        <div class="mb-6">
-                            <label for="superuser_status" class="block text-white font-medium mb-2">User Type</label>
-                            <div class="flex items-center">
-                                {{ form.is_superuser }}
-                                <span class="ml-2 text-white">Superuser</span>
-                            </div>
-                        </div>
-                        <div class="mb-6">
-                            <label for="status" class="block text-white font-medium mb-2">Status</label>
-                            <div class="flex items-center">
-                                {{ form.is_active }}
-                                <span class="ml-2 text-white">Active</span>
-                            </div>
-                        </div>
-                    </div>
+
+                <div class="flex justify-end gap-4 mt-8 items-center">
+                    <a href="{% url 'user-management' %}" class="bg-slate-300 hover:bg-slate-200 text-gray-700 font-bold rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                        Cancel
+                    </a>
+
+                    {% if perms.auth.add_user and not user %}
+                        <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 font-bold text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                            Add User
+                        </button>
+                    {% elif perms.auth.change_user and user %}
+                        <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 font-bold text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                            Update User
+                        </button>
+                    {% else %}
+                        <p class="text-red-600 font-semibold bg-slate-100 rounded-lg py-2 px-4">
+                            You do not have permission to add or update users.
+                        </p>
+                    {% endif %}
                 </div>
+            </form>
+
+        {% else %}
+            <div class="text-center mt-5 border rounded-lg p-16 bg-slate-100">
+                <div class="flex justify-center">
+                    <img src="{% static 'images/permission-error.png' %}" class="mx-auto my-3" width="100" height="100" alt="Permission Denied">
+                </div>
+                <p class="text-red-700 mb-6 text-3xl font-semibold">Permission Denied</p>
+                <p class="text-gray-500 mb-8">You do not have permission to add and update the user. Please contact your administrator if you believe this is an error.</p>
             </div>
-
-            <div class="flex flex-wrap gap-6 mt-8">
-                <div class="w-full md:w-1/4">
-                    <p class="text-white font-bold text-xl">User Permissions</p>
-                </div>
-                <div class="bg-cyan-800 rounded-lg p-6 w-full">
-                    <div class="mb-6">
-                        <label for="permissions" class="block text-white font-medium mb-2">Permissions</label>
-                        <div class="flex items-center mb-4">
-                            <input type="checkbox" id="select-all" class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3">
-                            <label for="select-all" class="text-gray-800 font-medium">Select All</label>
-                        </div>
-
-                        <div class="flex flex-col md:flex-row gap-6">
-                            <div class="p-4 rounded-lg w-full bg-white">
-                                <h3 class="text-gray-600 font-bold mb-2">Available Permissions</h3>
-                                <div id="available-permissions">
-                                    {% for permission in form.permissions.field.queryset %}
-                                        <div>
-                                            <input type="checkbox" id="permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}"
-                                                {% if permission in user_permissions %}checked{% endif %}
-                                                class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
-                                            <label for="permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        
-                            <div class="p-4 rounded-lg w-full bg-white">
-                                <h3 class="text-gray-600 font-bold mb-2">Selected Permissions</h3>
-                                <div id="selected-permissions" class="flex flex-col">
-                                    <!-- Selected permissions will appear here -->
-                                    {% for permission in user_permissions %}
-                                        <div>
-                                            <input type="checkbox" id="selected_permission_{{ permission.id }}" name="permissions" value="{{ permission.id }}" checked class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-2">
-                                            <label for="selected_permission_{{ permission.id }}" class="text-gray-700">{{ permission.name }}</label>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-
-                        {% if form.permissions.errors %}
-                            <div class="text-red-500 font-semibold">
-                                {{ form.permissions.errors }}    
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-4 mt-8 items-center">
-                <a href="{% url 'user-management' %}" class="bg-slate-300 hover:bg-slate-200 text-gray-700 font-bold rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                    Cancel
-                </a>
-                {% if perms.auth.add_user %}
-                    <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 font-bold text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
-                        {% if user %}Update User{% else %}Add User{% endif %}
-                    </button>
-                {% else %}
-                    <p class="text-red-600 font-semibold bg-slate-100 rounded-lg py-2 px-4">You do not have permission to add or update users.</p>
-                {% endif %}
-            </div>
-        </form>
+        {% endif %}
     </div>
 </div>
 
