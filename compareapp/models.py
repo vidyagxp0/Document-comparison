@@ -122,19 +122,6 @@ class Document(models.Model):
         ('elec', 'Electron'),
     )
 
-    # DOC_FORMAT_CHOICES = (
-    #     ('pdf', 'PDF'),
-    #     ('docx', 'Word Document (.docx)'),
-    #     ('xlsx', 'Spreadsheet'),
-    #     ('pptx', 'Presentation'),
-    #     ('vsd', 'Visio File'),
-    #     ('mp3', 'Audio (.mp3)'),
-    #     ('mp4', 'Video (.mp4)'),
-    #     ('png', 'Image File'),
-    #     ('txt', 'Text File'),
-    #     ('other', 'Other'),
-    # )
-
     def upload_to_path(instance, filename):
         format_paths = {
             'pdf': 'documents/pdf/',
@@ -154,7 +141,6 @@ class Document(models.Model):
     language = models.CharField(max_length=255, choices=LANGUAGE_CHOICES, default='en')
     version = models.CharField(max_length=255, default='1.0.0')
     doc_type = models.CharField(max_length=255, choices=DOC_TYPE_CHOICES, default='stp')
-    # doc_format = models.CharField(max_length=255, choices=DOC_FORMAT_CHOICES)
     doc_format = models.CharField(max_length=255)
     comments = models.TextField()
     comparison_status = models.CharField(max_length=255, null=True, blank=True)

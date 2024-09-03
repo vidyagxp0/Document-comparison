@@ -72,12 +72,17 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'is_superuser', 'is_active', 'permissions']
+        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'date_joined', 'is_superuser', 'is_active', 'permissions']
         widgets = {
             'username': forms.TextInput(attrs={
                 'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
                 'required': 'required',
                 'placeholder': 'Enter username',
+            }),
+            'password': forms.PasswordInput(attrs={
+                'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
+                'required': 'required',
+                'placeholder': 'Enter user password',
             }),
             'first_name': forms.TextInput(attrs={
                 'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
@@ -93,6 +98,13 @@ class UserForm(forms.ModelForm):
                 'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
                 'required': 'required',
                 'placeholder': 'Enter email address',
+            }),
+            'date_joined': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
+                'required': 'required',
+                'readonly': 'readonly',
+                'title': 'This field is set as read-only.'
             }),
             'is_superuser': forms.CheckboxInput(attrs={
                 'class': 'form-checkbox text-cyan-600 focus:ring-cyan-500 border-cyan-300 rounded',

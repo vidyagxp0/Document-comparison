@@ -34,15 +34,6 @@
                         </div>
                         <div class="bg-cyan-800 rounded-lg p-6 w-full">
                             <div class="mb-6">
-                                <label for="username" class="block text-white font-medium mb-2">Username</label>
-                                <div class="w-full">{{ form.username }}</div>
-                                {% if form.username.errors %}
-                                    <div class="text-red-500 font-semibold">
-                                        {{ form.username.errors }}    
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="mb-6">
                                 <label for="first_name" class="block text-white font-medium mb-2">First Name</label>
                                 <div class="w-full">{{ form.first_name }}</div>
                                 {% if form.first_name.errors %}
@@ -69,6 +60,15 @@
                                     </div>
                                 {% endif %}
                             </div>
+                            <div class="mb-6">
+                                <label for="date_joined" class="block text-white font-medium mb-2">Joining Date</label>
+                                <div class="w-full">{{ form.date_joined }}</div>
+                                {% if form.date_joined.errors %}
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.date_joined.errors }}    
+                                    </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-6 w-full h-full">
@@ -76,19 +76,45 @@
                             <p class="text-white font-bold text-xl">User Status</p>
                         </div>
                         <div class="bg-cyan-800 rounded-lg p-6 w-full">
-                            <div class="mb-6">
+                            <div class="mb-4">
                                 <label for="superuser_status" class="block text-white font-medium mb-2">User Type</label>
                                 <div class="flex items-center">
                                     {{ form.is_superuser }}
-                                    <span class="ml-2 text-white">Superuser</span>
+                                    <label for="id_is_superuser" class="ml-2 text-cyan-500 font-semibold">Superuser</label>
                                 </div>
                             </div>
-                            <div class="mb-6">
+                            <div class="mb-4">
                                 <label for="status" class="block text-white font-medium mb-2">Status</label>
                                 <div class="flex items-center">
                                     {{ form.is_active }}
-                                    <span class="ml-2 text-white">Active</span>
+                                    <label for="id_is_active" class="ml-2 text-cyan-500 font-semibold">Active</label>
                                 </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="username" class="block text-white font-medium mb-2">Username</label>
+                                <div class="w-full">{{ form.username }}</div>
+                                {% if form.username.errors %}
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.username.errors }}    
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-4">
+                                <label for="username" class="block text-white font-medium mb-2">Password Creation Type</label>
+                                <select name="password_type" id="password_type" class="form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500">
+                                    <option value="">Select creation type</option>
+                                    <option value="manually">Manually</option>
+                                    <option value="bymail">By Mail</option>
+                                </select>
+                            </div>
+                            <div class="mb-0">
+                                <label for="password" class="block text-white font-medium mb-2">Password</label>
+                                <div class="w-full">{{ form.password }}</div>
+                                {% if form.password.errors %}
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.password.errors }}    
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
