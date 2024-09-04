@@ -5,26 +5,34 @@ from django.utils import timezone
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
+from django.contrib.auth.hashers import make_password
 from django.core.exceptions import ValidationError
+
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ['title', 'author', 'creation_date', 'version', 'language', 'doc_type', 'doc_format', 'upload_document', 'comments']
         widgets = {
-            'creation_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'}),
+            'creation_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'}),
         }
 
     def __init__(self, *args, **kwargs):
         super(DocumentForm, self).__init__(*args, **kwargs)
-        self.fields['title'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document title'})
-        self.fields['author'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document author'})
-        self.fields['version'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document version'})
-        self.fields['language'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
-        self.fields['doc_type'].widget.attrs.update({'class': 'form-select mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
-        self.fields['doc_format'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'readonly': 'readonly', 'title': 'This field is read-only.'})
-        self.fields['upload_document'].widget.attrs.update({'class': 'form-input mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
-        self.fields['comments'].widget.attrs.update({'class': 'form-textarea h-14 mt-1 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter comments here'})
+        self.fields['title'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document title'})
+        self.fields['author'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document author'})
+        self.fields['version'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document version'})
+        self.fields['language'].widget.attrs.update({'class': 'form-select mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
+        self.fields['doc_type'].widget.attrs.update({'class': 'form-select mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
+        self.fields['doc_format'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'readonly': 'readonly', 'title': 'This field is read-only.'})
+        self.fields['upload_document'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
+        self.fields['comments'].widget.attrs.update({'class': 'form-textarea h-14 mb-4 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter comments here...'})
 
 class CustomPasswordResetForm(PasswordResetForm):
     def clean_email(self):
@@ -70,6 +78,25 @@ class UserForm(forms.ModelForm):
         required=True
     )
 
+    PASSWORD_TYPE_CHOICES = [
+        ('manual', 'Manual'),
+        ('bymail', 'By Mail'),
+    ]
+
+    password_type = forms.ChoiceField(
+        choices=PASSWORD_TYPE_CHOICES,
+        widget=forms.RadioSelect,
+        required=True,
+    )
+
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
+            'placeholder': 'Enter user password',
+        }),
+        required=False,
+    )
+
     class Meta:
         model = User
         fields = ['username', 'password', 'first_name', 'last_name', 'email', 'date_joined', 'is_superuser', 'is_active', 'permissions']
@@ -78,11 +105,6 @@ class UserForm(forms.ModelForm):
                 'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
                 'required': 'required',
                 'placeholder': 'Enter username',
-            }),
-            'password': forms.PasswordInput(attrs={
-                'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
-                'required': 'required',
-                'placeholder': 'Enter user password',
             }),
             'first_name': forms.TextInput(attrs={
                 'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
@@ -113,13 +135,69 @@ class UserForm(forms.ModelForm):
                 'class': 'form-checkbox text-cyan-600 focus:ring-cyan-500 border-cyan-300 rounded',
             }),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password_type = cleaned_data.get('password_type')
+        password = cleaned_data.get('password')
+
+        if password_type == 'manual':
+            if not password:
+                self.add_error('password', "Password is required when selecting 'Manual' password type.")
+            elif len(password) < 8:
+                self.add_error('password', "Password must be at least 8 characters long.")
+
+        # add more validation here
+
+        return cleaned_data
     
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if email:
             if User.objects.filter(email=email).exclude(id=self.instance.id).exists():
-                raise ValidationError("A user with that email already exists. please use another one!")
+                raise ValidationError("A user with that email already exists.")
         return email
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None) 
+        super().__init__(*args, **kwargs)
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get('password')
+        password_type = self.cleaned_data.get('password_type')
+
+        if password_type == 'manual' and password:
+            user.password = make_password(password)
+        
+        if password_type == 'bymail':
+            # Send email for password creation
+            subject = "Create Your Password"
+            email_template_name = "password-base/password_creation_email.html"
+            context = {
+                "email": user.email,
+                "domain": self.request.META['HTTP_HOST'],
+                "site_name": "Doc Comparison Pro",
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "user": user,
+                "token": default_token_generator.make_token(user),
+                "protocol": "http",
+            }
+            email_message = render_to_string(email_template_name, context)
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=email_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user.email]
+            )
+            email.attach_alternative(email_message, "text/html")
+            email.send(fail_silently=False)
+
+        if commit:
+            user.save()
+            self.save_m2m()
+
+        return user
 
 class FeedbackForm(forms.ModelForm):
     class Meta:

@@ -110,7 +110,7 @@ def add_edit_user(request, user_id=None):
         user_permissions = user.user_permissions.all()
     else:
         user = None
-        form = UserForm(request.POST or None)
+        form = UserForm(request.POST or None, request=request)
         user_permissions = []
 
     if request.method == 'POST':
@@ -120,7 +120,11 @@ def add_edit_user(request, user_id=None):
             if user_id:
                 messages.success(request, 'User updated successfully.')
             else:
-                messages.success(request, 'User created successfully.')
+                # Need more modification for this
+                if form.password_type == "bymail":
+                    messages.success(request, 'User created and an email has been sent to the user to create password.')
+                else:
+                    messages.success(request, 'User created successfully.')
             return redirect('user-management')
 
     return render(request, 'user-management/user_form.html', {

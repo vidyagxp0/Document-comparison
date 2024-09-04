@@ -160,6 +160,7 @@ class ComparisonReport(models.Model):
     comparison_summary = models.JSONField()
     comparison_date = models.DateField(default=timezone.now)
     compared_by = models.CharField(max_length=255)
+    comparison_status = models.BooleanField(default=True)
     report_path = models.TextField()
     comparison_between = models.CharField(max_length=255, default=None)
 

@@ -37,7 +37,11 @@
                 </a>
             </div>
             <div class="flex gap-4 items-center relative">
-                <div class="border-r-2 border-yellow-600 h-8 flex items-center">
+                <div class="bg-slate-400 text-slate-800 py-1 px-2 rounded-full font-semibold flex items-center" title="View last login time">
+                    <p class="mr-1"><img class="size-5" src="{% static "images/clock.png" %}" alt="" srcset=""></p>
+                    <p>{{ user.last_login|date:"D M h:i:s A" }}</p>
+                </div>
+                <div class="border-r-2 border-yellow-600 h-8 flex items-center md:block hidden">
                     <a href="mailto:support@doccomparisonpro.com" class="text-blue-600 text-lg px-4">support@doccomparisonpro.com</a>
                 </div>
                 <div class="relative">

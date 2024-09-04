@@ -103,11 +103,16 @@
                                 <label for="username" class="block text-white font-medium mb-2">Password Creation Type</label>
                                 <select name="password_type" id="password_type" class="form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500">
                                     <option value="">Select creation type</option>
-                                    <option value="manually">Manually</option>
+                                    <option value="manual">Manually</option>
                                     <option value="bymail">By Mail</option>
                                 </select>
+                                {% if form.password_type.errors %}
+                                <div class="text-red-500 font-semibold">
+                                    {{ form.password_type.errors }}    
+                                </div>
+                            {% endif %}
                             </div>
-                            <div class="mb-0">
+                            <div id="password-field-container" class="mb-0">
                                 <label for="password" class="block text-white font-medium mb-2">Password</label>
                                 <div class="w-full">{{ form.password }}</div>
                                 {% if form.password.errors %}
@@ -222,6 +227,23 @@
     // Run this function when the page loads to pre-select permissions
     document.addEventListener('DOMContentLoaded', function() {
         moveSelectedPermissions();
+
+        const passwordTypeDropdown = document.getElementById('password_type');
+        const passwordFieldContainer = document.getElementById('password-field-container');
+
+        function togglePasswordField() {
+            if (passwordTypeDropdown.value === 'manual') {
+                passwordFieldContainer.style.display = 'block';
+            } else {
+                passwordFieldContainer.style.display = 'none';
+            }
+        }
+
+        // Run on page load to check the initial state
+        togglePasswordField();
+
+        // Add event listener to toggle password field based on selection
+        passwordTypeDropdown.addEventListener('change', togglePasswordField);
     });
 
     document.getElementById('select-all').onclick = function() {

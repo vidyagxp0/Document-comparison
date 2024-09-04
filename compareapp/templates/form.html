@@ -22,7 +22,7 @@
         <div class="shadow-2xl rounded-lg p-6 backdrop-blur-3xl border border-cyan-900 bg-cyan-950">
             <div class="flex-row md:flex gap-6">
                 <div class="w-full md:w-[70%]">
-                    <div class="mb-3 text-slate-400 text-lg font-semibold">
+                    <div class="mb-3 text-slate-400 font-semibold">
                         File Number :  <span class="text-blue-500 font-medium">{{ new_report_number|default:"DCR1001" }}<span class="text-xl font-normal text-slate-400">/</span>{{ doc_id }}</span>
                     </div>
                     <form method="post" enctype="multipart/form-data" class="rounded-lg p-4 border border-cyan-900 bg-cyan-800">
@@ -35,7 +35,7 @@
                         </div>
 
                         {% if perms.compareapp.add_document %}
-                            <button type="submit" class="bg-blue-600 shadow-2xl hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload</button>
+                            <button type="submit" class="bg-blue-700 shadow-2xl hover:-translate-y-0.5 hover:delay-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-2">Upload Document</button>
                         {% else %}
                             <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload files.</div>
                         {% endif %}
@@ -46,14 +46,14 @@
                     <div class="mt-10 text-start font-bold w-full mb-3 text-slate-400">Files Insights</div>
                     <div class="p-4 rounded-lg bg-cyan-800 w-full">
                         <div class="">
-                            <div class="rounded-lg bg-cyan-400 py-2 px-4 text-slate-700 font-bold text-center">
+                            <div class="rounded-lg bg-cyan-600 py-2 px-4 text-slate-700 font-bold text-center">
                                 <p class="my-3 text-white text-xl"> Files Count </p>
-                                <a href="{% url "initial-document" %}" title="View all files ready for the comparison" class="text-blue-500 font-extrabold text-4xl">{{ document_count }}</a>
+                                <a href="{% url "initial-document" %}" title="View all files ready for the comparison" class="text-indigo-700 hover:text-indigo-600 font-extrabold text-4xl">{{ document_count }}</a>
                             </div>
                         </div>
                         
                         <div class="mt-4 flex justify-between">
-                            <button onclick="openCTModal()" class="bg-red-800 hover:bg-red-700 text-white font-bold rounded-lg py-2 px-3">Reset Process</button>
+                            <button onclick="openCTModal()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg py-2 px-3">Reset Process</button>
 
                             {% if document_count >= 2 %}
                                 {% if perms.compareapp.add_comparisonreport %}
