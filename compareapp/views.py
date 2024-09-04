@@ -10,7 +10,7 @@ from django.templatetags.static import static
 from docx.oxml.ns import qn
 from django.contrib import messages
 from docx import Document
-from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm
+from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm, CustomSetPasswordForm
 from .models import Document as Form, ComparisonReport, Feedback
 from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
@@ -32,6 +32,7 @@ import fitz
 # mail configuration  
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode
 from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
@@ -89,9 +90,9 @@ def userManagement(request):
         users = users.filter(
             Q(id__icontains=query) |
             Q(username__icontains=query) |
-            Q(email__icontains=query)
-            # Q(comparison_date__icontains=query) |
-            # Q(compared_by__icontains=query)
+            Q(email__icontains=query) |
+            Q(comparison_status__icontains=query) |
+            Q(is_superuser__icontains=query)
         ).distinct()
     
     if filter_by:
@@ -120,9 +121,10 @@ def add_edit_user(request, user_id=None):
             if user_id:
                 messages.success(request, 'User updated successfully.')
             else:
-                # Need more modification for this
-                if form.password_type == "bymail":
-                    messages.success(request, 'User created and an email has been sent to the user to create password.')
+                passwd_type = form.cleaned_data.get('password_type')
+
+                if passwd_type == "bymail":
+                    messages.success(request, 'User created and a password creation request has been sent to the user.')
                 else:
                     messages.success(request, 'User created successfully.')
             return redirect('user-management')
@@ -254,6 +256,27 @@ def password_reset_request(request):
         form = CustomPasswordResetForm()
 
     return render(request, "password-base/password_reset_form.html", {"form": form})
+
+
+def password_creation_view(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = get_object_or_404(User, pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            form = CustomSetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                return redirect('password_create_done')
+        else:
+            form = CustomSetPasswordForm(user)
+    else:
+        form = None
+
+    return render(request, 'password-base/password_creation_confirm.html', {'form': form})
 
 def dashboard(request):
     if not request.user.is_authenticated:

@@ -33,13 +33,18 @@ urlpatterns = [
     path('comparison/', views.comparison, name="compare"),
     path('comparison/preview/<str:report>', views.preview, name="preview"),
 
-    # To chatPDF
+    # For chatPDF
     path('upload-pdf/', views.uploadPDF, name='upload-pdf'),
     path('proxy-chat-pdf/', views.proxy_chat_pdf, name='proxy-chat-pdf'),
 
-    # Password Resetting
-    path('password_reset/', views.password_reset_request, name='password_reset'),
+    # Password resetting
+    path('password-reset/', views.password_reset_request, name='password_reset'),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password-base/password_reset_confirm.html'), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password-base/password_reset_complete.html'), name='password_reset_complete'),
+
+    # Password Creation
+    path('password-creation/<uidb64>/<token>/', views.password_creation_view, name='password_create'),
+    path('password-creation/done/', auth_views.PasswordResetDoneView.as_view(template_name='password-base/password_create_done.html'), name='password_create_done'),
+
 
 ]

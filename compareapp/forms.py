@@ -2,7 +2,7 @@ from django import forms
 from .models import Document, Feedback
 from django.utils import timezone
 
-from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 from django.contrib.auth.hashers import make_password
@@ -199,6 +199,26 @@ class UserForm(forms.ModelForm):
 
         return user
 
+class CustomSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500',
+            'placeholder': 'Enter your new password',
+        }),
+    )
+    new_password2 = forms.CharField(
+        label="Confirm New Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-input w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500',
+            'placeholder': 'Confirm your new password',
+        }),
+    )
+
+    class Meta:
+        model = forms.models.User
+        fields = ['new_password1', 'new_password2']
+        
 class FeedbackForm(forms.ModelForm):
     class Meta:
         model = Feedback
