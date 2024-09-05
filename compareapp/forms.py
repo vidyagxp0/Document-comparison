@@ -85,7 +85,7 @@ class UserForm(forms.ModelForm):
     password_type = forms.ChoiceField(
         choices=PASSWORD_TYPE_CHOICES,
         widget=forms.RadioSelect,
-        required=True,
+        required=False,
     )
 
     password = forms.CharField(
@@ -135,18 +135,26 @@ class UserForm(forms.ModelForm):
             }),
         }
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+
+        if self.instance.pk:
+            self.fields.pop('password_type')
+            self.fields['password'].required = False
+            self.fields['password'].widget.attrs['placeholder'] = 'Leave blank to keep current password'
+
     def clean(self):
         cleaned_data = super().clean()
         password_type = cleaned_data.get('password_type')
         password = cleaned_data.get('password')
 
-        if password_type == 'manual':
-            if not password:
-                self.add_error('password', "Password is required when selecting 'Manual' password type.")
-            elif len(password) < 8:
-                self.add_error('password', "Password must be at least 8 characters long.")
-
-        # add more validation here
+        if not self.instance.pk:
+            if password_type == 'manual':
+                if not password:
+                    self.add_error('password', "Password is required when selecting 'Manual' password type.")
+                elif len(password) < 8:
+                    self.add_error('password', "Password must be at least 8 characters long.")
 
         return cleaned_data
     
@@ -156,19 +164,19 @@ class UserForm(forms.ModelForm):
             if User.objects.filter(email=email).exclude(id=self.instance.id).exists():
                 raise ValidationError("A user with that email already exists.")
         return email
-    
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None) 
-        super().__init__(*args, **kwargs)
-    
+
     def save(self, commit=True):
         user = super().save(commit=False)
         password = self.cleaned_data.get('password')
         password_type = self.cleaned_data.get('password_type')
 
-        if password_type == 'manual' and password:
+        if not self.instance.pk:
+            if password_type == 'manual' and password:
+                user.password = make_password(password)
+
+        elif password:
             user.password = make_password(password)
-        
+
         if commit:
             user.save()
             self.save_m2m()

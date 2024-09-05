@@ -118,35 +118,37 @@ def add_edit_user(request, user_id=None):
         if form.is_valid():
             user = form.save()
             user.user_permissions.set(form.cleaned_data['permissions'])
-            
-            passwd_type = form.cleaned_data.get('password_type')
 
-            if passwd_type == "bymail" and not user_id:
-                # Send email for password creation
-                subject = "Create Your Password"
-                email_template_name = "password-base/password_creation_email.html"
-                context = {
-                    "email": user.email,
-                    "domain": request.META['HTTP_HOST'],
-                    "site_name": "Doc Comparison Pro",
-                    "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                    "user": user,
-                    "token": default_token_generator.make_token(user),
-                    "protocol": "http",
-                }
-                email_message = render_to_string(email_template_name, context)
-                email = EmailMultiAlternatives(
-                    subject=subject,
-                    body=email_message,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[user.email]
-                )
-                email.attach_alternative(email_message, "text/html")
-                email.send(fail_silently=False)
+            if not user_id:
+                passwd_type = form.cleaned_data.get('password_type')
+                if passwd_type == "bymail":
+                    # Send email for password creation
+                    subject = "Create Your Password"
+                    email_template_name = "password-base/password_creation_email.html"
+                    context = {
+                        "email": user.email,
+                        "domain": request.META['HTTP_HOST'],
+                        "site_name": "Doc Comparison Pro",
+                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                        "user": user,
+                        "token": default_token_generator.make_token(user),
+                        "protocol": "http",
+                    }
+                    email_message = render_to_string(email_template_name, context)
+                    email = EmailMultiAlternatives(
+                        subject=subject,
+                        body=email_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to=[user.email]
+                    )
+                    email.attach_alternative(email_message, "text/html")
+                    email.send(fail_silently=False)
 
-                messages.success(request, 'User created and a password creation request has been sent to the user.')
+                    messages.success(request, 'User created and a password creation request has been sent to the user.')
+                else:
+                    messages.success(request, 'User created successfully.')
             else:
-                messages.success(request, f'User {"updated" if user_id else "created"} successfully.')
+                messages.success(request, 'User created successfully.')
 
             return redirect('user-management')
 
