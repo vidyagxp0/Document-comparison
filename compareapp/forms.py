@@ -41,7 +41,6 @@ class CustomPasswordResetForm(PasswordResetForm):
             raise forms.ValidationError("There is no account registered with this email address.")
         return email
 
-
 class UserForm(forms.ModelForm):
     DOCUMENT_PERMISSIONS = [
         'add_document',
@@ -170,29 +169,6 @@ class UserForm(forms.ModelForm):
         if password_type == 'manual' and password:
             user.password = make_password(password)
         
-        if password_type == 'bymail':
-            # Send email for password creation
-            subject = "Create Your Password"
-            email_template_name = "password-base/password_creation_email.html"
-            context = {
-                "email": user.email,
-                "domain": self.request.META['HTTP_HOST'],
-                "site_name": "Doc Comparison Pro",
-                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                "user": user,
-                "token": default_token_generator.make_token(user),
-                "protocol": "http",
-            }
-            email_message = render_to_string(email_template_name, context)
-            email = EmailMultiAlternatives(
-                subject=subject,
-                body=email_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[user.email]
-            )
-            email.attach_alternative(email_message, "text/html")
-            email.send(fail_silently=False)
-
         if commit:
             user.save()
             self.save_m2m()
@@ -214,10 +190,6 @@ class CustomSetPasswordForm(SetPasswordForm):
             'placeholder': 'Confirm your new password',
         }),
     )
-
-    class Meta:
-        model = forms.models.User
-        fields = ['new_password1', 'new_password2']
         
 class FeedbackForm(forms.ModelForm):
     class Meta:
