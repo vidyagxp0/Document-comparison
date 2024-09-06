@@ -321,6 +321,7 @@ def dashboard(request):
             Q(report_number__icontains=query) |
             Q(comparison_reason__icontains=query) |
             Q(comparison_between__icontains=query) |
+            Q(comparison_status__icontains=query) |
             Q(comparison_date__icontains=query) |
             Q(compared_by__icontains=query)
         ).distinct()
