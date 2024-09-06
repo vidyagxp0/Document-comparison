@@ -148,7 +148,7 @@ def add_edit_user(request, user_id=None):
                 else:
                     messages.success(request, 'User created successfully.')
             else:
-                messages.success(request, 'User created successfully.')
+                messages.success(request, 'User updated successfully.')
 
             return redirect('user-management')
 
