@@ -29,7 +29,7 @@
 
     <!-- Header -->
     <header>
-        <div class="z-40 flex w-full justify-between items-center px-10 py-2.5 backdrop-blur-3xl bg-cyan-950 bg-opacity-75 text-white fixed">
+        <div class="z-40 flex w-full justify-between items-center px-10 py-2.5 backdrop-blur-xl bg-cyan-900 bg-opacity-85 text-white fixed">
             <div>
                 <a href="{% url "dashboard" %}" class="flex items-center gap-4">
                     <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo">
@@ -51,20 +51,20 @@
                     </span>
                 </div>
                 <div class="relative">
-                    <button id="dropdownButton" class="font-medium text-white px-1 py-1 rounded-lg hover:backdrop-blur-3xl bg-cyan-700 hover:bg-cyan-800" type="button">
+                    <button id="dropdownButton" class="font-medium text-white pr-1 py-1 pl-2 rounded-lg hover:backdrop-blur-3xl hover:bg-cyan-950" type="button">
                         {% if request.user.is_authenticated %}
                             {{ request.user.get_full_name|default:request.user.username|title }}
                         {% else %}
-                            Guest User
+                            Guest
                         {% endif %} ▾ 
                     </button>
-                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-52 bg-white text-black shadow-lg rounded-md">
-                        <div class="flex justify-center items-center px-5 py-2 gap-2 border-b">
+                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-64 bg-white text-black shadow-lg rounded-md">
+                        <div class="flex justify-center font-extrabold text-lg items-center px-5 py-2 gap-2 border-b">
                             <img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> 
                             {% if request.user.is_authenticated %}
                                 {{ request.user.get_full_name|default:request.user.username|title }}
                             {% else %}
-                                Guest User
+                                Guest
                             {% endif %}
                         </div>
                         <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'user-management' %}"><img class="size-5 mr-0.5" src="{% static 'images/user-management.png' %}" alt="" srcset="">User management</a></div>
