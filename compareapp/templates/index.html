@@ -24,6 +24,9 @@
     </style>
 </head>
 <body class="font-sans leading-normal tracking-normal">
+
+    {% include "toast.html" with messages=messages %}
+
     <div class="relative h-screen flex flex-col" style="background-image: url({% static 'images/welcome.jpg' %}); background-size: cover; background-position: center;">
         <nav class="bg-cyan-950 bg-opacity-95 py-2.5">
             <div class="mx-10 flex justify-between items-center">

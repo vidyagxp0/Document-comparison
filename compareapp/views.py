@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import user_passes_test
 from django.templatetags.static import static
 from docx.oxml.ns import qn
 from django.contrib import messages
@@ -80,7 +81,13 @@ def submitFeedback(request):
         return redirect(previous_url)
 
 @login_required
+# @user_passes_test(lambda user: user.is_superuser)
 def userManagement(request):
+    if not request.user.is_superuser:
+        messages.warning(request, "Only admin have access to the user management!")
+        messages.info(request, "If you have valid login credentials to access the admin you can try.")
+        
+    
     query = request.GET.get('q')
     filter_by = request.GET.get('status')
 
@@ -104,6 +111,7 @@ def userManagement(request):
     return render(request, 'user-management/users.html', {'users': users})
 
 @login_required
+@user_passes_test(lambda user: user.is_superuser)
 def add_edit_user(request, user_id=None):
     if user_id:
         user = get_object_or_404(User, id=user_id)

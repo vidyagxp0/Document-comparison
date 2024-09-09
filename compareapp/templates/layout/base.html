@@ -39,7 +39,9 @@
             <div class="flex gap-4 items-center relative">
                 <div class="flex items-center ring-2 ring-cyan-600 rounded-full p-0.5 bg-slate-300" title="Last Login Time">
                     <img class="size-7 mx-2" src="{% static "images/calendar.png" %}" alt="" srcset="">
+                    {% if user.last_login %}
                     <p class="bg-cyan-700 text-white py-1 px-2 rounded-full font-bold ">{{ user.last_login|date:"d M Y  h:i A" }}</p>
+                    {% endif %}
                 </div>
                 <div class="border-r-2 border-yellow-600 h-8 flex items-center md:block hidden">
                     <a href="mailto:support@doccomparisonpro.com" class="text-blue-600 text-lg px-4 hover:text-blue-500 font-semibold">support@doccomparisonpro.com</a>
@@ -61,11 +63,13 @@
                     <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-64 bg-white text-black shadow-lg rounded-md">
                         <div class="flex justify-center font-extrabold text-lg items-center px-5 py-2 gap-2 border-b">
                             <img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> 
-                            {% if request.user.is_authenticated %}
+                            <p class="truncate">
+                                {% if request.user.is_authenticated %}
                                 {{ request.user.get_full_name|default:request.user.username|title }}
-                            {% else %}
+                                {% else %}
                                 Guest
-                            {% endif %}
+                                {% endif %}
+                            </p>
                         </div>
                         <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'user-management' %}"><img class="size-5 mr-0.5" src="{% static 'images/user-management.png' %}" alt="" srcset="">User management</a></div>
                         <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" id="feedbackButton" href="#" ><img class="size-6" src="{% static 'images/feedback.png' %}" alt="" srcset="">Feedback</a></div>
@@ -78,8 +82,9 @@
     </header>
 
     <!-- Loader -->
-    <div id="loader" class="fixed inset-0 flex items-center justify-center bg-slate-300 bg-opacity-50 z-50 hidden">
-        <div class="animate-spin rounded-full border-t-4 border-red-900 h-16 w-16"></div>
+    <div id="loader" class="fixed inset-0 flex flex-col gap-3 items-center justify-center z-50 backdrop-blur-sm">
+        <div class="animate-spin border-transparent border-[8px] border-t-[8px] border-t-orange-500 rounded-[50%] size-16"></div>
+        <p class="text-cyan-600 font-bold animate-pulse text-xl tracking-wide">Loading...</p>
     </div>
     
     <!-- Modal -->

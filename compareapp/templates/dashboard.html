@@ -71,7 +71,7 @@
                                     <tr>
                                         <td class="px-5 py-3 border-b border-gray-200">{{ forloop.counter }}</td>
                                         <td class="px-5 py-3 border-b border-gray-200">{{ report.report_number }}</td>
-                                        <td class="px-5 py-3 border-b border-gray-200">{{ report.comparison_reason }}</td>
+                                        <td class="px-5 py-3 truncate border-b border-gray-200">{{ report.comparison_reason }}</td>
                                         <td class="px-5 py-3 border-b border-gray-200">
                                             <div class="p-2 bg-slate-200 rounded w-64 h-[52px] overflow-y-scroll">
                                                 {% for name, id in report.compared_documents.items %}
