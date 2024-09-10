@@ -139,10 +139,9 @@ class UserForm(forms.ModelForm):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
 
-        if self.instance.pk:
-            self.fields.pop('password_type')
-            self.fields['password'].required = False
-            self.fields['password'].widget.attrs['placeholder'] = 'Leave blank to keep current password'
+        if self.instance.pk:                  # User is being edited
+            self.fields.pop('password_type', None)
+            self.fields.pop('password', None)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -167,15 +166,13 @@ class UserForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        password = self.cleaned_data.get('password')
-        password_type = self.cleaned_data.get('password_type')
 
         if not self.instance.pk:
-            if password_type == 'manual' and password:
-                user.password = make_password(password)
+            password = self.cleaned_data.get('password')
+            password_type = self.cleaned_data.get('password_type')
 
-        elif password:
-            user.password = make_password(password)
+            if password_type == 'manual' and password:
+                user.set_password(password)
 
         if commit:
             user.save()

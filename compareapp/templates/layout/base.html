@@ -29,7 +29,7 @@
 
     <!-- Header -->
     <header>
-        <div class="z-40 flex w-full justify-between items-center px-10 py-2.5 backdrop-blur-xl bg-cyan-900 bg-opacity-85 text-white fixed">
+        <div class="z-40 flex w-full justify-between items-center shadow-black shadow-lg px-10 py-2.5 backdrop-blur-xl bg-cyan-900 bg-opacity-85 text-white fixed">
             <div>
                 <a href="{% url "dashboard" %}" class="flex items-center gap-4">
                     <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo">
@@ -37,14 +37,18 @@
                 </a>
             </div>
             <div class="flex gap-4 items-center relative">
+                <div class="border-r-2 border-yellow-600 h-8 flex items-center md:block hidden">
+                    <a href="mailto:support@doccomparisonpro.com" class="text-blue-600 text-lg px-4 hover:text-blue-500 font-semibold">support@doccomparisonpro.com</a>
+                </div>
                 <div class="flex items-center ring-2 ring-cyan-600 rounded-full p-0.5 bg-slate-300" title="Last Login Time">
                     <img class="size-7 mx-2" src="{% static "images/calendar.png" %}" alt="" srcset="">
                     {% if user.last_login %}
                     <p class="bg-cyan-700 text-white py-1 px-2 rounded-full font-bold ">{{ user.last_login|date:"d M Y  h:i A" }}</p>
                     {% endif %}
                 </div>
-                <div class="border-r-2 border-yellow-600 h-8 flex items-center md:block hidden">
-                    <a href="mailto:support@doccomparisonpro.com" class="text-blue-600 text-lg px-4 hover:text-blue-500 font-semibold">support@doccomparisonpro.com</a>
+                <div class="flex items-center ring-2 ring-cyan-600 rounded-full p-0.5 bg-slate-300" title="Your session time counter, after completion you will be logout.">
+                    <img class="size-6 mx-2" src="{% static "images/clock.png" %}" alt="" srcset="">
+                    <p id="timer" class="bg-red-700 text-white py-1 px-2 rounded-full font-bold animate-pulse">05:00:00</p>
                 </div>
                 <div class="relative">
                     <img src="{% static 'images/user.png' %}" alt="user" width="40" height="40">
@@ -82,9 +86,9 @@
     </header>
 
     <!-- Loader -->
-    <div id="loader" class="fixed inset-0 flex flex-col gap-3 items-center justify-center z-50 backdrop-blur-sm">
+    <div id="loader" class="fixed inset-0 flex flex-col gap-3 items-center justify-center z-50 backdrop-blur-md">
         <div class="animate-spin border-transparent border-[8px] border-t-[8px] border-t-orange-500 rounded-[50%] size-16"></div>
-        <p class="text-cyan-600 font-bold animate-pulse text-xl tracking-wide">Loading...</p>
+        <p class="text-cyan-800 font-bold animate-pulse text-xl tracking-wide">Loading...</p>
     </div>
     
     <!-- Modal -->
@@ -250,6 +254,40 @@
                     feedbackModal.classList.add('modal-closed');
                 }
             });
+
+
+            // Handling Session time for logged in user
+            
+            // Get the session expiry time from Django context (passed via view)
+            let expiryTime = new Date("{{ request.session.expiry_time }}").getTime();
+            
+            // Update the countdown every 1 second
+            let countdown = setInterval(function() {
+                // Get current time
+                let now = new Date().getTime();
+                
+                // Calculate remaining time
+                let timeLeft = expiryTime - now;
+
+                // Convert to minutes and seconds
+                let hours = Math.floor(timeLeft / (1000 * 60 * 60));
+                let minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                // Display the result in the element with id="timer"
+                document.getElementById("timer").innerHTML = hours + ":" + minutes + ":" + seconds;
+
+                // If the count down is finished, clear the interval and log out the user
+                if (timeLeft < 0) {
+                    clearInterval(countdown);
+                    document.getElementById("timer").innerHTML = "Session expired.";
+                    window.location.href = "{% url 'logout' %}";  // Redirect to logout page
+                }
+            }, 1000);
 
             // Hide loader on window load
             window.onload = function() {
