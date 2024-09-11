@@ -38,7 +38,7 @@
             </div>
             <div class="flex gap-4 items-center relative">
                 <div class="border-r-2 border-yellow-600 h-8 flex items-center md:block hidden">
-                    <a href="mailto:support@doccomparisonpro.com" class="text-blue-600 text-lg px-4 hover:text-blue-500 font-semibold">support@doccomparisonpro.com</a>
+                    <a href="mailto:quality@vidyagxp.com" class="text-blue-600 text-lg px-4 hover:text-blue-500 font-semibold">support@doccomparisonpro.com</a>
                 </div>
                 <div class="flex items-center ring-2 ring-cyan-600 rounded-full p-0.5 bg-slate-300" title="Last Login Time">
                     <img class="size-7 mx-2" src="{% static "images/calendar.png" %}" alt="" srcset="">
@@ -88,7 +88,7 @@
     <!-- Loader -->
     <div id="loader" class="fixed inset-0 flex flex-col gap-3 items-center justify-center z-50 backdrop-blur-md">
         <div class="animate-spin border-transparent border-[8px] border-t-[8px] border-t-orange-500 rounded-[50%] size-16"></div>
-        <p class="text-cyan-800 font-bold animate-pulse text-xl tracking-wide">Loading...</p>
+        <p class="text-cyan-800 font-bold text-xl tracking-wide">Loading...</p>
     </div>
     
     <!-- Modal -->
@@ -152,6 +152,19 @@
             <hr>
             <h3 class="text-xl font-semibold my-2">Need Further Assistance?</h3>
             <p class="text-lg text-slate-500">If you need further assistance, feel free to contact us at <a href="mailto:quality@vidyagxp.com" class="text-blue-500 hover:underline">support@doccomparisonpro.com</a>.</p>
+        </div>
+    </div>
+
+    <!-- Logout Warning Modal -->
+    <div id="logoutWarningModal" class="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50 hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold text-gray-800 mb-5">You will be logged out soon!</h3>
+            <p>You will be logged out in <span id="countdown" class="text-red-600 font-semibold">10</span> seconds due to inactivity.</p>
+            <div class="mt-4">
+                <button id="stayLoggedInButton" class="bg-cyan-600 text-white px-4 py-2 rounded-lg">
+                    Stay Logged In
+                </button>
+            </div>
         </div>
     </div>
 
@@ -256,7 +269,7 @@
             });
 
 
-            // Handling Session time for logged in user
+            // Handling Session time for loggedIn user --------------------------------------------
             
             // Get the session expiry time from Django context (passed via view)
             let expiryTime = new Date("{{ request.session.expiry_time }}").getTime();
@@ -285,9 +298,81 @@
                 if (timeLeft < 0) {
                     clearInterval(countdown);
                     document.getElementById("timer").innerHTML = "Session expired.";
-                    window.location.href = "{% url 'logout' %}";  // Redirect to logout page
+                    window.location.href = "{% url 'logout' %}"; 
                 }
             }, 1000);
+
+            
+            // Handling user inactivity -------------------------------------------
+
+            (function() {
+                let logoutTime = 5 * 60 * 1000;  // 5 minutes in milliseconds
+                let warningTime = 10 * 1000;      // 5 seconds in milliseconds
+                let timeout, warningTimeout, countdownInterval;
+                let countdownElement = document.getElementById('countdown');
+                let modal = document.getElementById('logoutWarningModal');
+                let stayLoggedInButton = document.getElementById('stayLoggedInButton');
+                let countdown = 10;
+        
+                // Reset the inactivity timer, unless interacting with the modal
+                function resetTimer(e) {
+                    let target = e.target;
+                    if (modal.contains(target)) {
+                        return;
+                    }
+        
+                    clearTimeout(timeout);
+                    clearTimeout(warningTimeout);
+                    clearInterval(countdownInterval);
+                    hideModal();
+                    countdown = 10;  // Reset countdown
+                    timeout = setTimeout(logout, logoutTime);         // Trigger logout after inactivity
+                    warningTimeout = setTimeout(showWarning, logoutTime - warningTime);  // Show modal 10 seconds before logout
+                }
+        
+                // Show the warning modal and start the countdown
+                function showWarning() {
+                    modal.classList.remove('hidden');
+                    startCountdown();
+                }
+        
+                // Start the 10-second countdown
+                function startCountdown() {
+                    countdownInterval = setInterval(function() {
+                        countdown--;
+                        countdownElement.textContent = countdown;  // Update the modal with the countdown number
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                        }
+                    }, 1000);
+                }
+        
+                // Hide the warning modal
+                function hideModal() {
+                    modal.classList.add('hidden');
+                    countdownElement.textContent = 10;  // Reset the countdown display
+                }
+        
+                // Logout function to redirect to the logout page
+                function logout() {
+                    window.location.href = "{% url 'logout' %}";
+                }
+        
+                // Event listener for the "Stay Logged In" button
+                stayLoggedInButton.addEventListener('click', function() {
+                    resetTimer({target: document.body});  // Manually reset timer
+                });
+        
+                // Detect user activity and reset the timer
+                window.onload = resetTimer;
+                window.onmousemove = resetTimer;
+                window.onmousedown = resetTimer;
+                window.ontouchstart = resetTimer;
+                window.onclick = resetTimer;
+                window.onkeypress = resetTimer;
+                window.addEventListener('scroll', resetTimer, true);
+            })();
+
 
             // Hide loader on window load
             window.onload = function() {

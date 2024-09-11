@@ -106,8 +106,9 @@ LOGIN_URL = 'login'
 # SessionTimeExpity 
 SESSION_COOKIE_AGE = 5 * 60 * 60
 
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Mail Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

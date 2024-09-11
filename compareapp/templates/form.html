@@ -35,7 +35,7 @@
                         </div>
 
                         {% if perms.compareapp.add_document %}
-                            <button type="submit" class="bg-blue-600 shadow-2xl hover:-translate-y-0.5 delay-100 hover:ring-2 hover:ring-white hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload Document</button>
+                            <button type="submit" class="drop-shadow-xl bg-blue-600 hover:-translate-y-0.5 delay-100 hover:ring-2 hover:ring-cyan-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload Document</button>
                         {% else %}
                             <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload files.</div>
                         {% endif %}
@@ -75,7 +75,9 @@
                                             <img class="size-5" src="{% static 'images/cross.png' %}" alt="" srcset="">
                                         </button>
                                     </div>
-                                    <a href="{% url "view-document" doc.document_id %}" class="text-blue-700 font-bold">{{ doc.title }}</a>
+                                    <div class="w-[94px] truncate">
+                                        <a href="{% url "view-document" doc.document_id %}" class="text-blue-700 font-bold">{{ doc.title }}</a>
+                                    </div>
                                 </div>
                             {% endfor %}
                         {% else %}
@@ -94,11 +96,11 @@
                 <form id="comparisonForm">
                     <div class="mb-4">
                         <label for="reason" class="block text-md font-medium text-gray-700">Reason <span class="text-red-700 font-bold">*</span></label>
-                        <textarea id="reason" maxlength="150" placeholder="Enter a valid reason for comparison" name="reason" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required></textarea>
+                        <input id="reason" maxlength="150" placeholder="Enter a valid reason for comparison" name="reason" maxlength="100" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm" required>
                     </div>
                     <div class="flex justify-end">
-                        <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeModal()">Cancel</button>
-                        <button type="submit" class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-4">Submit</button>
+                        <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-4" onclick="closeModal()">Cancel</button>
+                        <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg py-2 px-4">Submit</button>
                     </div>
                 </form>
             {% else %}
