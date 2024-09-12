@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Document(models.Model):
     LANGUAGE_CHOICES = (
@@ -134,6 +135,7 @@ class Document(models.Model):
         return f"{format_paths.get(instance.doc_format, 'documents/other/')}{filename}"
 
     document_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
     creation_date = models.DateField(default=timezone.now)
@@ -155,6 +157,7 @@ class Document(models.Model):
 
 class ComparisonReport(models.Model):
     report_number = models.CharField(max_length=255, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     comparison_reason = models.CharField(max_length=255)
     compared_documents = models.JSONField()
     comparison_summary = models.JSONField()

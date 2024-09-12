@@ -86,7 +86,6 @@ def submitFeedback(request):
         return redirect(previous_url)
 
 @login_required
-# @user_passes_test(lambda user: user.is_superuser)
 def userManagement(request):
     if not request.user.is_superuser:
         messages.warning(request, "You are restricted to access the user management!")
@@ -216,27 +215,27 @@ def user_profile(request, user_id):
 @login_required
 def analytics(request):
     # Accessing data values from DATABASE
-    total_docx = len(Form.objects.filter(doc_format = 'docx'))
-    total_pdf = len(Form.objects.filter(doc_format = 'pdf'))
-    total_spreadsheet = len(Form.objects.filter(doc_format = 'xlsx'))
-    total_prasentation = len(Form.objects.filter(doc_format = 'pptx'))
-    total_visio=len(Form.objects.filter(doc_format = 'vsd'))
-    total_audio=len(Form.objects.filter(doc_format = 'mp3'))
-    total_video=len(Form.objects.filter(doc_format = 'mp4'))
-    total_image=len(Form.objects.filter(doc_format = 'png'))
-    total_text=len(Form.objects.filter(doc_format = 'txt'))
-    total_other=len(Form.objects.filter(doc_format = 'other'))
+    total_docx = len(Form.objects.filter(user=request.user, doc_format = 'docx'))
+    total_pdf = len(Form.objects.filter(user=request.user, doc_format = 'pdf'))
+    total_spreadsheet = len(Form.objects.filter(user=request.user, doc_format = 'xlsx'))
+    total_prasentation = len(Form.objects.filter(user=request.user, doc_format = 'pptx'))
+    total_visio=len(Form.objects.filter(user=request.user, doc_format = 'vsd'))
+    total_audio=len(Form.objects.filter(user=request.user, doc_format = 'mp3'))
+    total_video=len(Form.objects.filter(user=request.user, doc_format = 'mp4'))
+    total_image=len(Form.objects.filter(user=request.user, doc_format = 'png'))
+    total_text=len(Form.objects.filter(user=request.user, doc_format = 'txt'))
+    total_other=len(Form.objects.filter(user=request.user, doc_format = 'other'))
 
-    all_docx = len(ComparisonReport.objects.filter(comparison_between = 'docx'))
-    all_pdf = len(ComparisonReport.objects.filter(comparison_between = 'pdf'))
-    all_spreadsheet = len(ComparisonReport.objects.filter(comparison_between = 'xlsx'))
-    all_prasentation = len(ComparisonReport.objects.filter(comparison_between = 'pptx'))
-    all_visio=len(ComparisonReport.objects.filter(comparison_between = 'vsd'))
-    all_audio=len(ComparisonReport.objects.filter(comparison_between = 'mp3'))
-    all_video=len(ComparisonReport.objects.filter(comparison_between = 'mp4'))
-    all_image=len(ComparisonReport.objects.filter(comparison_between = 'png'))
-    all_text=len(ComparisonReport.objects.filter(comparison_between = 'txt'))
-    all_other=len(ComparisonReport.objects.filter(comparison_between = 'other'))
+    all_docx = len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'docx'))
+    all_pdf = len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'pdf'))
+    all_spreadsheet = len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'xlsx'))
+    all_prasentation = len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'pptx'))
+    all_visio=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'vsd'))
+    all_audio=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'mp3'))
+    all_video=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'mp4'))
+    all_image=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'png'))
+    all_text=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'txt'))
+    all_other=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'other'))
 
     total_comparisons = len(ComparisonReport.objects.all())
     total_users=len(User.objects.all())
@@ -324,7 +323,7 @@ def dashboard(request):
     query = request.GET.get('q', '')
     filter_by = request.GET.get('filter')
     
-    reports = ComparisonReport.objects.all()
+    reports = ComparisonReport.objects.filter(user=request.user)
     
     if filter_by:
         valid_filters = ['docx', 'pdf', 'xlsx', 'pptx', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
@@ -349,7 +348,7 @@ def viewComparison(request, report_id):
         messages.warning(request, "Login Required!")
         return redirect('login')
     
-    report = ComparisonReport.objects.filter(report_number=report_id).first()
+    report = ComparisonReport.objects.filter(user=request.user, report_number=report_id).first()
 
     if not report:
         messages.warning(request, "The report is not available for given report number.")
@@ -358,7 +357,7 @@ def viewComparison(request, report_id):
     comparison_details = report.comparison_summary
     compared_documents = report.compared_documents
     document_ids = list(compared_documents.values())
-    documents = Form.objects.filter(document_id__in=document_ids)
+    documents = Form.objects.filter(user=request.user, document_id__in=document_ids)
 
     return render(request, "result.html", {
         "documents": documents,
@@ -374,7 +373,7 @@ def formView(request):
     report_number = request.GET.get('report_number')
     success = request.GET.get('success')
 
-    documents = Form.objects.filter(new=True)
+    documents = Form.objects.filter(new=True, user=request.user)
     document_count = documents.count()
     formData = Form.objects.last()
     last_report = ComparisonReport.objects.last()
@@ -436,6 +435,7 @@ def formView(request):
                 })
 
             document_instance = form.save(commit=False)
+            document_instance.user = request.user
             document_instance.comparison_between = comparison_between
             document_instance.save()
 
@@ -459,7 +459,7 @@ def formView(request):
 # Resetting upload process
 @login_required
 def uploadReset(request):
-    documents = Form.objects.filter(new=True)
+    documents = Form.objects.filter(new=True, user=request.user)
     if documents:
         documents.delete()
 
@@ -472,7 +472,7 @@ def documentDetail(request, doc_id):
         return redirect('login')
     
     try: 
-        document = get_object_or_404(Form, document_id=doc_id)
+        document = get_object_or_404(Form, document_id=doc_id, user=request.user)
     except:
         messages.warning(request, "Invalid document ID, please provide valid ID.")
         return redirect('dashboard')
@@ -487,7 +487,7 @@ def initialDocument(request):
     query = request.GET.get('q', '')
     filter_type = request.GET.get('filter', '')
 
-    documents = Form.objects.filter(new=True)
+    documents = Form.objects.filter(new=True, user=request.user)
 
     if query:
         documents = documents.filter(
@@ -524,7 +524,7 @@ def comparison(request: HttpRequest):
         return redirect('login')
 
     reason = request.GET.get('reason', '')
-    documents = Form.objects.filter(new=True)
+    documents = Form.objects.filter(new=True, user=request.user)
     last_report = ComparisonReport.objects.last()
     user_full_name = request.user.get_full_name().title()
 
@@ -623,6 +623,7 @@ def comparison(request: HttpRequest):
     try:
         comparison_report = ComparisonReport.objects.create(
             report_number = new_report_number,
+            user = request.user,
             comparison_reason = reason,
             compared_documents = compared_documents,
             comparison_summary = comparison_details,

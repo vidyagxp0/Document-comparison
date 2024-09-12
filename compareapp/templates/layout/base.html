@@ -157,11 +157,12 @@
 
     <!-- Logout Warning Modal -->
     <div id="logoutWarningModal" class="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50 hidden">
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h3 class="text-xl font-semibold text-gray-800 mb-5">You will be logged out soon!</h3>
-            <p>You will be logged out in <span id="countdown" class="text-red-600 font-semibold">10</span> seconds due to inactivity.</p>
-            <div class="mt-4">
-                <button id="stayLoggedInButton" class="bg-cyan-600 text-white px-4 py-2 rounded-lg">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+            <h3 class="text-2xl text-center font-extrabold text-slate-500 mb-5">Action Required</h3>
+            <p id="countdown" class="text-center text-red-600 text-3xl font-extrabold animate-ping py-3">10</p>
+            <p>You will be logged out soon due to inactivity, please click on below button.</p>
+            <div class="mt-4 flex justify-center">
+                <button id="stayLoggedInButton" class="bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold">
                     Stay Logged In
                 </button>
             </div>

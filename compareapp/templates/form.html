@@ -12,14 +12,20 @@
             <h1 class="text-3xl font-bold text-white">Upload Process</h1>
         </div>
         <div class="flex justify-between mb-4 backdrop-blur-3xl border border-cyan-900 bg-cyan-950 rounded-lg py-3 px-6">
-            <p class="text-emerald-500 mt-2">Upload your files and manage them efficiently. If you have at least two files, you can start a comparison.</p>
+            <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">Upload your files and manage them efficiently. If you have at least two files, you can start a comparison.</p>
             <div class="flex items-center gap-4">
                 <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
                     Dashboard
                 </a>
             </div>
         </div>
-        <div class="shadow-2xl rounded-lg p-6 backdrop-blur-3xl border border-cyan-900 bg-cyan-950">
+        <div class="shadow-2xl rounded-lg p-6 backdrop-blur-3xl border border-cyan-900 bg-cyan-900">
+            <div class="flex justify-center">
+                <div class="rounded-lg  text-cyan-500 px-5 py-2 flex items-center gap-3"> 
+                    <img src="{% static 'images/compare.png' %}" class="size-10" alt="Compare Icon" srcset="">
+                    <p class="text-xl font-semibold border-b-2 border-white">Comparison Between: <span class="text-rose-500 font-bold" id="comparison_between_title">~</span></p>
+                </div>
+            </div>
             <div class="flex-row md:flex gap-6">
                 <div class="w-full md:w-[70%]">
                     <div class="mb-3 text-slate-400 font-semibold">
@@ -35,7 +41,7 @@
                         </div>
 
                         {% if perms.compareapp.add_document %}
-                            <button type="submit" class="drop-shadow-xl bg-blue-600 hover:-translate-y-0.5 delay-100 hover:ring-2 hover:ring-cyan-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload Document</button>
+                            <button type="submit" class="drop-shadow-xl bg-blue-600 hover:-translate-y-0.5 delay-100 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload Document</button>
                         {% else %}
                             <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload files.</div>
                         {% endif %}
@@ -207,9 +213,37 @@
         
             // Retrieve the comparison type from localStorage and set it in the hidden input field
             const comparisonTypeSelected = localStorage.getItem("comparisonTypeSelected");
+
+            const updateTitle = (fileType) => {
+                const title = document.getElementById("comparison_between_title");
+
+                if (fileType === 'pdf') {
+                    title.textContent = 'PDFs';
+                } else if (fileType === 'docx') {
+                    title.textContent = 'Documents';
+                } else if (fileType === 'xlsx') {
+                    title.textContent = 'Spreadsheets';
+                } else if (fileType === 'mp3') {
+                    title.textContent = 'Audios';
+                } else if (fileType === 'mp4') {
+                    title.textContent = 'Videos';
+                } else if (fileType === 'png') {
+                    title.textContent = 'Images';
+                } else if (fileType === 'txt') {
+                    title.textContent = 'Text Files';
+                } else if (fileType === 'pptx') {
+                    title.textContent = 'Presentations';
+                } else if (fileType === 'vsd') {
+                    title.textContent = 'Visio Files';
+                } else {
+                    title.textContent = 'Files';
+                }
+            };
+            
             if (comparisonTypeSelected) {
                 document.getElementById("comparison_between_hidden").value = comparisonTypeSelected;
                 docFormatField.value = comparisonTypeSelected
+                updateTitle(comparisonTypeSelected)
             } else {
                 setTimeout(() => {
                     openCTModal();
@@ -266,6 +300,7 @@
                         document.getElementById("comparison_between_hidden").value = selectedType;
                         docFormatField.value = selectedType
                         error.innerText = "";
+                        updateTitle(selectedType)
                         window.location.href = "{% url 'reset' %}";
     
                     } else {
