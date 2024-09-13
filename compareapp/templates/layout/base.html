@@ -47,8 +47,8 @@
                     {% endif %}
                 </div>
                 <div class="flex items-center ring-2 ring-cyan-600 rounded-full p-0.5 bg-slate-300" title="Your session time counter, after completion you will be logout.">
-                    <img class="size-6 mx-2" src="{% static "images/clock.png" %}" alt="" srcset="">
-                    <p id="timer" class="bg-red-700 text-white py-1 px-2 rounded-full font-bold animate-pulse">05:00:00</p>
+                    <img class="size-6 mx-2" src="{% static "images/time.png" %}" alt="" srcset="">
+                    <p id="timer" class="bg-rose-500 text-white py-1 px-2 rounded-full font-bold animate-pulse">00:00:00</p>
                 </div>
                 <div class="relative">
                     <img src="{% static 'images/user.png' %}" alt="user" width="40" height="40">
@@ -75,10 +75,14 @@
                                 {% endif %}
                             </p>
                         </div>
-                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'user-management' %}"><img class="size-5 mr-0.5" src="{% static 'images/user-management.png' %}" alt="" srcset="">User management</a></div>
+                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="#" ><img class="size-6" src="{% static 'images/profile.png' %}" alt="" srcset="">Profile</a></div>
+                        {% if user.is_superuser %}
+                            <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'user-management' %}"><img class="size-5 mr-0.5" src="{% static 'images/user-management.png' %}" alt="" srcset="">User management</a></div>
+                        {% endif %}
                         <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" id="feedbackButton" href="#" ><img class="size-6" src="{% static 'images/feedback.png' %}" alt="" srcset="">Feedback</a></div>
                         <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="#" id="aboutButton"><img class="size-6" src="{% static 'images/about.png' %}" alt="" srcset="">About</a></div>
-                        <div><a class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200" href="{% url 'logout' %}"><img class="size-6" src="{% static 'images/logout.png' %}" alt="" srcset="">Log Out</a></div>
+                        <hr>
+                        <div><button class="flex items-center gap-2 px-4 py-2 hover:bg-gray-200 w-full" onclick="clearTimerAndLogout()"><img class="size-6" src="{% static 'images/logout.png' %}" alt="" srcset="">Log Out</button></div>
                     </div>
                 </div>
             </div>
@@ -272,50 +276,53 @@
 
             // Handling Session time for loggedIn user --------------------------------------------
             
-            // Get the session expiry time from Django context (passed via view)
-            let expiryTime = new Date("{{ request.session.expiry_time }}").getTime();
-            
-            // Update the countdown every 1 second
-            let countdown = setInterval(function() {
-                // Get current time
-                let now = new Date().getTime();
-                
-                // Calculate remaining time
-                let timeLeft = expiryTime - now;
+            let expiryTime = {{ request.session.expiry_time }} * 1000;
+            let startTime = localStorage.getItem('countdownStartTime');
 
-                // Convert to minutes and seconds
-                let hours = Math.floor(timeLeft / (1000 * 60 * 60));
-                let minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                let seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            if (!startTime) {
+                startTime = new Date().getTime();
+                localStorage.setItem('countdownStartTime', startTime);
+            } else {
+                startTime = parseInt(startTime, 10);
+            }
+
+            let countdown = setInterval(function() {
+                let now = new Date().getTime();
+                let elapsedTime = now - startTime;
+                let timeLeft = expiryTime - elapsedTime;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    localStorage.removeItem('countdownStartTime');
+                    document.getElementById("timer").innerHTML = "Session expired.";
+                    window.location.href = "{% url 'logout' %}";
+                    return;
+                }
+
+                let hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+                let minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
 
                 hours = hours < 10 ? "0" + hours : hours;
                 minutes = minutes < 10 ? "0" + minutes : minutes;
                 seconds = seconds < 10 ? "0" + seconds : seconds;
 
-                // Display the result in the element with id="timer"
                 document.getElementById("timer").innerHTML = hours + ":" + minutes + ":" + seconds;
 
-                // If the count down is finished, clear the interval and log out the user
-                if (timeLeft < 0) {
-                    clearInterval(countdown);
-                    document.getElementById("timer").innerHTML = "Session expired.";
-                    window.location.href = "{% url 'logout' %}"; 
-                }
             }, 1000);
 
-            
-            // Handling user inactivity -------------------------------------------
+
+            // Handling user inactivity ------------------------------------------------------------------
 
             (function() {
                 let logoutTime = 5 * 60 * 1000;  // 5 minutes in milliseconds
-                let warningTime = 10 * 1000;      // 5 seconds in milliseconds
+                let warningTime = 10 * 1000;      // 10 seconds in milliseconds
                 let timeout, warningTimeout, countdownInterval;
                 let countdownElement = document.getElementById('countdown');
                 let modal = document.getElementById('logoutWarningModal');
                 let stayLoggedInButton = document.getElementById('stayLoggedInButton');
                 let countdown = 10;
         
-                // Reset the inactivity timer, unless interacting with the modal
                 function resetTimer(e) {
                     let target = e.target;
                     if (modal.contains(target)) {
@@ -354,8 +361,8 @@
                     countdownElement.textContent = 10;  // Reset the countdown display
                 }
         
-                // Logout function to redirect to the logout page
                 function logout() {
+                    clearTimer();
                     window.location.href = "{% url 'logout' %}";
                 }
         
@@ -374,12 +381,22 @@
                 window.addEventListener('scroll', resetTimer, true);
             })();
 
+            function clearTimer() {
+                localStorage.removeItem('countdownStartTime');
+            }
+
 
             // Hide loader on window load
             window.onload = function() {
                 loader.classList.add('hidden');
             };
         });
+
+        function clearTimerAndLogout() {
+            localStorage.removeItem('countdownStartTime');
+            window.location.href = "{% url 'logout' %}";
+        }
+        
     </script>
         
 </body>

@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import user_passes_test
 from django.utils import timezone
 from django.templatetags.static import static
 from docx.oxml.ns import qn
@@ -58,10 +59,9 @@ def loginUser(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-
-                sessionExpiryTime = settings.SESSION_COOKIE_AGE
-                expiry_time = timezone.now() + timezone.timedelta(seconds=sessionExpiryTime)
-                request.session['expiry_time'] = expiry_time.isoformat()
+                
+                request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+                request.session['expiry_time'] = settings.SESSION_COOKIE_AGE
 
                 messages.success(request, "You have successfully logged in.")
                 return redirect('dashboard')
@@ -85,11 +85,14 @@ def submitFeedback(request):
     else:
         return redirect(previous_url)
 
+# User Management Section -------------------------------------------------------------
 @login_required
+@user_passes_test(lambda user: user.is_superuser)
 def userManagement(request):
-    if not request.user.is_superuser:
-        messages.warning(request, "You are restricted to access the user management!")
-        return redirect(request.META.get('HTTP_REFERER', reverse('dashboard')))    
+    # Custom logic for superuser validation
+    # if not request.user.is_superuser:
+    #     messages.warning(request, "You are restricted to access the user management!")
+    #     return redirect(request.META.get('HTTP_REFERER', reverse('dashboard')))    
     
     query = request.GET.get('q')
     filter_by = request.GET.get('status')
@@ -114,11 +117,8 @@ def userManagement(request):
     return render(request, 'user-management/users.html', {'users': users})
 
 @login_required
+@user_passes_test(lambda user: user.is_superuser)
 def add_edit_user(request, user_id=None):
-    if not request.user.is_superuser:
-        messages.warning(request, "You are restricted to access the user management!")
-        return redirect(request.META.get('HTTP_REFERER', reverse('dashboard')))
-    
     if user_id:
         user = get_object_or_404(User, id=user_id)
         form = UserForm(request.POST or None, instance=user)
@@ -173,8 +173,8 @@ def add_edit_user(request, user_id=None):
         'user_permissions': user_permissions,
     })
     
-# Delete User
 @login_required
+@user_passes_test(lambda user: user.is_superuser)
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     if request.method == 'POST':
@@ -211,52 +211,45 @@ def user_profile(request, user_id):
         'specific_permissions': specific_permissions,
     })
 
-# Comparison analytics 
+# Comparison analytics ------------------------------------
 @login_required
 def analytics(request):
-    # Accessing data values from DATABASE
-    total_docx = len(Form.objects.filter(user=request.user, doc_format = 'docx'))
-    total_pdf = len(Form.objects.filter(user=request.user, doc_format = 'pdf'))
-    total_spreadsheet = len(Form.objects.filter(user=request.user, doc_format = 'xlsx'))
-    total_prasentation = len(Form.objects.filter(user=request.user, doc_format = 'pptx'))
-    total_visio=len(Form.objects.filter(user=request.user, doc_format = 'vsd'))
-    total_audio=len(Form.objects.filter(user=request.user, doc_format = 'mp3'))
-    total_video=len(Form.objects.filter(user=request.user, doc_format = 'mp4'))
-    total_image=len(Form.objects.filter(user=request.user, doc_format = 'png'))
-    total_text=len(Form.objects.filter(user=request.user, doc_format = 'txt'))
-    total_other=len(Form.objects.filter(user=request.user, doc_format = 'other'))
+    files_format = ['pdf', 'docx', 'xlsx', 'pptx', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
+    file_labels = ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text', 'Others']
 
-    all_docx = len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'docx'))
-    all_pdf = len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'pdf'))
-    all_spreadsheet = len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'xlsx'))
-    all_prasentation = len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'pptx'))
-    all_visio=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'vsd'))
-    all_audio=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'mp3'))
-    all_video=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'mp4'))
-    all_image=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'png'))
-    all_text=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'txt'))
-    all_other=len(ComparisonReport.objects.filter(user=request.user, comparison_between = 'other'))
+    # Handling users
+    if request.user.is_superuser:
+        total_files_data = [ len(Form.objects.filter(doc_format = doc)) for doc in files_format ]
+        all_comparison_data = [ len(ComparisonReport.objects.filter(comparison_between = doc)) for doc in files_format ]
 
-    total_comparisons = len(ComparisonReport.objects.all())
-    total_users=len(User.objects.all())
-    user_feedbacks = len(Feedback.objects.all())
+        total_comparisons = len(ComparisonReport.objects.all())
+        failed_reports = len(ComparisonReport.objects.filter(comparison_status=False))
+    else:
+        total_files_data = [ len(Form.objects.filter(user=request.user, doc_format = doc)) for doc in files_format ]
+        all_comparison_data = [ len(ComparisonReport.objects.filter(user=request.user, comparison_between = doc)) for doc in files_format ]
+
+        total_comparisons = len(ComparisonReport.objects.filter(user=request.user))
+        failed_reports = len(ComparisonReport.objects.filter(user=request.user, comparison_status=False))
     
-    all_comparisons = {
-        'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
-        'values': [all_pdf, all_docx, all_spreadsheet, all_prasentation, all_visio, all_audio, all_video, all_image, all_text, all_other]
-    }
+    total_users = len(User.objects.all())
+    user_feedbacks = len(Feedback.objects.all())
 
     total_files = {
-        'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
-        'values': [total_pdf, total_docx, total_spreadsheet, total_prasentation, total_visio, total_audio, total_video, total_image, total_text, total_other]
+        'labels': file_labels,
+        'values': total_files_data
+    }
+
+    all_comparisons = {
+        'labels': file_labels,
+        'values': all_comparison_data
     }
     
     report_data={
-        'labels': ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text','Others'],
-        'values': [total_pdf, total_docx, total_spreadsheet, total_prasentation, total_visio, total_audio, total_video, total_image, total_text, total_other]
+        'labels': file_labels,
+        'values': total_files_data
     }
 
-    return render(request, 'analytics.html', { 'total_users':total_users, 'total_files': total_files, 'report_data':report_data , 'user_feedbacks': user_feedbacks, 'total_comparisons':total_comparisons , 'all_comparisons':all_comparisons})
+    return render(request, 'analytics.html', { 'failed_reports':failed_reports, 'total_users': total_users, 'total_files': total_files, 'report_data':report_data , 'user_feedbacks': user_feedbacks, 'total_comparisons':total_comparisons , 'all_comparisons':all_comparisons})
 
 def password_reset_request(request):
     if request.method == "POST":
@@ -330,7 +323,6 @@ def dashboard(request):
         if filter_by in valid_filters:
             reports = reports.filter(comparison_between__icontains=filter_by)
 
-    # Apply search query filter
     if query:
         reports = reports.filter(
             Q(report_number__icontains=query) |
@@ -410,7 +402,6 @@ def formView(request):
             if upload_document and doc_format:
                 file_extension = os.path.splitext(upload_document.name)[1].lstrip('.').lower()
 
-                # Validate file extension against selected format
                 if doc_format != 'other' and doc_format != file_extension:
                     messages.warning(request, f"Please upload the file with the selected format '{doc_format}'.")
                     return render(request, "form.html", {
@@ -422,7 +413,6 @@ def formView(request):
                         'documents': documents
                     })
 
-            # Validate comparison format
             if comparison_between != doc_format:
                 messages.error(request, f"Please upload '{comparison_between}' files only for comparison.")
                 return render(request, "form.html", {
