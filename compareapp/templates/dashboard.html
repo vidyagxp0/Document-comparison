@@ -14,8 +14,9 @@
         <div class="flex justify-between mb-4 border border-cyan-900 backdrop-blur-3xl bg-cyan-950 rounded-lg py-3 px-6">
             <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">Use the button to access Analytics for data insights and view the comparison reports. Start a new comparison when you're ready.</p>
             <div class="flex items-center gap-4">
-                <a href="{% url "analytics" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
-                    Analytics
+                <a href="{% url "analytics" %}" class="flex gap-1 items-center bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                    <img class="size-6" src="{% static 'images/analytics-icon.png' %}" alt="Analytics Icon" srcset="">
+                    <span>Analytics</span>
                 </a>
             </div>
         </div>
@@ -52,7 +53,7 @@
                 </div>
                 {% if reports %}
                     <div class="overflow-auto">
-                        <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100 text-left">
+                        <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-50 text-left">
                             <thead>
                                 <tr>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">S.No.</th>
@@ -68,10 +69,14 @@
                             </thead>
                             <tbody>
                                 {% for report in reports %}
-                                    <tr>
+                                    <tr class="hover:bg-gray-100">
                                         <td class="px-5 py-3 border-b border-gray-200">{{ forloop.counter }}</td>
-                                        <td class="px-5 py-3 border-b border-gray-200">{{ report.report_number }}</td>
-                                        <td class="px-5 py-3 truncate border-b border-gray-200">{{ report.comparison_reason }}</td>
+                                        <td class="px-5 py-3 border-b border-gray-200 text-blue-700 font-medium"><a href="#">{{ report.report_number }}</a></td>
+                                        <td class="px-5 py-3 border-b border-gray-200">
+                                            <div class="max-w-80 truncate" title="Reason: {{ report.comparison_reason }}">
+                                                {{ report.comparison_reason }}
+                                            </div>
+                                        </td>
                                         <td class="px-5 py-3 border-b border-gray-200">
                                             <div class="p-2 bg-slate-200 rounded w-64 h-[52px] overflow-y-scroll">
                                                 {% for name, id in report.compared_documents.items %}
@@ -96,15 +101,21 @@
                                                 Other
                                             {% endif %}
                                         </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 flex items-center">
-                                            {% if report.comparison_status %}
-                                                <span class="px-3 py-1.5 bg-green-500 text-white rounded-full">Success</span>
-                                            {% else %}
-                                                <span class="px-3 py-1.5 bg-red-500 text-white rounded-full">Fail</span>
-                                            {% endif %}
+                                        <td class="px-5 py-5 border-b border-gray-200">
+                                            <div class="flex items-center">
+                                                {% if report.comparison_status %}
+                                                    <p class="px-3 py-1.5 bg-green-500 text-white rounded-full font-medium">Success</p>
+                                                {% else %}
+                                                    <p class="px-3 py-1.5 bg-red-500 text-white rounded-full font-medium">Fail</p>
+                                                {% endif %}
+                                            </div>
                                         </td>
-                                        <td class="px-5 py-3 border-b border-gray-200">{{ report.comparison_date|date:"d-M-Y" }}</td>
-                                        <td class="px-5 py-3 border-b border-gray-200">{{ report.compared_by|title }}</td>
+                                        <td class="px-5 py-3 border-b border-gray-200">{{ report.comparison_date|date:"d M Y" }}</td>
+                                        <td class="px-5 py-3 border-b border-gray-200">
+                                            <div class="w-24 overflow-hidden truncate">
+                                                {{ report.compared_by|title }}
+                                            </div>
+                                        </td>
                                         <td class="px-5 py-3 border-b border-gray-200">
                                             <a href="{% url "view-comparison" report.report_number %}" class="size-auto">
                                                 <img class="size-10 hover:bg-gray-200 rounded-full p-2" src="{% static 'images/view.png' %}" alt="Document">

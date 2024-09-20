@@ -9,77 +9,70 @@
 
     <div class="container mx-auto my-12 px-6">
         <div class="text-start mb-8">
-            <h1 class="text-3xl font-bold text-white">Document Info</h1>
+            <h1 class="text-3xl font-bold text-white">Document Insights</h1>
         </div>
-        <div class="flex justify-between items-center mb-4 bg-slate-200 border rounded-lg py-3 px-6">
-            <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">Here you can view detailed information about your document and download it if needed.</p>
-            <div class="flex gap-4">
-                <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
-                    Dashboard
-                </a>
-                <button onclick="history.back();" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
-                    Back
-                </button>
-            </div>
-        </div>
-        <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+        
+        <!-- Navigator -->
+        {% include "layout/navigator.html" with pageInfo="Here you can view detailed information about your document and download it if needed." %}
+        
+        <div class="shadow-lg shadow-slate-800 rounded-lg p-6 backdrop-blur-3xl bg-cyan-900">
             <div class="flex justify-between items-center mb-4">
-                <div class="ml-3 text-slate-400">
-                    Document Number :  <strong class="text-blue-600">{{ document.report_number|default:"Initial Record" }}<span class="text-xl font-normal text-slate-400">/</span>{{ document.document_id }}</strong>
+                <div class="rounded p-2 text-slate-400 bg-slate-100 font-semibold">
+                    Document Number :  <span class="text-blue-600 font-bold">{{ document.report_number|default:"INITIAL DOCUMENT" }}<span class="font-normal text-slate-400">/</span>{{ document.document_id }}</span>
                 </div>
             </div>
             {% if perms.compareapp.view_document %}
                 {% if document %}
                     <div class="overflow-auto">
-                        <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-100">
+                        <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-50">
                             <thead>
                                 <tr>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Attribute</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Value</th>
+                                    <th class="px-5 py-3 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Document Attributes</th>
+                                    <th class="px-5 py-3 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Document Information</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Document ID</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.document_id }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Title</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.title }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Author</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.author }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Creation Date</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.creation_date }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Document Type</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_type }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Document Format</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_format }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Language</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.language }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Version</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.version }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Comments</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.comments }}</td>
                                 </tr>
-                                <tr>
+                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Action</td>
                                     <td class="px-5 py-3 border-b border-gray-200">
                                         <a href="{{ document.upload_document.url }}" class="hover:bg-slate-200 rounded-full">
-                                            <img src="{% static 'images/download.png' %}" class="size-8" title="Download" alt="">
+                                            <img src="{% static 'images/download-icon.png' %}" class="size-8" title="Download" alt="">
                                         </a>
                                     </td>
                                 </tr>

@@ -11,18 +11,13 @@
         <div class="text-start mb-8">
             <h1 class="text-3xl font-bold text-white">Analytics</h1>
         </div>
-        <div class="flex justify-between mb-4 backdrop-blur-3xl border border-cyan-900 bg-cyan-950 rounded-lg py-3 px-6">
-            <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">Here you can view the graphical representation of all comparisons.</p>
-            <div class="flex items-center gap-4">
-                <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
-                    Back
-                </a>
-            </div>
-        </div>
+
+        <!-- Navigator -->
+        {% include "layout/navigator.html" with pageInfo="Here you can view the graphical representation of all comparisons." %}
+        
         <div class="shadow-2xl border-cyan-900 flex flex-col gap-4 backdrop-blur-3xl p-8 rounded-lg bg-cyan-900">
-        <!-- Chart Containers -->
             <div class="flex justify-between gap-4">
-                <div class="w-72 px-8 py-4 rounded-lg shadow-md bg-yellow-500">
+                <div class="w-72 px-8 py-4 rounded-lg shadow-md bg-blue-500">
                     <p class="text-2xl text-center font-bold mb-2 text-white">Total Comparisons</p>
                     <div >
                         <div class="text-center font-extrabold text-3xl text-white">{{total_comparisons}}</div>
@@ -34,12 +29,14 @@
                         <div class="text-center font-extrabold text-3xl text-white">{{failed_reports}}</div>
                     </div>
                 </div>
-                <div class="w-72 px-8 py-4 rounded-lg shadow-md bg-green-700">
-                    <p class="text-2xl text-center font-bold mb-2 text-white">All Users</p>
-                    <div >
-                        <div class="text-center font-extrabold text-3xl text-white">{{ total_users }}</div>
+                {% if user.is_superuser %}
+                    <div class="w-72 px-8 py-4 rounded-lg shadow-md bg-yellow-500">
+                        <p class="text-2xl text-center font-bold mb-2 text-white">All Users</p>
+                        <div >
+                            <div class="text-center font-extrabold text-3xl text-white">{{ total_users }}</div>
+                        </div>
                     </div>
-                </div>
+                {% endif %}
                 <div class="w-72 px-8 py-4 rounded-lg shadow-md bg-emerald-700">
                     <p class="text-2xl text-center font-bold mb-2 text-white">Successful Comparisons</p>
                     <div >

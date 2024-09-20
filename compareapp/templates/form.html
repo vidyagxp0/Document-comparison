@@ -11,15 +11,11 @@
         <div class="text-start mb-8">
             <h1 class="text-3xl font-bold text-white">Upload Process</h1>
         </div>
-        <div class="flex justify-between mb-4 backdrop-blur-3xl border border-cyan-900 bg-cyan-950 rounded-lg py-3 px-6">
-            <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">Upload your files and manage them efficiently. If you have at least two files, you can start a comparison.</p>
-            <div class="flex items-center gap-4">
-                <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
-                    Dashboard
-                </a>
-            </div>
-        </div>
-        <div class="shadow-2xl rounded-lg p-6 backdrop-blur-3xl border border-cyan-900 bg-cyan-900">
+
+        <!-- Navigator -->
+        {% include "layout/navigator.html" with pageInfo="Upload your files and manage them efficiently. If you have at least two files, you can start a comparison." %}
+        
+        <div class="shadow-lg shadow-slate-800 rounded-lg p-6 backdrop-blur-3xl bg-cyan-900">
             <div class="flex justify-center">
                 <div class="rounded-lg  text-cyan-500 px-5 py-2 flex items-center gap-3"> 
                     <img src="{% static 'images/compare.png' %}" class="size-10" alt="Compare Icon" srcset="">
@@ -28,10 +24,10 @@
             </div>
             <div class="flex-row md:flex gap-6">
                 <div class="w-full md:w-[70%]">
-                    <div class="mb-3 text-slate-400 font-semibold">
-                        File Number :  <span class="text-blue-500 font-medium">{{ new_report_number|default:"DCR1001" }}<span class="text-xl font-normal text-slate-400">/</span>{{ doc_id }}</span>
-                    </div>
-                    <form method="post" enctype="multipart/form-data" class="rounded-lg p-4 border border-cyan-900 bg-cyan-800">
+                    <span class="p-2 rounded bg-slate-100 text-slate-400 font-semibold">
+                        Document Number :  <span class="text-blue-500 font-bold">{{ new_report_number|default:"DCR1001" }}<span class="text-xl font-normal text-slate-400">/</span>{{ doc_id }}</span>
+                    </span>
+                    <form method="post" enctype="multipart/form-data" class="rounded-lg p-4 border border-cyan-900 bg-cyan-800 mt-4">
                         <div class="text-slate-200 font-semibold">
 
                             {% csrf_token %}
@@ -41,7 +37,11 @@
                         </div>
 
                         {% if perms.compareapp.add_document %}
-                            <button type="submit" class="drop-shadow-xl bg-blue-600 hover:-translate-y-0.5 delay-100 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Upload Document</button>
+                            <div class="flex justify-center md:justify-start">
+                                <button type="submit" class="flex items-center gap-1 drop-shadow-xl bg-blue-600 hover:-translate-y-0.5 delay-100 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">
+                                    <img class="size-6" src="{% static 'images/upload.png' %}" alt="" srcset="">Upload Document
+                                </button>
+                            </div>
                         {% else %}
                             <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload files.</div>
                         {% endif %}
@@ -59,11 +59,16 @@
                         </div>
                         
                         <div class="mt-4 flex justify-between">
-                            <button onclick="openCTModal()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg py-2 px-3">Reset Process</button>
+                            <button onclick="openCTModal()" class="flex gap-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg py-2 px-3">
+                                <img class="size-6" src="{% static 'images/reset.png' %}" alt="" srcset="">Reset Process
+                            </button>
 
                             {% if document_count >= 2 %}
                                 {% if perms.compareapp.add_comparisonreport %}
-                                    <button onclick="openModal()" class="bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg py-2 px-3">Perform Comparison</button>
+                                    <button onclick="openModal()" class="flex gap-1 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg py-2 px-3">
+                                        <img class="size-6" src="{% static 'images/compare.png' %}" alt="Compare Icon">
+                                        Perform Comparison 
+                                    </button>
                                 {% else %}
                                     <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to perform comparison.</div>
                                 {% endif %}
@@ -87,7 +92,11 @@
                                 </div>
                             {% endfor %}
                         {% else %}
-                        <div class="size-full flex items-center justify-center font-semibold text-slate-400">There are no files uploaded yet!</div>
+                        <div class="size-full flex flex-col items-center justify-center">
+                            <img class="size-14" src="{% static 'images/no-documents.png' %}" alt="No files">
+                            <p class="mb-4 mt-2 font-bold text-xl text-rose-500">Document Not Found!</p>
+                            <p class="text-center font-semibold text-slate-200">There is no document uploaded yet, please upload files to perform comparison.</p>
+                        </div>
                         {% endif %}
                     </div>
                 </div>

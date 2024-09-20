@@ -12,34 +12,24 @@
         <div class="text-start mb-8">
             <h1 class="text-3xl font-bold text-white">Comparison Report</h1>
         </div>
-        <div class="flex flex-col md:flex-row gap-5 justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
-            <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">Here you can view detailed information about your comparison reports. This section allows you to examine the attributes of your compared documents and review their similarity scores.</p>
-            <div class="flex gap-4 items-center">
-                <a href="{% url "dashboard" %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
-                    Dashboard
-                </a>
-                <button onclick="history.back();" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
-                    Back
-                </button>
-            </div>
-        </div>
-        <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+        
+        <!-- Navigator -->
+        {% include "layout/navigator.html" with pageInfo="Here you can view detailed information about your comparison reports and enables you to preview the comparison report." %}
+        
+        <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg shadow-slate-800 rounded-lg p-8">
             {% if perms.compareapp.view_comparisonreport %}
                 {% if documents %}
-                    <div class="flex justify-between mb-6">
-                        <div class="font-bold text-xl text-slate-600">Compared Documents Info</div>
-                        <div class="head">
-                            {% comment %} <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" href="{% url "dashboard" %}">Back</a> {% endcomment %}
-                        </div>
+                    <div class="flex justify-between mb-3">
+                        <div class="font-bold text-xl text-white">Compared Documents Info</div>
                     </div>
-                    <div class="mb-8 flex leading-normal rounded-lg overflow-auto bg-slate-100">
-                        <table class="min-w-full leading-normal bg-slate-100">
+                    <div class="mb-8 flex leading-normal rounded-lg overflow-auto">
+                        <table class="min-w-full leading-normal bg-slate-50">
                             <thead>
                                 <tr>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document_ID</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc_ID</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Title</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Author</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Creation Date</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Creation_Date</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Version</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Language</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc Type</th>
@@ -52,16 +42,28 @@
                             </thead>
                             <tbody>
                                 {% for document in documents %}
-                                    <tr>
+                                    <tr class="hover:bg-gray-100">
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.title }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.author }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm w-48">
+                                            <div class="w-36 overflow-x-auto truncate">
+                                                {{ document.title }}
+                                            </div>
+                                        </td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                            <div class="w-36">
+                                                {{ document.author }}
+                                            </div>
+                                        </td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.creation_date }}</td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.version }}</td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.language }}</td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_format }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comments }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                            <div class="w-36 overflow-x-auto truncate">
+                                                {{ document.comments }}
+                                            </div>
+                                        </td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comparison_status }}</td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.summary }}</td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.similarity_score|floatformat:0 }}%</td>
@@ -73,11 +75,14 @@
                 {% endif %}
                 <div class="">
                     <div class="mb-5 flex justify-between items-center">
-                        <p class="font-bold text-xl text-slate-600">Comparison Summary</p>
-                        <a class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3 ml-4" href="{% url 'preview' report %}">View Report</a>
+                        <p class="font-bold text-xl text-white">Comparison Summary</p>
+                        <a class="flex items-center gap-1 bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3 ml-4" href="{% url 'preview' report %}">
+                            <img class="size-7" src="{% static 'images/report.png' %}" alt="" srcset="">
+                            View Report
+                        </a>
                     </div>
-                    <div class="overflow-auto mb-8 rounded-lg">
-                        <table class="min-w-full leading-normal bg-slate-100 text-balance">
+                    <div class="overflow-auto rounded-lg">
+                        <table class="min-w-full leading-normal bg-slate-50 text-balance">
                             <thead>
                                 <tr>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Section</th>
@@ -91,36 +96,42 @@
                             </thead>
                             <tbody>
                                 {% for header, details in comparison_details.items %}
-                                    <tr>
+                                    <tr class="hover:bg-gray-100">
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm font-bold">{{ header }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ details.primary|default:"-" }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                            <div class="min-w-96">
+                                                {{ details.primary|default:"-" }}
+                                            </div>
+                                        </td>
                                         {% for doc in documents %}
                                             {% if doc.document_id != documents.0.document_id %}
                                                 {% with details.documents|get_item:doc.document_id as doc_detail %}
                                                     <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                                                        {% if doc_detail %}
-                                                            {% if doc_detail.modified_text %}
-                                                                <p><span class="bg-yellow-200 font-semibold">{{ doc_detail.modified_text|default:"-" }}</span></p>
+                                                        <div class="min-w-96">
+                                                            {% if doc_detail %}
+                                                                {% if doc_detail.modified_text %}
+                                                                    <p><span class="bg-yellow-200 font-semibold">{{ doc_detail.modified_text|default:"-" }}</span></p>
+                                                                {% else %}
+                                                                    {% if doc_detail.content %}
+                                                                        <p>Content : <span class="font-medium">{{ doc_detail.content|default:"-" }}</span></p>
+                                                                    {% endif %}
+                                                                    {% if doc_detail.added_text %}
+                                                                    <p><span class="bg-green-200 font-semibold">{{ doc_detail.added_text|default:"-" }}</span></p>
+                                                                    {% endif %}
+                                                                    {% if doc_detail.removed_text %}
+                                                                    <p><span class="bg-red-200 font-semibold">{{ doc_detail.removed_text|default:"-" }}</span></p>
+                                                                    {% endif %}
+                                                                {% endif %}
                                                             {% else %}
-                                                                {% if doc_detail.content %}
-                                                                    <p>Content : <span class="font-medium">{{ doc_detail.content|default:"-" }}</span></p>
-                                                                {% endif %}
-                                                                {% if doc_detail.added_text %}
-                                                                <p><span class="bg-green-200 font-semibold">{{ doc_detail.added_text|default:"-" }}</span></p>
-                                                                {% endif %}
-                                                                {% if doc_detail.removed_text %}
-                                                                <p><span class="bg-red-200 font-semibold">{{ doc_detail.removed_text|default:"-" }}</span></p>
-                                                                {% endif %}
+                                                                <p>-</p>
                                                             {% endif %}
-                                                        {% else %}
-                                                            <p>-</p>
-                                                        {% endif %}
-                        
-                                                        {% if doc_detail.tag and doc_detail.tag != 'S' %}
-                                                            <span class="text-xs font-bold {% if doc_detail.tag == 'M' %}text-yellow-600{% elif doc_detail.tag == 'A' %}text-green-500{% elif doc_detail.tag == 'R' %}text-red-500{% else %}text-gray-500{% endif %}">
-                                                                [{{ doc_detail.tag }}]
-                                                            </span>
-                                                        {% endif %}
+                            
+                                                            {% if doc_detail.tag and doc_detail.tag != 'S' %}
+                                                                <span class="text-xs font-bold {% if doc_detail.tag == 'M' %}text-yellow-600{% elif doc_detail.tag == 'A' %}text-green-500{% elif doc_detail.tag == 'R' %}text-red-500{% else %}text-gray-500{% endif %}">
+                                                                    [{{ doc_detail.tag }}]
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
                                                     </td>
                                                 {% endwith %}
                                             {% endif %}

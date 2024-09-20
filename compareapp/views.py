@@ -45,7 +45,7 @@ def index(request):
 
 def logoutUser(request):
     logout(request)
-    messages.info(request, "You have logged out.")
+    messages.info(request, "You have been logged out.")
     return redirect('index')
 
 def loginUser(request):
@@ -71,20 +71,18 @@ def loginUser(request):
     return render(request, "login.html")
 
 def submitFeedback(request):
-    previous_url = request.META.get('HTTP_REFERER', '/')
+    previous_url = request.META.get('HTTP_REFERER', 'dashboard')
 
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Thank you for your feedback!')
+            messages.success(request, 'Thank you for your valuable feedback!')
         else:
             messages.warning(request, 'Please provide valid feedback!')
-        return redirect(previous_url)
-        
-    else:
-        return redirect(previous_url)
 
+    return redirect(previous_url)
+    
 # User Management Section -------------------------------------------------------------
 @login_required
 @user_passes_test(lambda user: user.is_superuser)
@@ -103,9 +101,7 @@ def userManagement(request):
         users = users.filter(
             Q(id__icontains=query) |
             Q(username__icontains=query) |
-            Q(email__icontains=query) |
-            Q(comparison_status__icontains=query) |
-            Q(is_superuser__icontains=query)
+            Q(email__icontains=query)
         ).distinct()
     
     if filter_by:
@@ -186,7 +182,20 @@ def delete_user(request, user_id):
 # User Profile View
 @login_required
 def user_profile(request, user_id):
-    user = User.objects.get(id=user_id)
+    exists = User.objects.filter(id=user_id)
+
+    if not exists:
+        messages.warning(request, "The requested profile is not available!")
+        return redirect(request.META.get('HTTP_REFERER', 'dashboard'))
+    
+    if request.user.is_superuser:
+        user = User.objects.get(id=user_id)
+    else:
+        user = User.objects.get(id=request.user.id)
+
+    total_comparison = len(ComparisonReport.objects.filter(user=request.user))
+    total_documents = len(Form.objects.filter(user=request.user))
+
     specific_permissions = [
         "auth.add_user",
         "auth.change_user",
@@ -208,12 +217,17 @@ def user_profile(request, user_id):
     
     return render(request, 'user-management/user_profile.html', {
         'user': user,
+        'total_comparison': total_comparison,
+        'total_documents': total_documents,
         'specific_permissions': specific_permissions,
     })
 
 # Comparison analytics ------------------------------------
-@login_required
 def analytics(request):
+    if not request.user.is_authenticated:
+        messages.warning(request, "Login Required!")
+        return redirect('login')
+
     files_format = ['pdf', 'docx', 'xlsx', 'pptx', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
     file_labels = ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text', 'Others']
 
@@ -315,8 +329,11 @@ def dashboard(request):
     
     query = request.GET.get('q', '')
     filter_by = request.GET.get('filter')
-    
-    reports = ComparisonReport.objects.filter(user=request.user)
+
+    if request.user.is_superuser:
+        reports = ComparisonReport.objects.all()
+    else:
+        reports = ComparisonReport.objects.filter(user=request.user)
     
     if filter_by:
         valid_filters = ['docx', 'pdf', 'xlsx', 'pptx', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
@@ -333,23 +350,30 @@ def dashboard(request):
             Q(compared_by__icontains=query)
         ).distinct()
     
-    return render(request, 'dashboard.html', { "reports": reports })
+    return render(request, 'dashboard.html', { "reports": reports[::-1] })
 
 def viewComparison(request, report_id):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
     
-    report = ComparisonReport.objects.filter(user=request.user, report_number=report_id).first()
+    try:
+        if request.user.is_superuser:
+            report = ComparisonReport.objects.filter(report_number=report_id).first()
+            compared_documents = report.compared_documents
+            document_ids = list(compared_documents.values())
+            documents = Form.objects.filter(document_id__in=document_ids)
+        else:
+            report = ComparisonReport.objects.filter(user=request.user, report_number=report_id).first()
+            compared_documents = report.compared_documents
+            document_ids = list(compared_documents.values())
+            documents = Form.objects.filter(user=request.user, document_id__in=document_ids)
 
-    if not report:
-        messages.warning(request, "The report is not available for given report number.")
+    except:
+        messages.warning(request, "The requested report is not available!")
         return redirect('dashboard')
 
     comparison_details = report.comparison_summary
-    compared_documents = report.compared_documents
-    document_ids = list(compared_documents.values())
-    documents = Form.objects.filter(user=request.user, document_id__in=document_ids)
 
     return render(request, "result.html", {
         "documents": documents,
@@ -371,9 +395,9 @@ def formView(request):
     last_report = ComparisonReport.objects.last()
 
     if last_report:
-        new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
+        new_report_number = f"DC{ request.user.id }R{int(last_report.report_number.split('R')[1]) + 1}"
     else:
-        new_report_number = "DCR1001"
+        new_report_number = f"DC{ request.user.id }R1001"
 
     if formData:
         doc_id = formData.document_id + 1
@@ -429,7 +453,7 @@ def formView(request):
             document_instance.comparison_between = comparison_between
             document_instance.save()
 
-            messages.success(request, "Document added successfully.")
+            messages.success(request, "Document uploaded successfully.")
             return redirect('form')
         else:
             messages.warning(request, "All fields are required to be filled!")
@@ -462,7 +486,10 @@ def documentDetail(request, doc_id):
         return redirect('login')
     
     try: 
-        document = get_object_or_404(Form, document_id=doc_id, user=request.user)
+        if request.user.is_superuser:
+            document = get_object_or_404(Form, document_id=doc_id)
+        else:
+            document = get_object_or_404(Form, document_id=doc_id, user=request.user)
     except:
         messages.warning(request, "Invalid document ID, please provide valid ID.")
         return redirect('dashboard')
@@ -492,10 +519,9 @@ def initialDocument(request):
     
     return render(request, 'initial-document.html', { 'documents': documents })
 
+@login_required
 def removeDocument(request, doc_id):
-    if not request.user.is_authenticated:
-        messages.warning(request, "Login Required!")
-        return redirect('login')
+    previous_url = request.META.get('HTTP_REFERER', 'dashboard')
 
     try:
         document = get_object_or_404(Form, document_id=doc_id)
@@ -503,10 +529,10 @@ def removeDocument(request, doc_id):
         remove_file = document.upload_document.path
         os.remove(remove_file)
         messages.success(request, "Document deleted successfully.")
-        return redirect('initial-document')
     except:
         messages.warning(request, "Invalid document ID, please provide valid ID")
-        return redirect('form')
+        
+    return redirect(previous_url)
 
 def comparison(request: HttpRequest):
     if not request.user.is_authenticated:
@@ -523,14 +549,14 @@ def comparison(request: HttpRequest):
     else:
         comparedBy = user_full_name
     
-    if not documents:
-        messages.error(request, "No files found for comparison!")
+    if not documents or len(documents) < 2:
+        messages.warning(request, "Minimum two documents are required to perform the comparison!")
         return redirect('form')
     
     if last_report:
-        new_report_number = f"DCR{int(last_report.report_number[3:]) + 1}"
+        new_report_number = f"DC{request.user.id}R{int(last_report.report_number.split('R')[1]) + 1}"
     else:
-        new_report_number = "DCR1001"
+        new_report_number = f"DC{request.user.id}R1001"
     
     data = {}
     comparison_between = documents[0].doc_format
@@ -538,13 +564,20 @@ def comparison(request: HttpRequest):
         file_path = doc.upload_document.path
         if doc.doc_format == 'docx':
             sections = read_docx(file_path)
+            data[doc.document_id] = sections
         elif doc.doc_format == 'pdf':
             sections = read_pdf(file_path)
+            data[doc.document_id] = sections
+        elif doc.doc_format == 'png':
+            pass
+        elif doc.doc_format == 'mp3':
+            pass
+        elif doc.doc_format == 'xlsx':
+            pass
         else:
             messages.error(request, "Can't perform comparison due to invalid file format.")
             return redirect('form')
 
-        data[doc.document_id] = sections
 
     result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison-reports')
     os.makedirs(result_dir, exist_ok=True)

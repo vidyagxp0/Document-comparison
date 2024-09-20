@@ -8,50 +8,93 @@
 {% block body %}
 <div class="container mx-auto my-12 px-6">
     <div class="text-start mb-8">
-        <h1 class="text-3xl font-bold text-white">{{ user.username|title }}'s Profile</h1>
+        <h1 class="text-3xl font-bold text-white">{{ user.first_name|default:user.username|title }}'s Profile</h1>
     </div>
-    <div class="flex flex-col md:flex-row gap-5 justify-between mb-4 bg-slate-200 border rounded-lg py-3 px-6">
-        <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">Here you can view user information and their permissions.</p>
-        <div class="flex gap-4 justify-center items-center">
-            <a href="{% url 'dashboard' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
-                Dashboard
-            </a>
-            <a href="{% url 'user-management' %}" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
-                Back
-            </a>
-        </div>
-    </div>
-    <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-        <div class="flex items-center mb-8">
-            <img src="{% static 'images/user.png' %}" alt="{{ user.username }}" class="rounded-full h-24 w-24 mr-6">
+
+    <!-- Navigator -->
+    {% include "layout/navigator.html" with pageInfo="Here you can view user information, permissions, and activity logs." %}
+
+    <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg rounded-lg p-8 border border-cyan-900">
+        <!-- Profile Info Section -->
+        <div class="flex items-center mb-10">
+            <img src="{% static 'images/user.png' %}" alt="{{ user.username }}" class="rounded-full h-28 w-28 border-4 border-white mr-8">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900">{{ user.get_full_name|default:user|title }}</h2>
-                <p class="text-gray-600">{{ user.email }}</p>
-                <p class="text-gray-600">Role: {{ user.role|default:"Not Available" }}</p>
-                <p class="text-gray-600">Status: 
+                <h2 class="text-3xl font-extrabold text-white">{{ user.get_full_name|default:user|title }}</h2>
+                <p class="text-lg text-cyan-300">{{ user.email }}</p>
+                <p class="text-lg text-cyan-300">Role: {{ user.role|default:"N/A" }}</p>
+                <p class="text-lg text-cyan-300">Status: 
                     {% if user.is_active %}
-                        <span class="text-green-600">Active</span>
+                        <span class="text-green-400 font-semibold">Active</span>
                     {% else %}
-                        <span class="text-red-600">Inactive</span>
+                        <span class="text-red-400 font-semibold">Inactive</span>
                     {% endif %}
                 </p>
             </div>
         </div>
+    
+        <!-- Additional Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            <!-- Account Information Section -->
+            <div class="bg-gradient-to-r from-cyan-800 to-cyan-600 p-6 rounded-lg shadow-lg border border-cyan-700 transition-all duration-300 hover:shadow-2xl hover:scale-105">
+                <h3 class="text-lg font-semibold text-white mb-4">Account Information</h3>
+                <p class="text-cyan-100 mb-3">
+                    <strong class="block text-cyan-50">Username:</strong> {{ user.username }}
+                </p>
+                <p class="text-cyan-100 mb-3">
+                    <strong class="block text-cyan-50">Email:</strong> {{ user.email }}
+                </p>
+                <p class="text-cyan-100 mb-3">
+                    <strong class="block text-cyan-50">Last Login:</strong> {{ user.last_login|date:"F j, Y, g:i A" }}
+                </p>
+                <p class="text-cyan-100">
+                    <strong class="block text-cyan-50">Account Created:</strong> {{ user.date_joined|date:"F j, Y" }}
+                </p>
+            </div>
+            
+            <!-- User Activity Section -->
+            <div class="bg-gradient-to-r from-cyan-800 to-cyan-600 p-6 rounded-lg shadow-lg border border-cyan-700 transition-all duration-300 hover:shadow-2xl hover:scale-105">
+                <h3 class="text-lg font-semibold text-white mb-4">User Activity</h3>
+                <div class="mb-3">
+                    <strong class="block text-gray-50">Total Documents:</strong>
+                    <p class="text-gray-200">{{ total_documents|default:"N/A" }}</p>
+                </div>
+                <div class="mb-3">
+                    <strong class="block text-gray-50">Total Comparisons:</strong>
+                    <p class="text-gray-200">{{ total_comparison|default:"N/A" }}</p>
+                </div>
+                <div>
+                    <strong class="block text-gray-50">Last Activity:</strong>
+                    <p class="text-gray-200">{{ user.last_activity|default:"N/A" }}</p>
+                </div>
+            </div>
+        </div>
         
         <!-- Permissions Section -->
-        <div class="mt-8">
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Permissions</h3>
-            {% for perm in user.get_all_permissions %}
-                {% if perm in specific_permissions %}
-                    <p class="ml-3"><strong class="mx-3">🔸</strong>{{ perm|capfirst }}</p>
-                {% endif %}
-            {% endfor %}
+        <div class="mb-10">
+            <h3 class="text-2xl font-bold text-white mb-6">Permissions</h3>
+            
+            <!-- Permissions Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for perm in user.get_all_permissions %}
+                    {% if perm in specific_permissions %}
+                        <div class="bg-white text-black hover:text-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow hover:bg-rose-500">
+                            <div class="flex items-center">
+                                <p class="font-semibold">{{ perm|capfirst }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
-
-        <div class="mt-6">
-            <a href="{% url 'edit-user' user.id %}" class="bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-lg py-2 px-4">Edit Profile</a>
-            <a href="{% url 'user-management' %}" class="ml-4 bg-gray-300 hover:bg-gray-200 text-white font-medium rounded-lg py-2 px-4">Close</a>
-        </div>
+    
+        <!-- Action Buttons -->
+        {% if user.is_superuser %}
+            <div class="flex justify-start mt-8">
+                <a href="{% url 'edit-user' user.id %}" class="bg-cyan-600 hover:bg-cyan-500 text-white font-medium rounded-lg py-3 px-6 shadow-lg transition-all">Edit Profile</a>
+                <a href="{% url 'user-management' %}" class="ml-4 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-lg py-3 px-6 shadow-lg transition-all">User Management</a>
+            </div>
+        {% endif %}
     </div>
+    
 </div>
 {% endblock body %}

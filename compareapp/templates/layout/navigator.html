@@ -1,0 +1,16 @@
+{% load static %}
+
+
+<div class="flex justify-between mb-4 backdrop-blur-3xl border border-cyan-900 bg-cyan-950 rounded-lg py-3 px-6">
+    <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">{{ pageInfo }}</p>
+    <div class="flex items-center gap-4">
+        <a href="{% url "dashboard" %}" class="flex items-center gap-1 bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+            <img class="inline-block size-6" src="{% static 'images/reports-icon.png' %}" alt="" srcset="">
+            <span>Dashboard</span>
+        </a>
+        <button onclick="history.back();" class="flex items-center gap-1 bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+            <img class="size-6" src="{% static 'images/backward.png' %}" alt="" srcset="">
+            <span>Back</span>
+        </button>
+    </div>
+</div>
