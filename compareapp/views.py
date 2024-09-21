@@ -1,4 +1,3 @@
-import os
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
@@ -7,29 +6,33 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test
-from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.templatetags.static import static
-from docx.oxml.ns import qn
 from django.contrib import messages
-from docx import Document
+
 from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm, CustomSetPasswordForm
 from .models import Document as Form, ComparisonReport, Feedback
+
+from docx import Document
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
 from docx.shared import RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.shared import Pt, Inches
-from docx.oxml import OxmlElement
-from datetime import datetime as date
-import difflib
+
+import fitz     # PDF reader
+
 from pathlib import Path
 import convertapi
-import logging
-import requests
+import difflib
 from django.http import JsonResponse
 import json
-from django.views.decorators.csrf import csrf_exempt
 
-import fitz
+import os
+import requests
+import logging
+from datetime import datetime as date
 
 # mail configuration  
 from django.contrib.auth.tokens import default_token_generator
@@ -228,7 +231,7 @@ def analytics(request):
         messages.warning(request, "Login Required!")
         return redirect('login')
 
-    files_format = ['pdf', 'docx', 'xlsx', 'pptx', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
+    files_format = ['pdf', 'docx', 'xlsx', 'pptx', 'vsd', 'wav', 'mp4', 'png', 'txt', 'other']
     file_labels = ['PDFs', 'Documents', 'Spreadsheets', 'Prasentations', 'Visios', 'Audios', 'Videos', 'Images', 'Text', 'Others']
 
     # Handling users
@@ -336,7 +339,7 @@ def dashboard(request):
         reports = ComparisonReport.objects.filter(user=request.user)
     
     if filter_by:
-        valid_filters = ['docx', 'pdf', 'xlsx', 'pptx', 'vsd', 'mp3', 'mp4', 'png', 'txt', 'other']
+        valid_filters = ['docx', 'pdf', 'xlsx', 'pptx', 'vsd', 'wav', 'mp4', 'png', 'txt', 'other']
         if filter_by in valid_filters:
             reports = reports.filter(comparison_between__icontains=filter_by)
 
@@ -375,7 +378,7 @@ def viewComparison(request, report_id):
 
     comparison_details = report.comparison_summary
 
-    return render(request, "result.html", {
+    return render(request, "view-comparisons/view-comparison.html", {
         "documents": documents,
         "comparison_details": comparison_details,
         "report": report_id,
@@ -485,6 +488,13 @@ def documentDetail(request, doc_id):
         messages.warning(request, "Login Required!")
         return redirect('login')
     
+    last_report = ComparisonReport.objects.last()
+
+    if last_report:
+        new_report_number = f"DC{ request.user.id }R{int(last_report.report_number.split('R')[1]) + 1}"
+    else:
+        new_report_number = f"DC{ request.user.id }R1001"
+    
     try: 
         if request.user.is_superuser:
             document = get_object_or_404(Form, document_id=doc_id)
@@ -494,7 +504,7 @@ def documentDetail(request, doc_id):
         messages.warning(request, "Invalid document ID, please provide valid ID.")
         return redirect('dashboard')
     
-    return render(request, 'document-details.html', { 'document': document })
+    return render(request, 'document-details.html', { 'document': document, 'report_number': new_report_number })
 
 def initialDocument(request):
     if not request.user.is_authenticated:
@@ -541,6 +551,7 @@ def comparison(request: HttpRequest):
 
     reason = request.GET.get('reason', '')
     documents = Form.objects.filter(new=True, user=request.user)
+    comparison_between = documents[0].comparison_between
     last_report = ComparisonReport.objects.last()
     user_full_name = request.user.get_full_name().title()
 
@@ -552,14 +563,14 @@ def comparison(request: HttpRequest):
     if not documents or len(documents) < 2:
         messages.warning(request, "Minimum two documents are required to perform the comparison!")
         return redirect('form')
-    
+
     if last_report:
         new_report_number = f"DC{request.user.id}R{int(last_report.report_number.split('R')[1]) + 1}"
     else:
         new_report_number = f"DC{request.user.id}R1001"
     
+    
     data = {}
-    comparison_between = documents[0].doc_format
     for doc in documents:
         file_path = doc.upload_document.path
         if doc.doc_format == 'docx':
@@ -570,7 +581,7 @@ def comparison(request: HttpRequest):
             data[doc.document_id] = sections
         elif doc.doc_format == 'png':
             pass
-        elif doc.doc_format == 'mp3':
+        elif doc.doc_format == 'wav':
             pass
         elif doc.doc_format == 'xlsx':
             pass

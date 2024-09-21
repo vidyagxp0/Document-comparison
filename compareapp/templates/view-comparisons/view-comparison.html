@@ -44,13 +44,13 @@
                                 {% for document in documents %}
                                     <tr class="hover:bg-gray-100">
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm w-48">
-                                            <div class="w-36 overflow-x-auto truncate">
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                            <div class="max-w-36 overflow-x-auto truncate">
                                                 {{ document.title }}
                                             </div>
                                         </td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                                            <div class="w-36">
+                                            <div class="max-w-36">
                                                 {{ document.author }}
                                             </div>
                                         </td>
@@ -60,7 +60,7 @@
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_format }}</td>
                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                                            <div class="w-36 overflow-x-auto truncate">
+                                            <div class="max-w-36 overflow-x-auto truncate">
                                                 {{ document.comments }}
                                             </div>
                                         </td>
@@ -74,7 +74,7 @@
                     </div>
                 {% endif %}
                 <div class="">
-                    <div class="mb-5 flex justify-between items-center">
+                    <div class="mb-3 flex justify-between items-center">
                         <p class="font-bold text-xl text-white">Comparison Summary</p>
                         <a class="flex items-center gap-1 bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3 ml-4" href="{% url 'preview' report %}">
                             <img class="size-7" src="{% static 'images/report.png' %}" alt="" srcset="">

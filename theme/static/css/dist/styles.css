@@ -1327,6 +1327,14 @@ select {
   height: 100vh;
 }
 
+.max-h-full {
+  max-height: 100%;
+}
+
+.max-h-screen {
+  max-height: 100vh;
+}
+
 .w-11\/12 {
   width: 91.666667%;
 }
@@ -1431,28 +1439,16 @@ select {
   max-width: 20rem;
 }
 
+.max-w-36 {
+  max-width: 9rem;
+}
+
 .flex-grow {
   flex-grow: 1;
 }
 
 .border-collapse {
   border-collapse: collapse;
-}
-
-.border-separate {
-  border-collapse: separate;
-}
-
-.border-spacing-1 {
-  --tw-border-spacing-x: 0.25rem;
-  --tw-border-spacing-y: 0.25rem;
-  border-spacing: var(--tw-border-spacing-x) var(--tw-border-spacing-y);
-}
-
-.border-spacing-5 {
-  --tw-border-spacing-x: 1.25rem;
-  --tw-border-spacing-y: 1.25rem;
-  border-spacing: var(--tw-border-spacing-x) var(--tw-border-spacing-y);
 }
 
 .-translate-x-1\/2 {

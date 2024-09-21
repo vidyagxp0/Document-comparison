@@ -128,6 +128,8 @@ class Document(models.Model):
             'pdf': 'documents/pdf/',
             'docx': 'documents/docx/',
             'xlsx': 'documents/excel/',
+            'png': 'documents/images/',
+            'wav': 'documents/audios/',
             'pptx': 'documents/ppt/',
             'txt': 'documents/text/',
             'other': 'documents/other/',

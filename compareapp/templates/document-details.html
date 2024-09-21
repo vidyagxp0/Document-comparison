@@ -18,7 +18,7 @@
         <div class="shadow-lg shadow-slate-800 rounded-lg p-6 backdrop-blur-3xl bg-cyan-900">
             <div class="flex justify-between items-center mb-4">
                 <div class="rounded p-2 text-slate-400 bg-slate-100 font-semibold">
-                    Document Number :  <span class="text-blue-600 font-bold">{{ document.report_number|default:"INITIAL DOCUMENT" }}<span class="font-normal text-slate-400">/</span>{{ document.document_id }}</span>
+                    Document Number :  <span class="text-blue-600 font-bold">{{ document.report_number|default:report_number }}<span class="font-normal text-slate-400">/</span>{{ document.document_id }}</span>
                 </div>
             </div>
             {% if perms.compareapp.view_document %}

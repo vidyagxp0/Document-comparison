@@ -19,11 +19,9 @@ urlpatterns = [
     # View analytics
     path('analytics/', views.analytics, name="analytics"),  
 
-    # Resetting the upload processs
-    path('form/reset', views.uploadReset, name="reset"),  
-    
     # For Document upload
     path('form/', views.formView, name="form"),
+    path('form/reset', views.uploadReset, name="reset"),  
     path('form/view/<int:doc_id>/', views.documentDetail, name="view-document"),
     path('form/initial-documents', views.initialDocument, name="initial-document"),
     path('form/remove/<int:doc_id>/', views.removeDocument, name="remove-doc"),

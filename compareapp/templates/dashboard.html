@@ -33,7 +33,7 @@
                                 <option value="xlsx">Spreadsheet</option>
                                 <option value="pptx">Presentation</option>
                                 <option value="vsd">Visio File</option>
-                                <option value="mp3">Audio</option>
+                                <option value="wav">Audio</option>
                                 <option value="mp4">Video</option>
                                 <option value="png">Image</option>
                                 <option value="txt">Text</option>
@@ -47,7 +47,7 @@
                     {% if reports %}
                         <a class="bg-pink-700 hover:bg-pink-600 text-white font-medium rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">
                             <img class="inline-block mt-0 pt-0 size-6" src="{% static 'images/new-comparison.png' %}" alt="" srcset="">
-                            <span>New Comparison</span>
+                            <span>Create Comparison</span>
                         </a>
                     {% endif %}
                 </div>
@@ -93,7 +93,7 @@
                                                 PDF
                                             {% elif report.comparison_between == "png" %}
                                                 Image
-                                            {% elif report.comparison_between == "mp3" %}
+                                            {% elif report.comparison_between == "wav" %}
                                                 Audio
                                             {% elif report.comparison_between == "xlsx" %}
                                                 Excel
@@ -135,7 +135,7 @@
                         <p class="text-gray-500 mb-8">It looks like you haven't created any comparison reports yet. Click the button below to start a new comparison.</p>
                         <a class="inline-flex items-center bg-pink-700 hover:bg-pink-600 text-white font-semibold rounded-lg py-2 px-3 transition duration-300 ease-in-out shadow-md hover:shadow-lg" href="{% url "form" %}">
                             <img class="inline-block w-6 h-6 mr-2" src="{% static 'images/new-comparison.png' %}" alt="New Comparison">
-                            <span>Start New Comparison</span>
+                            <span>Create Comparison</span>
                         </a>
                     </div>
                 {% endif %}

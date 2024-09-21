@@ -119,12 +119,6 @@ EMAIL_HOST_USER = 'quality@vidyagxp.com'
 EMAIL_HOST_PASSWORD = 'ubhe xiui mhsp gjng'
 DEFAULT_FROM_EMAIL = 'Document Comparison Coordinator'
 
-
-# EMAIL_HOST_USER = 'adityapatel8912@gmail.com'
-# EMAIL_HOST_PASSWORD = 'gqpibgqdoiutfews'
-# DEFAULT_FROM_EMAIL = 'adityapatel8912@gmail.com'
-
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
