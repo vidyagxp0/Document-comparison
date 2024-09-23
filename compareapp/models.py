@@ -168,6 +168,7 @@ class Document(models.Model):
     summary = models.CharField(max_length=255, null=True, blank=True)
     similarity_score = models.FloatField(null=True, blank=True)
     report_number = models.CharField(max_length=255, null=True, blank=True)
+    ai_summary = models.TextField(null=True, blank=True)
     new = models.BooleanField(default=True)
     comparison_between = models.CharField(max_length=255, default=None)
 
@@ -180,6 +181,7 @@ class ComparisonReport(models.Model):
     comparison_reason = models.CharField(max_length=255)
     compared_documents = models.JSONField()
     comparison_summary = models.JSONField()
+    ai_summary = models.TextField(null=True, blank=True)
     comparison_date = models.DateField(default=timezone.now)
     compared_by = models.CharField(max_length=255)
     comparison_status = models.BooleanField(default=True)

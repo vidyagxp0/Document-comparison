@@ -229,7 +229,6 @@ class UserForm(forms.ModelForm):
         profile.phone_number = self.cleaned_data.get('phone_number', profile.phone_number)
         profile.address = self.cleaned_data.get('address', profile.address)
         profile.department = self.cleaned_data.get('department', profile.department)
-        profile.department = self.cleaned_data.get('department', profile.department)
         profile.blood_group = self.cleaned_data.get('blood_group', profile.blood_group)
 
         if self.cleaned_data.get('image'):

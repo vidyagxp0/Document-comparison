@@ -22,64 +22,102 @@
                     <div class="flex justify-between mb-3">
                         <div class="font-bold text-xl text-white">Compared Documents Info</div>
                     </div>
-                    <div class="mb-8 flex leading-normal rounded-lg overflow-auto">
-                        <table class="min-w-full leading-normal bg-slate-50">
-                            <thead>
-                                <tr>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc_ID</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Title</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Author</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Creation_Date</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Version</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Language</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc Type</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">File Format</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comments</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Summary</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity Score</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for document in documents %}
-                                    <tr class="hover:bg-gray-100">
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                                            <div class="max-w-36 overflow-x-auto truncate">
-                                                {{ document.title }}
-                                            </div>
-                                        </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                                            <div class="max-w-36 overflow-x-auto truncate">
-                                                {{ document.author }}
-                                            </div>
-                                        </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.creation_date }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.version }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.language }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_format }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">
-                                            <div class="max-w-36 overflow-x-auto truncate">
-                                                {{ document.comments }}
-                                            </div>
-                                        </td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comparison_status }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.summary }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.similarity_score|floatformat:0 }}%</td>
+                    <div class="flex gap-4">
+                        <div class="mb-8 flex leading-normal rounded-lg overflow-auto">
+                            <table class="min-w-full leading-normal bg-slate-50">
+                                <thead>
+                                    <tr>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc_ID</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Title</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Author</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Creation_Date</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Version</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Language</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc Type</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">File Format</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comments</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Summary</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity Score</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for document in documents %}
+                                        <tr class="hover:bg-gray-100">
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                                <div class="max-w-36 overflow-x-auto truncate">
+                                                    {{ document.title }}
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                                <div class="max-w-36 overflow-x-auto truncate">
+                                                    {{ document.author }}
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.creation_date }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.version }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.language }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_format }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">
+                                                <div class="max-w-36 overflow-x-auto truncate">
+                                                    {{ document.comments }}
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comparison_status }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.summary }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.similarity_score|floatformat:0 }}%</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mb-8 flex leading-normal rounded-lg overflow-hidden">
+                            <table class="leading-normal bg-slate-50 w-32">
+                                <thead class="bg-slate-600">
+                                    <th class="px-4 py-3 text-[13px] font-semibold text-white uppercase tracking-wider overflow-hidden">AI Summary</th>
+                                </thead>
+                                <tbody>
+                                    {% for doc in documents %}
+                                        <tr class="hover:bg-gray-100">
+                                            <td class="px-5 border-b border-gray-200 text-sm">
+                                                <button onclick="openSummary('{{doc.ai_summary}}')" class="bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg p-1.5">
+                                                    Summary
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>  
+                {% endif %}
+
+                {% if report_summary %}
+                    <div class="">
+                        <div class="">
+                            <p class="font-bold text-xl text-white">Comparison Summary</p>
+                        </div>
+                        <pre class="bg-cyan-800 rounded-lg p-6 text-white my-4 font-medium">{{ report_summary }}</pre>
                     </div>
                 {% endif %}
+                
                 <div class="">
                     <div class="mb-3 flex justify-between items-center">
-                        <p class="font-bold text-xl text-white">Comparison Summary</p>
-                        <a class="flex items-center gap-1 bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3 ml-4" href="{% url 'preview' report %}">
-                            <img class="size-7" src="{% static 'images/report.png' %}" alt="" srcset="">
-                            View Report
-                        </a>
+                        <div class="">
+                            <p class="font-bold text-xl text-white">Comparison Insights</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <button onclick="openSummary(`{{ report_summary }}`)" class="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg py-2 px-3">
+                                {% comment %} <img class="size-7" src="{% static 'images/report.png' %}" alt="" srcset=""> {% endcomment %}
+                                Comparison Summary
+                            </button>
+                            <a class="flex items-center gap-1 bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3" href="{% url 'preview' report %}">
+                                <img class="size-7" src="{% static 'images/report.png' %}" alt="" srcset="">
+                                View Report
+                            </a>
+                        </div>
                     </div>
                     <div class="overflow-auto rounded-lg">
                         <table class="min-w-full leading-normal bg-slate-50 text-balance">
@@ -161,5 +199,45 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Modal for Summary -->
+    <div id="summaryModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 p-6 relative">
+            <button onclick="closeSummary()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-4xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4">Documents AI Summary</h2>
+            <p id="summaryContent" class="text-lg mb-4"></p>
+            <div class="mt-6 text-right">
+                <button onclick="closeSummary()" class="bg-slate-300 hover:bg-slate-200 text-white font-bold rounded-lg py-2 px-4">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+        function openSummary(summary) {
+            let content = '';
+            if (summary === 'None') {
+                content = `
+                    <div class="flex flex-col gap-5 h-48 justify-center items-center">
+                        <img class="size-24" src="{% static 'images/no-summary.png' %}" alt="" srcset="">
+                        <p class="text-slate-700 text-lg font-medium">Sorry, We didn't find the document summary.</p>
+                    </div>
+                `
+            } else {
+                content = summary;
+            }
+            document.getElementById('summaryContent').innerHTML = content;
+            document.getElementById('summaryModal').classList.remove('hidden');
+        }
+        
+        function closeSummary() {
+            document.getElementById('summaryModal').classList.add('hidden');
+        }
+        
+    </script>
+    
 
 {% endblock body %}

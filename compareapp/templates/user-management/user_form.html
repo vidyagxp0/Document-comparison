@@ -21,13 +21,11 @@
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="flex flex-wrap gap-6">
-                    <!-- Personal Information Section -->
                     <div class="w-full">
                         <p class="text-white font-bold text-2xl border-b border-cyan-500 pb-2">Personal Information</p>
                     </div>
 
-                    <!-- Profile Image Section -->
-                    <div class="w-full lg:w-2/3 mx-auto bg-cyan-800 rounded-lg p-6 mb-4 flex gap-6 items-center">
+                    <div class="w-full lg:w-2/3 mx-auto bg-cyan-800 rounded-lg p-6 flex gap-6 items-center">
                         {% if form.image.initial %}
                             <img src="{{ form.image.initial.url }}" class="hover:bg-white size-64 rounded-full border-2 border-cyan-500 bg-gray-300" alt="Profile Image">
                         {% else %}
@@ -87,8 +85,6 @@
                                 <div class="text-red-500 font-semibold mt-2">{{ form.phone_number.errors }}</div>
                             {% endif %}
                         </div>
-            
-                        <!-- Address -->
                         <div class="mb-4">
                             <label for="id_address" class="block text-white font-medium mb-2">Address</label>
                             <div class="w-full">{{ form.address }}</div>
@@ -96,8 +92,6 @@
                                 <div class="text-red-500 font-semibold mt-2">{{ form.address.errors }}</div>
                             {% endif %}
                         </div>
-            
-                        <!-- Department -->
                         <div class="mb-4">
                             <label for="id_department" class="block text-white font-medium mb-2">Department</label>
                             <div class="w-full">{{ form.department }}</div>
@@ -105,9 +99,7 @@
                                 <div class="text-red-500 font-semibold mt-2">{{ form.department.errors }}</div>
                             {% endif %}
                         </div>
-            
-                        <!-- Blood Group -->
-                        <div class="mb-4">
+                        <div class="">
                             <label for="id_blood_group" class="block text-white font-medium mb-2">Blood Group</label>
                             <div class="w-full">{{ form.blood_group }}</div>
                             {% if form.blood_group.errors %}
@@ -116,16 +108,16 @@
                         </div>
                     </div>
                 
-                    <!-- User Status Section -->
                     <div class="w-full">
                         <p class="text-white font-bold text-2xl border-b border-cyan-500 pb-2">User Status</p>
                     </div>
+
                     <div class="bg-cyan-800 shadow-md rounded-lg p-6 w-full lg:w-2/3 mx-auto">
                         <div class="mb-4 flex items-center">
                             {{ form.is_superuser }}
                             <label for="id_is_superuser" class="ml-2 text-cyan-500 font-semibold">Superuser</label>
                         </div>
-                        <div class="mb-4 flex items-center">
+                        <div class="flex items-center">
                             {{ form.is_active }}
                             <label for="id_is_active" class="ml-2 text-cyan-500 font-semibold">Active</label>
                         </div>
@@ -136,50 +128,47 @@
                             <label for="id_username" class="block text-white font-medium mb-2">Username</label>
                             <div class="w-full">{{ form.username }}</div>
                             {% if form.username.errors %}
-                            <div class="text-red-500 font-semibold">
+                                <div class="text-red-500 font-semibold">
                                     {{ form.username.errors }}    
                                 </div>
-                                {% endif %}
-                            </div>
+                            {% endif %}
                         </div>  
                         {% if not user %}
-                            <!-- Password Section (if user is being created) -->
                             <div class="mb-4">
-                                <label for="password_type" class="block text-white font-semibold mb-2">Password Creation Type</label>
-                                <select id="password_type" class="form-input w-full rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500 text-cyan-900">
+                                <label for="password_type" class="block text-white font-medium mb-2">Password Creation Type</label>
+                                <select name="password_type" id="password_type" class="form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500">
                                     <option value="">Select creation type</option>
-                                    <option value="manual">Manual</option>
+                                    <option value="manual">Manually</option>
                                     <option value="bymail">By Mail</option>
                                 </select>
                                 {% if form.password_type.errors %}
-                                    <div class="text-red-500 font-semibold">{{ form.password_type.errors }}</div>
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.password_type.errors }}    
+                                    </div>
                                 {% endif %}
                             </div>
-                    
-                            <div id="password-field-container" class="mt-4">
-                                <label for="id_password" class="block text-white font-semibold mb-2">Password</label>
+                            <div id="password-field-container" class="mb-0">
+                                <label for="id_password" class="block text-white font-medium mb-2">Password</label>
                                 <div class="w-full">{{ form.password }}</div>
                                 {% if form.password.errors %}
-                                    <div class="text-red-500 font-semibold">{{ form.password.errors }}</div>
+                                    <div class="text-red-500 font-semibold">
+                                        {{ form.password.errors }}    
+                                    </div>
                                 {% endif %}
                             </div>
                         {% endif %}
-                    </div>
-                </div>
-                
+                    </div>                  
 
-                <div class="flex flex-wrap gap-6 mt-8">
                     <div class="w-full">
                         <p class="text-white font-bold text-2xl border-b border-cyan-500 pb-2">User Permissions</p>
                     </div>
                     <div class="bg-cyan-800 rounded-lg p-6 w-full">
-                        <div class="mb-4">
+                        <div class="">
                             <label for="permissions" class="block text-white font-medium mb-2 text-lg">Permissions</label>
                             <div class="flex items-center mb-4">
                                 <input type="checkbox" id="select-all" class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3">
                                 <label for="select-all" class="text-cyan-400 font-medium">Select All</label>
                             </div>
-
                             <div class="flex flex-col md:flex-row gap-6">
                                 <div class="p-4 rounded-lg w-full bg-white">
                                     <h3 class="text-gray-600 font-bold mb-2">Available Permissions</h3>
@@ -208,7 +197,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             {% if form.permissions.errors %}
                                 <div class="text-red-500 font-semibold">
                                     {{ form.permissions.errors }}    
@@ -216,26 +204,26 @@
                             {% endif %}
                         </div>
                     </div>
-                </div>
 
-                <div class="flex justify-end gap-4 mt-8 items-center">
-                    <a href="{% url 'user-management' %}" class="bg-slate-300 hover:bg-slate-200 text-gray-700 font-bold rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                        Cancel
-                    </a>
+                    <div class="flex justify-end gap-4 items-center">
+                        <a href="{% url 'user-management' %}" class="bg-slate-300 hover:bg-slate-200 text-gray-700 font-bold rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                            Cancel
+                        </a>
 
-                    {% if perms.auth.add_user and not user %}
-                        <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 font-bold text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
-                            Add User
-                        </button>
-                    {% elif perms.auth.change_user and user %}
-                        <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 font-bold text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
-                            Update User
-                        </button>
-                    {% else %}
-                        <p class="text-red-600 font-semibold bg-slate-100 rounded-lg py-2 px-4">
-                            You do not have permission to add or update users.
-                        </p>
-                    {% endif %}
+                        {% if perms.auth.add_user and not user %}
+                            <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 font-bold text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                                Add User
+                            </button>
+                        {% elif perms.auth.change_user and user %}
+                            <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 font-bold text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-300 ease-in-out">
+                                Update User
+                            </button>
+                        {% else %}
+                            <p class="text-red-600 font-semibold bg-slate-50 rounded-lg py-2 px-4">
+                                You do not have permission to add or update users.
+                            </p>
+                        {% endif %}
+                    </div>
                 </div>
             </form>
 

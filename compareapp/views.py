@@ -24,6 +24,7 @@ from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 from docx.shared import Pt, Inches
 
 import fitz     # PDF reader
+from PyPDF2 import PdfReader
 
 from pathlib import Path
 import convertapi
@@ -32,6 +33,7 @@ from django.http import JsonResponse
 import json
 
 import os
+import openai
 import requests
 import logging
 from datetime import datetime as date
@@ -384,6 +386,7 @@ def viewComparison(request, report_id):
         "documents": documents,
         "comparison_details": comparison_details,
         "report": report_id,
+        "report_summary": report.ai_summary
     })
 
 def formView(request):
@@ -573,14 +576,25 @@ def comparison(request: HttpRequest):
     
     
     data = {}
+    ai_summary = {}
     for doc in documents:
         file_path = doc.upload_document.path
         if doc.doc_format == 'docx':
             sections = read_docx(file_path)
             data[doc.document_id] = sections
+            
+            # Getting AI Summary
+            content = read_file(file_path)
+            ai_summary[doc.document_id] = getSummary(content)
+            
         elif doc.doc_format == 'pdf':
             sections = read_pdf(file_path)
             data[doc.document_id] = sections
+            
+            # Getting AI Summary
+            content = read_file(file_path)
+            ai_summary[doc.document_id] = getSummary(content)
+
         elif doc.doc_format == 'png':
             pass
         elif doc.doc_format == 'wav':
@@ -649,12 +663,16 @@ def comparison(request: HttpRequest):
         doc.summary = "Same" if overall_similarity_scores[doc.document_id] == 100 else "Different"
         doc.similarity_score = overall_similarity_scores[doc.document_id]
         doc.comparison_status = 'Compared'
+        doc.ai_summary = ai_summary[doc.document_id]
         doc.report_number = new_report_number
         doc.save()
 
     compared_documents = {}
     for index, doc in zip(range(1, len(documents) + 1), documents):
         compared_documents[f'doc{index}'] = doc.document_id
+
+    prepare_data = read_file(result_path)
+    comparison_ai_summary = getSummary(prepare_data, ind=False)
 
     try:
         comparison_report = ComparisonReport.objects.create(
@@ -663,6 +681,7 @@ def comparison(request: HttpRequest):
             comparison_reason = reason,
             compared_documents = compared_documents,
             comparison_summary = comparison_details,
+            ai_summary = comparison_ai_summary,
             compared_by = comparedBy,
             report_path = result_path,
             comparison_between = comparison_between
@@ -984,6 +1003,8 @@ def preview(request, report):
     
     return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'report': report})
 
+
+# Chatting with document -----------------------------------------------------------------------
 @csrf_exempt
 def uploadPDF(request):
     if request.method == 'POST':
@@ -1047,4 +1068,59 @@ def proxy_chat_pdf(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
+
+        
+# Handling or evironment for generating comparison summary --------------------------------------
+def read_word_data(file):
+    doc = Document(file)
+    return "\n".join([para.text for para in doc.paragraphs])
+
+def read_pdf_data(file):
+    pdf = PdfReader(file)
+    content = ""
+    for page in pdf.pages:
+        content += page.extract_text()
+    return content
+
+def read_file(file):
+    file_type = os.path.splitext(file)[1].lower()
+    if file_type == ".docx":
+        return read_word_data(file)
+    elif file_type == ".pdf":
+        return read_pdf_data(file)
+    else:
+        return None
+
+def getSummary(data, ind=True):
+    openai.api_key = settings.OPENAI_API_KEY
+
+    try:
+        if ind:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are an AI that give the summary of document content."},
+                    {"role": "user", "content": f"give the summary of the following document content:\n{data}"}
+                ],
+                max_tokens=1000
+            )
+
+            summary = response['choices'][0]['message']['content'].strip()
+            return summary
+        else:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                {"role": "system", "content": "You are an AI that compares documents and highlights revisions/changes."},
+                {"role": "user", "content": f"Compare the following documents and highlight the revisions/changes:\n{data}"}
+            ],
+                max_tokens=1000
+            )
+
+            summary = response['choices'][0]['message']['content'].strip()
+
+            return summary
+    except Exception as e:
+        print("Error occured while fetching the summary response!\n", e)
+
+        return None
