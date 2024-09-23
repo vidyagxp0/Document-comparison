@@ -1,6 +1,23 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.core.validators import RegexValidator
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone_number = models.CharField(
+        max_length=12,
+        blank=True, 
+        null=True,
+        validators=[RegexValidator(regex=r'^\+?1?\d{10,12}$', message="Phone number must be entered in the format: '+919999999999'. Up to 12 digits allowed.")]
+    )
+    address = models.TextField(blank=True, null=True)
+    department = models.CharField(max_length=50, blank=True, null=True)
+    blood_group = models.CharField(max_length=3, blank=True, null=True)
+    image = models.ImageField(upload_to='user_images/', blank=True, null=True)  # Image field for user profile picture
+
+    def __str__(self):
+        return self.user.username
 
 class Document(models.Model):
     LANGUAGE_CHOICES = (

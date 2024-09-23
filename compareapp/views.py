@@ -4,14 +4,16 @@ from django.urls import reverse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test
+
 from django.views.decorators.csrf import csrf_exempt
 from django.templatetags.static import static
 from django.contrib import messages
 
 from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm, CustomSetPasswordForm
-from .models import Document as Form, ComparisonReport, Feedback
+from .models import Document as Form, ComparisonReport, Feedback, UserProfile
 
 from docx import Document
 from docx.oxml.ns import qn
@@ -120,7 +122,7 @@ def userManagement(request):
 def add_edit_user(request, user_id=None):
     if user_id:
         user = get_object_or_404(User, id=user_id)
-        form = UserForm(request.POST or None, instance=user)
+        form = UserForm(request.POST or None, request.FILES or None, instance=user)
         user_permissions = user.user_permissions.all()
     else:
         user = None
@@ -672,44 +674,40 @@ def comparison(request: HttpRequest):
         # messages.error(request, "Error occured while saving the comparison data.")
         return HttpResponse(f"Error: {e}")
 
-def compare_sections(section1, section2):
-    section1 = section1.strip()
-    section2 = section2.strip()
-    
-    seq_matcher = difflib.SequenceMatcher(None, section1, section2)
+def compare_sections(section1, section2):      
+    words1 = section1.strip().split()
+    words2 = section2.strip().split()
+
+    seq_matcher = difflib.SequenceMatcher(None, words1, words2)
     similarity = seq_matcher.ratio()
     is_different = similarity < 1.0
 
-    added_text = []
-    removed_text = []
-    modified_text = []
-    
-    # Iterate through the differences
+    added_words = []
+    removed_words = []
+    modified_words = []
+
     for tag, i1, i2, j1, j2 in seq_matcher.get_opcodes():
-        if tag == 'equal':
-            pass  # Unchanged parts
-        elif tag == 'replace':
-            removed_text.append(section1[i1:i2])    # Replaced in section1
-            added_text.append(section2[j1:j2])      # Added in section2
+        if tag == 'replace':
+            removed_words.append(' '.join(words1[i1:i2]))
+            added_words.append(' '.join(words2[j1:j2]))
         elif tag == 'delete':
-            removed_text.append(section1[i1:i2])    # Deleted in section1
+            removed_words.append(' '.join(words1[i1:i2]))
         elif tag == 'insert':
-            added_text.append(section2[j1:j2])      # Inserted in section2
-    
-    if similarity < 0.4:
-        modified_text.append(section2)
-    
+            added_words.append(' '.join(words2[j1:j2]))
+
+    if similarity <= 0.4:
+        modified_words.append(section2)
+
     if similarity == 1.0:
         tag = "S"  # Same
+    elif added_words and not removed_words:
+        tag = "A"  # Added
+    elif removed_words and not added_words:
+        tag = "R"  # Removed
     else:
-        if added_text and not removed_text:
-            tag = "A"  # Added
-        elif removed_text and not added_text:
-            tag = "R"  # Removed
-        else:
-            tag = "M"  # Modified
+        tag = "M"  # Modified       
 
-    return similarity, is_different, tag, ' '.join(added_text), ' '.join(removed_text), ' '.join(modified_text) 
+    return similarity, is_different, tag, ' '.join(added_words), ' '.join(removed_words), ' '.join(modified_words) 
 
 def read_docx(file_path):
     doc = Document(file_path)
@@ -789,49 +787,43 @@ def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, reaso
 
     header_left_cell = header_table.cell(1, 0)
     header_left_para = header_left_cell.paragraphs[0]
-    header_left_para.add_run("Compared By: " + comparedBy).font.size = Pt(10)
+    header_left_para.add_run("Compared By: " + comparedBy).font.size = Pt(12)
     header_left_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 
     header_right1_cell = header_table.cell(1, 1)
     header_right1_para = header_right1_cell.paragraphs[0]
-    header_right1_para.add_run(f"Report Number: {reportNo}").font.size = Pt(10)
+    header_right1_para.add_run(f"Report Number: {reportNo}").font.size = Pt(12)
     header_right1_para.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
     header_table.cell(2, 0).merge(header_table.cell(2, 1))
 
     header_right2_cell = header_table.cell(2, 0)
     header_right2_para = header_right2_cell.paragraphs[0]
-    header_right2_para.add_run("Comparison Reason: " + reason).font.size = Pt(10)
+    header_right2_para.add_run("Comparison Reason: " + reason).font.size = Pt(12)
     header_right2_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 
-    # Footer with text and page number
     footer = section.footer
-    footer_table = footer.add_table(rows=1, cols=2, width=Inches(6))  # One row, two columns
+    footer_table = footer.add_table(rows=1, cols=2, width=Inches(6))
 
     footer_table.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
-    # Set table borders for footer
     set_table_borders(footer_table)
 
-    # Set vertical alignment for all cells in footer
     for row in footer_table.rows:
         for cell in row.cells:
             cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
-    # Left cell content (compared by text)
     footer_left_cell = footer_table.cell(0, 0)
     footer_left_para = footer_left_cell.paragraphs[0]
     cdate = date.now()
-    footer_left_para.add_run(f"Comparison Date: {str(cdate).split(' ')[0]}").font.size = Pt(10)
+    footer_left_para.add_run(f"Comparison Date: {str(cdate).split(' ')[0]}").font.size = Pt(12)
     footer_left_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 
-    # Right cell content (page number)
     footer_right_cell = footer_table.cell(0, 1)
     footer_right_para = footer_right_cell.paragraphs[0]
-    footer_right_para.add_run("Page ").font.size = Pt(10)
+    footer_right_para.add_run("Page ").font.size = Pt(12)
     footer_right_para.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
-    # Add the page number field
     run = footer_right_para.add_run()
     fldChar = OxmlElement('w:fldChar')
     fldChar.set(qn('w:fldCharType'), 'begin')
@@ -854,7 +846,6 @@ def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, reaso
 
     run = footer_right_para.add_run(" of ")
 
-    # Add the total page number field
     run = footer_right_para.add_run()
     fldChar = OxmlElement('w:fldChar')
     fldChar.set(qn('w:fldCharType'), 'begin')
@@ -891,19 +882,44 @@ def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, reaso
                 summary = "Same" if not is_different else "Different"
                 comparison_status = "Compared" if ref_section_content else "Not Compared"
 
+                if tag == 'A':
+                    tag = 'Added'
+                elif tag == 'R':
+                    tag = 'Removed'
+                elif tag == 'S':
+                    tag = 'Similar'
+                else:
+                    tag = 'Modified'
+
                 new_doc.add_heading(f"Document {doc_id}", level=2)
-                new_doc.add_paragraph(f"Similarity Score: {int(similarity*100)}%")
-                new_doc.add_paragraph(f"Tag: {tag}")
-                new_doc.add_paragraph(f"Summary: {summary}")
-                new_doc.add_paragraph(f"Comparison Status: {comparison_status}")
 
-                if added_text:
-                    new_doc.add_paragraph(f"Added Text: {added_text}")
-                if removed_text:
-                    new_doc.add_paragraph(f"Removed Text: {removed_text}")
+                css = new_doc.add_paragraph()
+                run = css.add_run("Content Similarity Score: ")
+                run.bold = True
+                css.add_run(f"{int(similarity*100)}%")
+
+                s = new_doc.add_paragraph()
+                run = s.add_run("Summary: ")
+                run.bold = True
+                s.add_run(summary)
+                
+                t = new_doc.add_paragraph()
+                run = t.add_run("Tag: ")
+                run.bold = True
+                t.add_run(tag)
+
                 if modified_text:
-                    new_doc.add_paragraph(f"Modified Text: {modified_text}")
+                    new_doc.add_heading("Modified Text:", level=3)
+                    new_doc.add_paragraph(modified_text)
+                else:
+                    if added_text:
+                        new_doc.add_heading("Added Text:", level=3)
+                        new_doc.add_paragraph(added_text)
+                    if removed_text:
+                        new_doc.add_heading("Removed Text:", level=3)
+                        new_doc.add_paragraph(removed_text)
 
+                new_doc.add_heading("Content:", level=3)
                 highlight_differences(new_doc, header, section_content, is_different)
 
     new_doc.save(output_path)

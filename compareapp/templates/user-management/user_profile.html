@@ -17,7 +17,11 @@
     <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg rounded-lg p-8 border border-cyan-900">
         <!-- Profile Info Section -->
         <div class="flex items-center mb-10">
-            <img src="{% static 'images/user.png' %}" alt="{{ user.username }}" class="rounded-full h-28 w-28 border-4 border-white mr-8">
+            {% if user.profile.image.url %}
+                <img src="{{user.profile.image.url}}" alt="{{user}}' profile image" class="rounded-full bg-gray-300 h-28 w-28 border-4 border-white mr-8">
+            {% else %}
+                <img src="{% static 'images/user.png' %}" alt="{{ user.username }}" class="rounded-full bg-gray-300 h-28 w-28 border-4 border-white mr-8">
+            {% endif %}
             <div>
                 <h2 class="text-3xl font-extrabold text-white">{{ user.get_full_name|default:user|title }}</h2>
                 <p class="text-lg text-cyan-300">{{ user.email }}</p>

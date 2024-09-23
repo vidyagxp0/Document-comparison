@@ -53,10 +53,10 @@
                 <h2 class="text-xl font-semibold">Chat with Document</h2>
                 <button id="closeChat" class="text-gray-600 hover:text-gray-800 text-3xl font-bold z-50">&times;</button>
             </div>
-            <div id="chatContainer" class="overflow-y-auto h-96 mb-4 border border-gray-200 p-4 rounded-lg">
+            <div id="chatContainer" class="overflow-y-auto h-96 mb-2 border border-gray-200 p-4 rounded-lg">
                 <!-- Chat content will be dynamically added here -->
             </div>
-            <div class="text-center text-slate-400 text-sm md:text-base">ChatPDF can make mistakes. Check important info.</div>
+            <div class="text-center text-slate-400 text-sm md:text-base mb-2">ChatPDF can make mistakes. Check important info.</div>
             <div class="flex gap-4 items-center"> 
                 <input id="chatInput" type="text" class="border border-gray-300 rounded-lg w-full" placeholder="Type your message here...">
                 <div id="sendMessage" class="hover:bg-gray-100 rounded-full p-2">
@@ -82,7 +82,7 @@
                 const chatContainer = document.getElementById('chatContainer');
                 chatContainer.innerHTML += `
                     <div class="flex justify-start mb-3">
-                        <span class="bg-gray-700 text-white py-2 px-3 rounded-lg max-w-xs md:max-w-xl break-words">Hello, how can i help you today!</span>
+                        <span class="bg-gray-700 text-white py-2 px-3 rounded-lg max-w-xs md:max-w-xl break-words">Hello, how can i help you with document!</span>
                     </div>`;
             } else {
                 alert('Error uploading PDF. Please try again.');

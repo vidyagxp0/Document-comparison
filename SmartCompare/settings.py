@@ -47,7 +47,7 @@ ROOT_URLCONF = 'SmartCompare.urls'
 
 CHATPDF_API_KEY = 'sec_svlzEoctoxWzXMSGAaPmbpJjX9z6bUrU'
 
-CONVERT_API_SECRET = 'secret_LbeVcM0yXIDHWHHY'
+CONVERT_API_SECRET = 'secret_83bs1pF6eQgQ3NOX'
 
 TEMPLATES = [
     {

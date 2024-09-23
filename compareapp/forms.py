@@ -1,5 +1,6 @@
+import os
 from django import forms
-from .models import Document, Feedback
+from .models import Document, Feedback, UserProfile
 
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.models import User
@@ -87,9 +88,55 @@ class UserForm(forms.ModelForm):
         required=False,
     )
 
+    phone_number = forms.CharField(
+        max_length=15,
+        widget=forms.TextInput(attrs={
+            'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
+            'placeholder': '+91 0000000000',
+        }),
+        required=False,
+    )
+
+    address = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
+            'placeholder': 'Enter address',
+            'rows': 3,
+        }),
+        required=False,
+    )
+
+    department = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
+            'placeholder': 'Enter your department'
+        }),
+        required=False,
+    )
+
+    blood_group = forms.ChoiceField(
+        choices=[
+            ('A+', 'A+'), ('A-', 'A-'), 
+            ('B+', 'B+'), ('B-', 'B-'), 
+            ('AB+', 'AB+'), ('AB-', 'AB-'), 
+            ('O+', 'O+'), ('O-', 'O-')
+        ],
+        widget=forms.Select(attrs={
+            'class': 'form-select w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
+        }),
+        required=False,
+    )
+
+    image = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
+        }),
+    )
+
     class Meta:
         model = User
-        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'date_joined', 'is_superuser', 'is_active', 'permissions']
+        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'date_joined', 'is_superuser', 'is_active', 'permissions', 'phone_number', 'address', 'department', 'blood_group', 'image']
         widgets = {
             'username': forms.TextInput(attrs={
                 'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
@@ -134,12 +181,19 @@ class UserForm(forms.ModelForm):
             self.fields.pop('password_type', None)
             self.fields.pop('password', None)
 
+            profile = self.instance.profile
+            self.fields['phone_number'].initial = profile.phone_number
+            self.fields['address'].initial = profile.address
+            self.fields['department'].initial = profile.department
+            self.fields['blood_group'].initial = profile.blood_group
+            self.fields['image'].initial = profile.image
+
     def clean(self):
         cleaned_data = super().clean()
-        password_type = cleaned_data.get('password_type')
-        password = cleaned_data.get('password')
 
         if not self.instance.pk:
+            password_type = cleaned_data.get('password_type')
+            password = cleaned_data.get('password')
             if password_type == 'manual':
                 if not password:
                     self.add_error('password', "Password is required when selecting 'Manual' password type.")
@@ -168,6 +222,26 @@ class UserForm(forms.ModelForm):
         if commit:
             user.save()
             self.save_m2m()
+
+
+        profile, created = UserProfile.objects.get_or_create(user=user)
+        
+        profile.phone_number = self.cleaned_data.get('phone_number', profile.phone_number)
+        profile.address = self.cleaned_data.get('address', profile.address)
+        profile.department = self.cleaned_data.get('department', profile.department)
+        profile.department = self.cleaned_data.get('department', profile.department)
+        profile.blood_group = self.cleaned_data.get('blood_group', profile.blood_group)
+
+        if self.cleaned_data.get('image'):
+            if profile.pk:
+                old_image = profile.image
+                if old_image and old_image != self.cleaned_data['image']:
+                    if os.path.isfile(old_image.path):
+                        os.remove(old_image.path)
+
+            profile.image = self.cleaned_data['image']
+
+        profile.save()
 
         return user
 
