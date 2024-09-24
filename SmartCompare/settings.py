@@ -15,7 +15,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['89.116.21.165' ,'localhost', '127.0.0.1']
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'          # To embed oly same domain content in iframe or embed
+X_FRAME_OPTIONS = 'SAMEORIGIN'          # To embed only same domain content in iframe or embed
 
 # Application definition
 

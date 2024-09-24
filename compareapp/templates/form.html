@@ -24,30 +24,61 @@
             </div>
             <div class="flex-row md:flex gap-6">
                 <div class="w-full md:w-[70%]">
-                    <span class="p-2 rounded bg-slate-100 text-slate-400 font-semibold">
-                        Document Number :  <span class="text-blue-500 font-bold">{{ new_report_number|default:"DCR1001" }}<span class="text-xl font-normal text-slate-400">/</span>{{ doc_id }}</span>
-                    </span>
                     <form method="post" enctype="multipart/form-data" class="rounded-lg p-4 border border-cyan-900 bg-cyan-800 mt-4">
                         <div class="text-slate-200 font-semibold">
 
                             {% csrf_token %}
-                            {{ form.as_p }}
-
                             <div class="mb-4">
-                                <label class="block text-gray-700 text-sm font-bold mb-2" for="files">Upload Files</label>
-                                <div id="drop-area" class="p-6 border-dashed border-4 border-gray-300 rounded-lg text-center">
-                                    <p class="text-gray-700">Drag and Drop files here or click to upload</p>
-                                    <input type="file" id="files" name="files" class="hidden drag-drop-input" multiple>
+                                <label for="report_number" class="block text-md font-medium text-white">Comparison ID</label>
+                                <input type="text" id="report_number" value="{{ new_report_number }}" name="report_number" class="mt-2 form-input rounded w-full text-slate-500 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" readonly required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="comparison_date" class="block text-md font-medium text-white">Comparison Date</label>
+                                <input type="date" id="comparison_date"  name="comparison_date" value=""  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="description" class="block text-md font-medium text-white">Descrition</label>
+                                <textarea class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Enter description here..." name="description" id="description"></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label for="reason" class="block text-md font-medium text-white">Short Description</label>
+                                <input type="text" id="reason" maxlength="150" name="reason" value="" placeholder="Enter the valid comparison reason..."  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="short_description" class="block text-md font-medium text-white">Short Description</label>
+                                <input type="text" id="short_description" maxlength="255" name="short_description" value="" placeholder="Enter short description"  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="department_type" class="block text-md font-medium text-white">Department Type</label>
+                                <input type="text" id="department_type" maxlength="255" name="department_type" value="" placeholder="Enter department here"  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
+                            </div>
+                            <div class="mb-4">
+                                <label for="documents_format" class="block text-md font-medium text-white">Documents Format</label>
+                                <input type="text" id="documents_format" maxlength="255" name="documents_format" value=""  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" readonly required>
+                            </div>
+
+                            <div class="mb-0">
+                                <label for="id_upload_documents" class="mb-2 block text-md font-medium text-white">Upload Documents</label>
+                                <div id="drop-area" class="p-6 border-dashed border-4 border-gray-300 rounded-lg text-center bg-slate-400 hover:bg-slate-300 hover:border-gray-500 relative">
+                                    <p class="text-white">Drag & Drop files here or click to upload</p>
+                                    <input type="file" id="id_upload_documents" name="upload_documents" class="opacity-0 w-full h-full absolute top-0 left-0 cursor-pointer" multiple required>
+                                    <p id="file-count" class="my-2 text-gray-700"></p>
                                 </div>
+                                {% if form.upload_documents.errors %}
+                                    <div class="text-red-500 font-semibold mt-1">
+                                        {{ form.upload_documents.errors }}    
+                                    </div>
+                                {% endif %}
                             </div>
                             
                             <input type="hidden" name="files" id="comparison_between_hidden">
+
                         </div>
 
                         {% if perms.compareapp.add_document %}
-                            <div class="flex justify-center md:justify-start">
+                            <div class="flex justify-center md:justify-start mt-4">
                                 <button type="submit" class="flex items-center gap-1 drop-shadow-xl bg-blue-600 hover:-translate-y-0.5 delay-100 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">
-                                    <img class="size-6" src="{% static 'images/upload.png' %}" alt="" srcset="">Upload Document
+                                    <img class="size-6 mr-1" src="{% static 'images/upload.png' %}" alt="" srcset="">Save
                                 </button>
                             </div>
                         {% else %}
@@ -86,26 +117,13 @@
 
                     <div class="text-start text-slate-400 font-bold w-full my-3">Uploaded files</div>
                     <div class="w-full h-full rounded-lg bg-cyan-800 p-4 overflow-y-auto">
-                        {% if documents %}
-                            {% for doc in documents %}  
-                                <div class="relative inline-block border rounded-lg bg-white text-center px-3 py-2 mb-3 mr-2">
-                                    <div class="absolute -top-1 -right-1">
-                                        <button onclick="openDeleteModal({{ doc.document_id }})" title="Delete Document">
-                                            <img class="size-5" src="{% static 'images/cross.png' %}" alt="" srcset="">
-                                        </button>
-                                    </div>
-                                    <div class="w-[94px] truncate">
-                                        <a href="{% url "view-document" doc.document_id %}" class="text-blue-700 font-bold">{{ doc.title }}</a>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                        <div class="size-full flex flex-col items-center justify-center">
-                            <img class="size-14" src="{% static 'images/no-documents.png' %}" alt="No files">
-                            <p class="mb-4 mt-2 font-bold text-xl text-rose-500">Document Not Found!</p>
-                            <p class="text-center font-semibold text-slate-200">There is no document uploaded yet, please upload files to perform comparison.</p>
+                        <div class="" id="file-list">
+                            <div class="size-full flex flex-col items-center justify-center">
+                                <img class="size-14" src="{% static 'images/no-documents.png' %}" alt="No files">
+                                <p class="mb-4 mt-2 font-bold text-xl text-rose-500">Document Not Found!</p>
+                                <p class="text-center font-semibold text-slate-200">There is no document uploaded yet, please upload files to perform comparison.</p>
+                            </div>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -140,34 +158,6 @@
             {% endif %}
         </div>
     </div>
-
-    <div id="deleteModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-8 max-w-xl w-full">
-            <h2 class="text-2xl font-bold mb-4">Delete Document</h2>
-            <form id="deleteForm">
-                {% if perms.compareapp.delete_document %}
-                <div class="mb-4">
-                    <h5>Are you sure, want to delete the document?</h5>
-                </div>
-                <div class="flex justify-end">
-                    <button type="button" class="bg-slate-400 hover:bg-slate-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeDeleteModal()">Cancel</button>
-                    <button type="submit" class="bg-red-800 hover:bg-red-700 text-white rounded-lg py-2 px-4 mr-2">Delete</button>
-                </div>
-                {% else %}
-                <div class="text-center mt-5 border rounded-lg p-5 bg-slate-100">
-                    <div class="flex justify-center">
-                        <img src="{% static 'images/permission-error.png' %}" class="mx-auto my-3" width="50" height="50" alt="Permission Denied">
-                    </div>
-                    <p class="text-red-700 mb-6 text-2xl font-semibold">Permission Denied</p>
-                    <p class="text-gray-500 mb-8">You do not have permission to delete users. Please contact to administrator.</p>
-                </div>
-                <button type="button" onclick="closeDeleteModal()" class="bg-gray-300 mt-3 float-end hover:bg-gray-200 text-white font-bold py-2 px-4 rounded">
-                    Back
-                </button>
-                {% endif %}
-            </form>
-        </div>
-    </div> 
 
     <div id="comparisonSuccess" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 {% if success %}{% else %}hidden{% endif %}">
         <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
@@ -208,55 +198,98 @@
                 <button type="button" onclick="closeComparisonTypeModal('')" class="rounded text-white font-bold px-3 py-2 bg-cyan-700">Done</button>
             </div>
         </div>
-    </div>
-
-    <script>
-        const dropArea = document.getElementById('drop-area');
-        const fileInput = document.getElementById('files');
-    
-        // Handle drag events
-        dropArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropArea.classList.add('bg-gray-100');
-        });
-    
-        dropArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropArea.classList.remove('bg-gray-100');
-        });
-    
-        dropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropArea.classList.remove('bg-gray-100');
-            fileInput.files = e.dataTransfer.files;
-        });
-    
-        dropArea.addEventListener('click', () => fileInput.click());
-    
-    </script>
-    
+    </div>    
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Modal and form elements
-            document.getElementById("id_upload_document").classList.add('hidden');
-            document.getElementById("id_upload_document").classList.add('hidden');
-
-
             const modal = document.getElementById("comparisonModal");
             const form = document.getElementById("comparisonForm");
             const reasonTextarea = document.getElementById("reason");
         
-            const deleteModal = document.getElementById("deleteModal");
-            let deleteForm = document.getElementById("deleteForm");
-        
             let comparisonTypeModal = document.getElementById("comparisonTypeModal");
             const comparisonSelect = document.getElementById("comparison_between");
             const error = document.getElementById("comparisonTypeError");
-            const docFormatField = document.getElementById("id_doc_format");
+            const docFormatField = document.getElementById("documents_format");
         
             const comparisonSuccessModal = document.getElementById("comparisonSuccess");
-        
+
+            // Drag and Drop -----------------------
+
+            const dropArea = document.getElementById('drop-area');
+            const fileInput = document.getElementById('id_upload_documents');
+            const fileCountDisplay = document.getElementById('file-count');
+            const fileList = document.getElementById('file-list');  // Ensure you add an element for this in your HTML
+            let filesArray = [];
+
+            // Handle drag events
+            dropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropArea.classList.add('bg-gray-100');
+            });
+
+            dropArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('bg-gray-100');
+            });
+
+            dropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropArea.classList.remove('bg-gray-100');
+                handleFiles(e.dataTransfer.files);
+            });
+
+            dropArea.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+            // Handle files when dropped or selected
+            function handleFiles(selectedFiles) {
+                const newFiles = Array.from(selectedFiles);
+                filesArray = filesArray.concat(newFiles);
+                updateFileList();
+                updateFileCount();
+                updateFileInput();  // Update the file input to reflect the files in filesArray
+            }
+
+            // Function to update the file count display
+            function updateFileCount() {
+                const count = filesArray.length;
+                fileCountDisplay.textContent = `${count} file(s) selected`;
+            }
+
+            // Function to display the list of selected files
+            function updateFileList() {
+                fileList.innerHTML = ""; // Clear the previous list
+                filesArray.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item flex justify-between items-center p-2 bg-gray-100 mb-2 rounded-lg';
+                    fileItem.innerHTML = `
+                        <span>${file.name}</span>
+                        <button type="button" class="" onclick="removeFile(${index})"><img class="size-5" src="{% static 'images/cross.png' %}" alt="remove"></button>
+                    `;
+                    fileList.appendChild(fileItem);
+                });
+            }
+
+            // Function to remove a specific file
+            window.removeFile = function (index) {
+                filesArray.splice(index, 1);  // Remove the file from filesArray
+                updateFileList();
+                updateFileCount();
+                updateFileInput();  // Update the file input to reflect the remaining files
+            }
+
+            // Function to update the file input (hidden) and reset its files after adding/removing
+            function updateFileInput() {
+                const dataTransfer = new DataTransfer();  // Create a new data transfer object
+                filesArray.forEach(file => dataTransfer.items.add(file));  // Re-add the remaining files
+                fileInput.files = dataTransfer.files;  // Update the input's files with the remaining files
+            }
+
+            // end - Drag and Drop -----------------------
+
+
             // Retrieve the comparison type from localStorage and set it in the hidden input field
             const comparisonTypeSelected = localStorage.getItem("comparisonTypeSelected");
 
@@ -327,11 +360,6 @@
                 comparisonSuccessModal.classList.add("hidden");
             };
         
-            // Close delete modal
-            window.closeDeleteModal = function() {
-                deleteModal.classList.add("hidden");
-            };
-        
             // Close comparison type modal
             window.closeComparisonTypeModal = function(op) {
                 const selectedType = comparisonSelect.value;
@@ -353,21 +381,6 @@
                         error.innerText = "This field is required.";
                     }
                 }
-            };
-        
-            // Open delete modal
-            window.openDeleteModal = function(id) {
-                deleteModal.classList.remove("hidden");
-        
-                // Remove previous event listeners to prevent multiple bindings
-                deleteForm.replaceWith(deleteForm.cloneNode(true));
-                deleteForm = document.getElementById("deleteForm");
-        
-                deleteForm.addEventListener("submit", function(event) {
-                    event.preventDefault();
-                    const url = `{% url 'remove-doc' 0 %}`.replace('0', id);
-                    window.location.href = url;
-                });
             };
         
             // If comparison was successful, reset the comparison type in localStorage

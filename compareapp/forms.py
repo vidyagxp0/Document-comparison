@@ -7,24 +7,40 @@ from django.contrib.auth.models import User
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 
+# Handling multiple files -------------------------------
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = [single_file_clean(data, initial)]
+        return result
+
+# end - Handling multiple files -------------------------------
+
 class DocumentForm(forms.ModelForm):
+    upload_documents = MultipleFileField()
     class Meta:
         model = Document
-        fields = ['title', 'author', 'creation_date', 'version', 'language', 'doc_type', 'doc_format', 'upload_document', 'comments']
-        widgets = {
-            'creation_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'}),
-        }
+        fields = ['upload_documents']
+ 
+    def clean_upload_documents(self):
+        files = self.files.getlist('upload_documents')
+        if not files:
+            raise forms.ValidationError('Please upload at least one document.')
 
-    def __init__(self, *args, **kwargs):
-        super(DocumentForm, self).__init__(*args, **kwargs)
-        self.fields['title'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document title'})
-        self.fields['author'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document author'})
-        self.fields['version'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'placeholder': 'Enter document version'})
-        self.fields['language'].widget.attrs.update({'class': 'form-select mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
-        self.fields['doc_type'].widget.attrs.update({'class': 'form-select mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
-        self.fields['doc_format'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'readonly': 'readonly', 'title': 'This field is read-only.'})
-        self.fields['upload_document'].widget.attrs.update({'class': 'form-input mb-3 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500'})
-        self.fields['comments'].widget.attrs.update({'class': 'form-input mb-4 rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500', 'maxlength': '200', 'placeholder': 'Enter comments here...'})
+        if len(files) < 2:
+            raise forms.ValidationError('Please upload minimum two documents.')
+
+        return files
 
 class CustomPasswordResetForm(PasswordResetForm):
     def clean_email(self):

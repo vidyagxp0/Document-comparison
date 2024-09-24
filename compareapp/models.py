@@ -151,19 +151,12 @@ class Document(models.Model):
             'txt': 'documents/text/',
             'other': 'documents/other/',
         }
-        return f"{format_paths.get(instance.doc_format, 'documents/other/')}{filename}"
+        return f"{format_paths.get(instance.comparison_between, 'documents/other/')}{filename}"
 
     document_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
-    author = models.CharField(max_length=50)
     creation_date = models.DateField(default=timezone.now)
-    upload_document = models.FileField(upload_to=upload_to_path)
-    language = models.CharField(max_length=255, choices=LANGUAGE_CHOICES, default='en')
-    version = models.CharField(max_length=255, default='1.0.0')
-    doc_type = models.CharField(max_length=255, choices=DOC_TYPE_CHOICES, default='stp')
-    doc_format = models.CharField(max_length=255)
-    comments = models.CharField(max_length=255)
+    upload_documents = models.FileField(upload_to=upload_to_path)
     comparison_status = models.CharField(max_length=255, null=True, blank=True)
     summary = models.CharField(max_length=255, null=True, blank=True)
     similarity_score = models.FloatField(null=True, blank=True)
@@ -172,8 +165,9 @@ class Document(models.Model):
     new = models.BooleanField(default=True)
     comparison_between = models.CharField(max_length=255, default=None)
 
+
     def __str__(self):
-        return self.title
+        return self.document_id
 
 class ComparisonReport(models.Model):
     report_number = models.CharField(max_length=255, unique=True)
@@ -187,6 +181,10 @@ class ComparisonReport(models.Model):
     comparison_status = models.BooleanField(default=True)
     report_path = models.TextField()
     comparison_between = models.CharField(max_length=255, default=None)
+
+    short_description = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(max_length=400, null=True, blank=True)
+    department_type = models.CharField(max_length=255, null=True, blank=True)
 
 
     def __str__(self):

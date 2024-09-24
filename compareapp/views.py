@@ -390,16 +390,19 @@ def viewComparison(request, report_id):
     })
 
 def formView(request):
+
+    # Remove old code 
+    # handle comparison
+    # Modify comparison
+    # 
+
+    
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
 
     report_number = request.GET.get('report_number')
     success = request.GET.get('success')
-
-    documents = Form.objects.filter(new=True, user=request.user)
-    document_count = documents.count()
-    formData = Form.objects.last()
     last_report = ComparisonReport.objects.last()
 
     if last_report:
@@ -407,62 +410,60 @@ def formView(request):
     else:
         new_report_number = f"DC{ request.user.id }R1001"
 
-    if formData:
-        doc_id = formData.document_id + 1
-    else:
-        doc_id = 1
-
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
-        comparison_between = request.POST.get("files")
+        comparison_between = request.POST.get("documents_format")
+        comparison_date = request.POST.get("comparison_date")
+        short_description = request.POST.get("short_description")
+        description = request.POST.get("description")
+        department_type = request.POST.get("department_type")
+        reason = request.POST.get("reason")
 
         if form.is_valid():
-            doc_format = form.cleaned_data.get('doc_format')
-            upload_document = request.FILES.get('upload_document')
+            documents = request.FILES.getlist('upload_documents')
 
             if not comparison_between:
-                messages.warning(request, f"Please select the files type to intialise the upload process.")
+                messages.warning(request, f"Please select the files type to intialise the upload process, otherwise reset the process!")
                 return render(request, "form.html", {
                     'form': form,
-                    'doc_id': doc_id,
-                    'document_count': document_count,
                     'success': success,
                     'report_number': report_number,
-                    'documents': documents
                 })
 
-            if upload_document and doc_format:
-                file_extension = os.path.splitext(upload_document.name)[1].lstrip('.').lower()
+            if not documents:
+                messages.warning(request, "Please upload at least two documents to perform the comparison!")
+                return render(request, "form.html", {
+                    'form': form,
+                    'success': success,
+                    'report_number': report_number,
+                })
 
-                if doc_format != 'other' and doc_format != file_extension:
-                    messages.warning(request, f"Please upload the file with the selected format '{doc_format}'.")
+            for doc in documents:
+                file_extension = os.path.splitext(doc.name)[1].lstrip('.').lower()
+
+                if file_extension != comparison_between:
+                    messages.error(request, f"Please upload '{comparison_between}' files only for comparison as a selected format!")
                     return render(request, "form.html", {
                         'form': form,
-                        'doc_id': doc_id,
-                        'document_count': document_count,
                         'success': success,
                         'report_number': report_number,
-                        'documents': documents
                     })
+            
+            # Saving the files one by one
 
-            if comparison_between != doc_format:
-                messages.error(request, f"Please upload '{comparison_between}' files only for comparison.")
-                return render(request, "form.html", {
+            for doc in documents:
+                document_instance = Form()
+                document_instance.comparison_between = comparison_between
+                document_instance.upload_documents = doc
+                document_instance.user = request.user
+                document_instance.save()
+
+
+            return render(request, "form.html", {
                     'form': form,
-                    'doc_id': doc_id,
-                    'document_count': document_count,
-                    'success': success,
+                    'success': True,
                     'report_number': report_number,
-                    'documents': documents
                 })
-
-            document_instance = form.save(commit=False)
-            document_instance.user = request.user
-            document_instance.comparison_between = comparison_between
-            document_instance.save()
-
-            messages.success(request, "Document uploaded successfully.")
-            return redirect('form')
         else:
             messages.warning(request, "All fields are required to be filled!")
     else:
@@ -470,9 +471,6 @@ def formView(request):
 
     return render(request, "form.html", {
         'form': form,
-        'doc_id': doc_id,
-        'document_count': document_count,
-        'documents': documents,
         'success': success,
         'report_number': report_number,
         'new_report_number': new_report_number
