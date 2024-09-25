@@ -110,7 +110,7 @@ class UserForm(forms.ModelForm):
             'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
             'placeholder': '+91 0000000000',
         }),
-        required=False,
+        required=True,
     )
 
     address = forms.CharField(
@@ -119,7 +119,7 @@ class UserForm(forms.ModelForm):
             'placeholder': 'Enter address',
             'rows': 3,
         }),
-        required=False,
+        required=True,
     )
 
     department = forms.CharField(
@@ -127,7 +127,7 @@ class UserForm(forms.ModelForm):
             'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
             'placeholder': 'Enter your department'
         }),
-        required=False,
+        required=True,
     )
 
     blood_group = forms.ChoiceField(
@@ -248,6 +248,7 @@ class UserForm(forms.ModelForm):
         profile.blood_group = self.cleaned_data.get('blood_group', profile.blood_group)
 
         if self.cleaned_data.get('image'):
+            
             if profile.pk:
                 old_image = profile.image
                 if old_image and old_image != self.cleaned_data['image']:

@@ -13,7 +13,7 @@ SECRET_KEY = 'django-insecure-mj7a)%-2#n$r81y$%!c8$5fv4-^-u6jlmq5x1idwjs*9-=vg75
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['89.116.21.165' ,'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['89.116.21.165' ,'localhost', '127.0.0.1', 'document.vidyagxp.com']
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'          # To embed only same domain content in iframe or embed
 
@@ -49,7 +49,7 @@ CHATPDF_API_KEY = 'sec_svlzEoctoxWzXMSGAaPmbpJjX9z6bUrU'
 
 CONVERT_API_SECRET = 'secret_83bs1pF6eQgQ3NOX'
 
-OPENAI_API_KEY = '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'
+# key will be replace here
 
 TEMPLATES = [
     {
