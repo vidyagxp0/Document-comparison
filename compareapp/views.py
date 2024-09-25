@@ -26,6 +26,7 @@ from docx.shared import Pt, Inches
 import fitz     # PDF reader
 from PyPDF2 import PdfReader
 
+import pandas as pd
 from pathlib import Path
 import convertapi
 import difflib
@@ -37,6 +38,7 @@ import openai
 import requests
 import logging
 from datetime import datetime as date
+import datetime
 
 # mail configuration  
 from django.contrib.auth.tokens import default_token_generator
@@ -240,13 +242,13 @@ def analytics(request):
 
     # Handling users
     if request.user.is_superuser:
-        total_files_data = [ len(Form.objects.filter(doc_format = doc)) for doc in files_format ]
+        total_files_data = [ len(Form.objects.filter(comparison_between = doc)) for doc in files_format ]
         all_comparison_data = [ len(ComparisonReport.objects.filter(comparison_between = doc)) for doc in files_format ]
 
         total_comparisons = len(ComparisonReport.objects.all())
         failed_reports = len(ComparisonReport.objects.filter(comparison_status=False))
     else:
-        total_files_data = [ len(Form.objects.filter(user=request.user, doc_format = doc)) for doc in files_format ]
+        total_files_data = [ len(Form.objects.filter(user=request.user, comparison_between = doc)) for doc in files_format ]
         all_comparison_data = [ len(ComparisonReport.objects.filter(user=request.user, comparison_between = doc)) for doc in files_format ]
 
         total_comparisons = len(ComparisonReport.objects.filter(user=request.user))
@@ -350,9 +352,8 @@ def dashboard(request):
     if query:
         reports = reports.filter(
             Q(report_number__icontains=query) |
-            Q(comparison_reason__icontains=query) |
-            Q(comparison_between__icontains=query) |
-            Q(comparison_status__icontains=query) |
+            Q(short_description__icontains=query) |
+            Q(department_type__icontains=query) |
             Q(comparison_date__icontains=query) |
             Q(compared_by__icontains=query)
         ).distinct()
@@ -389,14 +390,7 @@ def viewComparison(request, report_id):
         "report_summary": report.ai_summary
     })
 
-def formView(request):
-
-    # Remove old code 
-    # handle comparison
-    # Modify comparison
-    # 
-
-    
+def formView(request):   
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
@@ -404,6 +398,7 @@ def formView(request):
     report_number = request.GET.get('report_number')
     success = request.GET.get('success')
     last_report = ComparisonReport.objects.last()
+    current_date = datetime.date.today()
 
     if last_report:
         new_report_number = f"DC{ request.user.id }R{int(last_report.report_number.split('R')[1]) + 1}"
@@ -417,7 +412,6 @@ def formView(request):
         short_description = request.POST.get("short_description")
         description = request.POST.get("description")
         department_type = request.POST.get("department_type")
-        reason = request.POST.get("reason")
 
         if form.is_valid():
             documents = request.FILES.getlist('upload_documents')
@@ -427,43 +421,50 @@ def formView(request):
                 return render(request, "form.html", {
                     'form': form,
                     'success': success,
-                    'report_number': report_number,
-                })
-
-            if not documents:
-                messages.warning(request, "Please upload at least two documents to perform the comparison!")
-                return render(request, "form.html", {
-                    'form': form,
-                    'success': success,
-                    'report_number': report_number,
+                    'new_report_number': new_report_number,
+                    'current_date': current_date,
+                    'report_number': report_number
                 })
 
             for doc in documents:
                 file_extension = os.path.splitext(doc.name)[1].lstrip('.').lower()
 
                 if file_extension != comparison_between:
-                    messages.error(request, f"Please upload '{comparison_between}' files only for comparison as a selected format!")
+                    messages.warning(request, f"Please upload '{comparison_between}' files only for the comparison!")
                     return render(request, "form.html", {
                         'form': form,
                         'success': success,
-                        'report_number': report_number,
+                        'new_report_number': new_report_number,
+                        'current_date': current_date,
+                        'report_number': report_number
                     })
             
-            # Saving the files one by one
+            try:
+                for doc in documents:
+                    document_instance = Form()
+                    document_instance.comparison_between = comparison_between
+                    document_instance.upload_documents = doc
+                    document_instance.user = request.user
+                    document_instance.save()
 
-            for doc in documents:
-                document_instance = Form()
-                document_instance.comparison_between = comparison_between
-                document_instance.upload_documents = doc
-                document_instance.user = request.user
-                document_instance.save()
+                comparison_instance = ComparisonReport()
+                comparison_instance.report_number = new_report_number
+                comparison_instance.department_type = department_type
+                comparison_instance.description = description
+                comparison_instance.short_description = short_description
+                comparison_instance.comparison_date = comparison_date
+                comparison_instance.comparison_between = comparison_between
+                comparison_instance.user = request.user
+                comparison_instance.save()
+            except:
+                messages.warning(request, "Error occured while saving the files or comparison!")
+                messages.info(request, "Please reset the upload process!")
+                return redirect("form")
 
-
-            return render(request, "form.html", {
-                    'form': form,
-                    'success': True,
-                    'report_number': report_number,
-                })
+            url = reverse('compare')
+            redirect_url = f"{url}?report_number={new_report_number}"
+            
+            return redirect(redirect_url)
         else:
             messages.warning(request, "All fields are required to be filled!")
     else:
@@ -473,8 +474,36 @@ def formView(request):
         'form': form,
         'success': success,
         'report_number': report_number,
+        'current_date': current_date,
         'new_report_number': new_report_number
     })
+    
+
+# Import data view
+def importData(request):
+    if request.method == 'POST' and request.FILES.get('excelFile'):
+        try:
+            excel_file = request.FILES['excelFile']
+            df = pd.read_excel(excel_file)
+
+            description = df['description'].iloc[0]
+            short_description = df['short_description'].iloc[0]
+            department_type = df['department_type'].iloc[0]
+
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'description': description,
+                    'short_description': short_description,
+                    'department_type': department_type,
+                }
+            })
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
 
 # Resetting upload process
 @login_required
@@ -491,13 +520,6 @@ def documentDetail(request, doc_id):
         messages.warning(request, "Login Required!")
         return redirect('login')
     
-    last_report = ComparisonReport.objects.last()
-
-    if last_report:
-        new_report_number = f"DC{ request.user.id }R{int(last_report.report_number.split('R')[1]) + 1}"
-    else:
-        new_report_number = f"DC{ request.user.id }R1001"
-    
     try: 
         if request.user.is_superuser:
             document = get_object_or_404(Form, document_id=doc_id)
@@ -507,30 +529,34 @@ def documentDetail(request, doc_id):
         messages.warning(request, "Invalid document ID, please provide valid ID.")
         return redirect('dashboard')
     
-    return render(request, 'document-details.html', { 'document': document, 'report_number': new_report_number })
+    return render(request, 'document-details.html', { 'document': document })
 
-def initialDocument(request):
+def comparedDocument(request, id):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
         return redirect('login')
-    
+
     query = request.GET.get('q', '')
     filter_type = request.GET.get('filter', '')
 
-    documents = Form.objects.filter(new=True, user=request.user)
+    try:
+        documents = Form.objects.filter(report_number=id, user=request.user)
+    except:
+        messages.warning(request, "Document ID is not available or invalid!")
+        return redirect('dashboard')
 
     if query:
         documents = documents.filter(
             Q(document_id__icontains=query) |
-            Q(title__icontains=query) |
-            Q(author__icontains=query) |
-            Q(comments__icontains=query)
+            Q(comparison_between__icontains=query) |
+            Q(report_number__icontains=query) |
+            Q(summary__icontains=query)
         ).distinct()
 
     if filter_type and filter_type != '':
-        documents = documents.filter(doc_format=filter_type)
+        documents = documents.filter(comparison_between=filter_type)
     
-    return render(request, 'initial-document.html', { 'documents': documents })
+    return render(request, 'view-comparisons/compared-documents.html', { 'documents': documents })
 
 @login_required
 def removeDocument(request, doc_id):
@@ -552,32 +578,32 @@ def comparison(request: HttpRequest):
         messages.warning(request, "Login Required!")
         return redirect('login')
 
-    reason = request.GET.get('reason', '')
+    old_report_number = request.GET.get('report_number', '')
     documents = Form.objects.filter(new=True, user=request.user)
-    comparison_between = documents[0].comparison_between
-    last_report = ComparisonReport.objects.last()
-    user_full_name = request.user.get_full_name().title()
 
+    if not documents or len(documents) < 2:
+        messages.warning(request, "Minimum two documents are required to perform the comparison!")
+        return redirect('form') 
+    
+    comparison_between = documents[0].comparison_between
+    user_full_name = request.user.get_full_name().title()
+    
+    try:
+        short_description = get_object_or_404(ComparisonReport, report_number=old_report_number).short_description
+    except:
+        messages.error(request, "Invalid comparison ID, can't perform the comparison!")
+        return redirect("form")
+    
     if not user_full_name:
         comparedBy = request.user.username.title()
     else:
-        comparedBy = user_full_name
-    
-    if not documents or len(documents) < 2:
-        messages.warning(request, "Minimum two documents are required to perform the comparison!")
-        return redirect('form')
-
-    if last_report:
-        new_report_number = f"DC{request.user.id}R{int(last_report.report_number.split('R')[1]) + 1}"
-    else:
-        new_report_number = f"DC{request.user.id}R1001"
-    
+        comparedBy = user_full_name  
     
     data = {}
     ai_summary = {}
     for doc in documents:
-        file_path = doc.upload_document.path
-        if doc.doc_format == 'docx':
+        file_path = doc.upload_documents.path
+        if comparison_between == 'docx':
             sections = read_docx(file_path)
             data[doc.document_id] = sections
             
@@ -585,7 +611,7 @@ def comparison(request: HttpRequest):
             content = read_file(file_path)
             ai_summary[doc.document_id] = getSummary(content)
             
-        elif doc.doc_format == 'pdf':
+        elif comparison_between == 'pdf':
             sections = read_pdf(file_path)
             data[doc.document_id] = sections
             
@@ -593,12 +619,6 @@ def comparison(request: HttpRequest):
             content = read_file(file_path)
             ai_summary[doc.document_id] = getSummary(content)
 
-        elif doc.doc_format == 'png':
-            pass
-        elif doc.doc_format == 'wav':
-            pass
-        elif doc.doc_format == 'xlsx':
-            pass
         else:
             messages.error(request, "Can't perform comparison due to invalid file format.")
             return redirect('form')
@@ -607,10 +627,10 @@ def comparison(request: HttpRequest):
     result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison-reports')
     os.makedirs(result_dir, exist_ok=True)
 
-    result_path = os.path.join(result_dir, f"{new_report_number}.docx")
+    result_path = os.path.join(result_dir, f"{old_report_number}.docx")
     logo_path = "compareapp" + static('images/logo.png')
 
-    create_merged_docx(data, new_report_number, result_path, logo_path, comparedBy, reason)
+    create_merged_docx(data, old_report_number, result_path, logo_path, comparedBy, short_description)
 
     # Prepare comparison details
     comparison_details = {}
@@ -662,7 +682,7 @@ def comparison(request: HttpRequest):
         doc.similarity_score = overall_similarity_scores[doc.document_id]
         doc.comparison_status = 'Compared'
         doc.ai_summary = ai_summary[doc.document_id]
-        doc.report_number = new_report_number
+        doc.report_number = old_report_number
         doc.save()
 
     compared_documents = {}
@@ -673,19 +693,15 @@ def comparison(request: HttpRequest):
     comparison_ai_summary = getSummary(prepare_data, ind=False)
 
     try:
-        comparison_report = ComparisonReport.objects.create(
-            report_number = new_report_number,
-            user = request.user,
-            comparison_reason = reason,
-            compared_documents = compared_documents,
-            comparison_summary = comparison_details,
-            ai_summary = comparison_ai_summary,
-            compared_by = comparedBy,
-            report_path = result_path,
-            comparison_between = comparison_between
-        )
-        comparison_report.save()
-        return redirect(f'{reverse("form")}?success=True&report_number={new_report_number}')
+        comparison_instance = ComparisonReport.objects.get(report_number=old_report_number, user=request.user)
+        comparison_instance.compared_documents = compared_documents
+        comparison_instance.comparison_summary = comparison_details
+        comparison_instance.ai_summary = comparison_ai_summary
+        comparison_instance.compared_by = comparedBy
+        comparison_instance.report_path = result_path
+        comparison_instance.save()
+
+        return redirect(f'{reverse("form")}?success=True&report_number={old_report_number}')
 
     except Exception as e:
         # messages.error(request, "Error occured while saving the comparison data.")
@@ -775,7 +791,7 @@ def read_pdf(file_path):
 
     return sections
 
-def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, reason):
+def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, short_description):
     new_doc = Document()
 
     # Set headers and footers for the entire document
@@ -816,7 +832,7 @@ def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, reaso
 
     header_right2_cell = header_table.cell(2, 0)
     header_right2_para = header_right2_cell.paragraphs[0]
-    header_right2_para.add_run("Comparison Reason: " + reason).font.size = Pt(12)
+    header_right2_para.add_run("Comparison short description: " + short_description).font.size = Pt(12)
     header_right2_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
 
     footer = section.footer
@@ -1068,7 +1084,7 @@ def proxy_chat_pdf(request):
         return JsonResponse({'error': 'Invalid request method'}, status=400)
 
         
-# Handling or evironment for generating comparison summary --------------------------------------
+# Handling an environment for generating comparison summary --------------------------------------
 def read_word_data(file):
     doc = Document(file)
     return "\n".join([para.text for para in doc.paragraphs])
@@ -1100,7 +1116,7 @@ def getSummary(data, ind=True):
                     {"role": "system", "content": "You are an AI that give the summary of document content."},
                     {"role": "user", "content": f"give the summary of the following document content:\n{data}"}
                 ],
-                max_tokens=1000
+                max_tokens=2000
             )
 
             summary = response['choices'][0]['message']['content'].strip()
@@ -1112,7 +1128,7 @@ def getSummary(data, ind=True):
                 {"role": "system", "content": "You are an AI that compares documents and highlights revisions/changes."},
                 {"role": "user", "content": f"Compare the following documents and highlight the revisions/changes:\n{data}"}
             ],
-                max_tokens=1000
+                max_tokens=2000
             )
 
             summary = response['choices'][0]['message']['content'].strip()

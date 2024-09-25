@@ -23,8 +23,9 @@ urlpatterns = [
     path('form/', views.formView, name="form"),
     path('form/reset', views.uploadReset, name="reset"),  
     path('form/view/<int:doc_id>/', views.documentDetail, name="view-document"),
-    path('form/initial-documents', views.initialDocument, name="initial-document"),
+    path('form/compared-documents/<str:id>', views.comparedDocument, name="compared-documents"),
     path('form/remove/<int:doc_id>/', views.removeDocument, name="remove-doc"),
+    path('form/import-data/', views.importData, name="import-data"),  
     
     # For comparison
     path('comparison/view/<str:report_id>', views.viewComparison, name="view-comparison"),

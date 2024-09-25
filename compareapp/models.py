@@ -172,15 +172,14 @@ class Document(models.Model):
 class ComparisonReport(models.Model):
     report_number = models.CharField(max_length=255, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    comparison_reason = models.CharField(max_length=255)
-    compared_documents = models.JSONField()
-    comparison_summary = models.JSONField()
+    compared_documents = models.JSONField(null=True, blank=True)
+    comparison_summary = models.JSONField(null=True, blank=True)
     ai_summary = models.TextField(null=True, blank=True)
     comparison_date = models.DateField(default=timezone.now)
-    compared_by = models.CharField(max_length=255)
+    compared_by = models.CharField(max_length=255, null=True, blank=True)
     comparison_status = models.BooleanField(default=True)
-    report_path = models.TextField()
-    comparison_between = models.CharField(max_length=255, default=None)
+    report_path = models.TextField(null=True, blank=True)
+    comparison_between = models.CharField(max_length=255, default=None, null=True, blank=True)
 
     short_description = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(max_length=400, null=True, blank=True)
@@ -188,7 +187,7 @@ class ComparisonReport(models.Model):
 
 
     def __str__(self):
-        return self.comparison_reason
+        return self.short_description
 
 class Feedback(models.Model):
     feedback = models.TextField()

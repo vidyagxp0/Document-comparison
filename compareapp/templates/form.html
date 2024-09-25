@@ -28,33 +28,29 @@
                         <div class="text-slate-200 font-semibold">
 
                             {% csrf_token %}
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="report_number" class="block text-md font-medium text-white">Comparison ID</label>
-                                <input type="text" id="report_number" value="{{ new_report_number }}" name="report_number" class="mt-2 form-input rounded w-full text-slate-500 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" readonly required>
+                                <input type="text" id="report_number" value="{{ new_report_number }}" name="report_number" class="mt-1 form-input rounded w-full text-slate-600 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" readonly required>
                             </div>
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="comparison_date" class="block text-md font-medium text-white">Comparison Date</label>
-                                <input type="date" id="comparison_date"  name="comparison_date" value=""  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
+                                <input type="date" id="comparison_date"  name="comparison_date" value="{% now 'Y-m-d' %}"  class="mt-1 form-input rounded w-full text-slate-600 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
                             </div>
-                            <div class="mb-4">
-                                <label for="description" class="block text-md font-medium text-white">Descrition</label>
-                                <textarea class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Enter description here..." name="description" id="description"></textarea>
-                            </div>
-                            <div class="mb-4">
-                                <label for="reason" class="block text-md font-medium text-white">Short Description</label>
-                                <input type="text" id="reason" maxlength="150" name="reason" value="" placeholder="Enter the valid comparison reason..."  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
-                            </div>
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="short_description" class="block text-md font-medium text-white">Short Description</label>
-                                <input type="text" id="short_description" maxlength="255" name="short_description" value="" placeholder="Enter short description"  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
+                                <input type="text" id="short_description" maxlength="255" name="short_description" value="" placeholder="Enter short description"  class="mt-1 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
                             </div>
-                            <div class="mb-4">
+                            <div class="mb-3">
+                                <label for="description" class="block text-md font-medium text-white">Description</label>
+                                <textarea class="mt-1 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Enter description here..." name="description" id="description"></textarea>
+                            </div>
+                            <div class="mb-3">
                                 <label for="department_type" class="block text-md font-medium text-white">Department Type</label>
-                                <input type="text" id="department_type" maxlength="255" name="department_type" value="" placeholder="Enter department here"  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
+                                <input type="text" id="department_type" maxlength="255" name="department_type" value="" placeholder="Enter department here"  class="mt-1 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" required>
                             </div>
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label for="documents_format" class="block text-md font-medium text-white">Documents Format</label>
-                                <input type="text" id="documents_format" maxlength="255" name="documents_format" value=""  class="mt-2 form-input rounded w-full text-slate-700 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" readonly required>
+                                <input type="text" id="documents_format" maxlength="255" name="documents_format"  class="mt-1 form-input rounded w-full text-slate-600 border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500" readonly required>
                             </div>
 
                             <div class="mb-0">
@@ -70,58 +66,39 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            
-                            <input type="hidden" name="files" id="comparison_between_hidden">
-
                         </div>
 
-                        {% if perms.compareapp.add_document %}
-                            <div class="flex justify-center md:justify-start mt-4">
-                                <button type="submit" class="flex items-center gap-1 drop-shadow-xl bg-blue-600 hover:-translate-y-0.5 delay-100 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">
-                                    <img class="size-6 mr-1" src="{% static 'images/upload.png' %}" alt="" srcset="">Save
+                        {% if perms.compareapp.add_document or perms.compareapp.add_comparisonreport %}
+                            <div class="flex justify-center md:justify-end mt-4">
+                                <button type="submit" class="flex items-center gap-1 drop-shadow-xl bg-yellow-500 hover:bg-yellow-400 text-white font-bold py-2 px-3 rounded mt-2">
+                                    <img class="size-6" src="{% static 'images/save.png' %}" alt="" srcset="">Save
                                 </button>
                             </div>
                         {% else %}
-                            <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload files.</div>
+                            <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to upload files or perform comparison.</div>
                         {% endif %}
                     </form>
                 </div>
                  
-                <div class="mt-4 md:mt-0 w-full md:w-[30%] flex flex-col md:items-center">
-                    <div class="mt-10 text-start font-bold w-full mb-3 text-slate-400">Files Insights</div>
-                    <div class="p-4 rounded-lg bg-cyan-800 w-full">
-                        <div class="">
-                            <div class="rounded-lg bg-cyan-600 py-2 px-4 text-slate-700 font-bold text-center">
-                                <p class="my-3 text-white text-xl"> Files Count </p>
-                                <a href="{% url "initial-document" %}" title="View all files ready for the comparison" class="text-indigo-700 hover:text-indigo-600 font-extrabold text-4xl">{{ document_count }}</a>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-4 flex justify-between">
-                            <button onclick="openCTModal()" class="flex gap-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg py-2 px-3">
-                                <img class="size-6" src="{% static 'images/reset.png' %}" alt="" srcset="">Reset Process
-                            </button>
-
-                            {% if document_count >= 2 %}
-                                {% if perms.compareapp.add_comparisonreport %}
-                                    <button onclick="openModal()" class="flex gap-1 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-lg py-2 px-3">
-                                        <img class="size-6" src="{% static 'images/compare.png' %}" alt="Compare Icon">
-                                        Perform Comparison 
-                                    </button>
-                                {% else %}
-                                    <div class="inline-block bg-white text-red-700 font-bold py-2 px-4 rounded mt-2">Permission Denied: You do not have permission to perform comparison.</div>
-                                {% endif %}
-                            {% endif %}  
-                        </div>
+                <div class="md:mt-0 w-full md:w-[30%] flex flex-col md:items-center">
+                    <div class="mt-4 flex justify-around gap-4 p-6 bg-cyan-800 rounded-lg w-full">
+                        <button onclick="openCTModal()" class="flex gap-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg py-2 px-3">
+                            <img class="size-6" src="{% static 'images/reset.png' %}" alt="" srcset="">Reset Process
+                        </button>
+                        <button type="button" id="importButton" onclick="openImportModal()" class="flex gap-1 bg-green-500 hover:bg-green-400 text-white font-bold rounded-lg py-2 px-3">
+                            <img class="size-6" src="{% static 'images/import.png' %}" alt="" srcset="">Import Data
+                        </button>  
                     </div>
 
                     <div class="text-start text-slate-400 font-bold w-full my-3">Uploaded files</div>
                     <div class="w-full h-full rounded-lg bg-cyan-800 p-4 overflow-y-auto">
-                        <div class="" id="file-list">
-                            <div class="size-full flex flex-col items-center justify-center">
-                                <img class="size-14" src="{% static 'images/no-documents.png' %}" alt="No files">
-                                <p class="mb-4 mt-2 font-bold text-xl text-rose-500">Document Not Found!</p>
-                                <p class="text-center font-semibold text-slate-200">There is no document uploaded yet, please upload files to perform comparison.</p>
+                        <div class="h-full" id="file-list">
+                            <div class="h-full flex">
+                                <div class="flex flex-col items-center justify-center">
+                                    <img class="size-14" src="{% static 'images/no-documents.png' %}" alt="No files">
+                                    <p class="mb-4 mt-2 font-bold text-xl text-rose-500">Document Not Found!</p>
+                                    <p class="text-center font-semibold text-slate-200">There is no document uploaded yet, please upload files to perform comparison.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -130,32 +107,18 @@
         </div>
     </div>
 
-    <div id="comparisonModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
-            {% if perms.compareapp.add_comparisonreport %}
-                <h2 class="text-2xl font-bold mb-4">Reason for Comparison</h2>
-                <form id="comparisonForm">
-                    <div class="mb-4">
-                        <label for="reason" class="block text-md font-medium text-gray-700">Reason <span class="text-red-700 font-bold">*</span></label>
-                        <input id="reason" maxlength="150" placeholder="Enter a valid reason for comparison" name="reason" maxlength="100" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-cyan-500 focus:border-cyan-500 sm:text-sm" required>
-                    </div>
-                    <div class="flex justify-end">
-                        <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-4 font-medium" onclick="closeModal()">Cancel</button>
-                        <button type="submit" class="bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg py-2 px-4 font-medium">Submit</button>
-                    </div>
+    <!-- Modal Popup for uploading Excel -->
+    <div id="importModal" class="fixed z-50 inset-0 overflow-y-auto hidden">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white p-4 rounded shadow-md w-1/3">
+                <h2 class="text-lg font-bold mb-4">Import Data By Excel</h2>
+                <form id="importForm" enctype="multipart/form-data">
+                    <label for="excelFile" class="block text-md font-medium text-slate-700 mb-1">Upload Excel</label>
+                    <input type="file" id="excelFile" name="excelFile" accept=".xlsx" class="mb-4 form-input rounded-lg w-full text-slate-600 border-slate-300 focus:ring-cyan-500 focus:border-cyan-500" required>
+                    <button type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg mr-4 font-medium hover:bg-green-400" onclick="uploadExcelFile()">Upload</button>
+                    <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-400" onclick="closeImportModal()">Cancel</button>
                 </form>
-            {% else %}
-                <h2 class="text-2xl font-bold text-red-700 mb-4">Permission Error</h2>
-
-                <div class="text-center mt-5 border rounded-lg p-5 bg-slate-100">
-                    <div class="flex justify-center">
-                        <img src="{% static 'images/permission-error.png' %}" class="mx-auto my-3" width="50" height="50" alt="Permission Denied">
-                    </div>
-                    <p class="text-red-700 mb-6 text-2xl font-semibold">Permission Denied</p>
-                    <p class="text-gray-500 mb-8">You do not have permission to perform comparison. Please contact to administrator.</p>
-                </div>
-                <button type="button" class="bg-gray-500 hover:bg-gray-400 text-white rounded-lg py-2 px-4 mr-2" onclick="closeModal()">Cancel</button>
-            {% endif %}
+            </div>
         </div>
     </div>
 
@@ -203,16 +166,13 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Modal and form elements
-            const modal = document.getElementById("comparisonModal");
-            const form = document.getElementById("comparisonForm");
-            const reasonTextarea = document.getElementById("reason");
-        
             let comparisonTypeModal = document.getElementById("comparisonTypeModal");
             const comparisonSelect = document.getElementById("comparison_between");
             const error = document.getElementById("comparisonTypeError");
             const docFormatField = document.getElementById("documents_format");
         
             const comparisonSuccessModal = document.getElementById("comparisonSuccess");
+            const openCTM = {{ perform_comparison|yesno:"true,false" }} ;
 
             // Drag and Drop -----------------------
 
@@ -290,6 +250,55 @@
             // end - Drag and Drop -----------------------
 
 
+            // Handling import data ----------------------
+            
+            window.openImportModal = function () {
+                document.getElementById('importModal').classList.remove('hidden');
+            }
+        
+            window.closeImportModal = function () {
+                document.getElementById('importModal').classList.add('hidden');
+            }
+        
+            window.uploadExcelFile = async function () {
+                const excelInput = document.getElementById('excelFile');
+                const file = excelInput.files[0];
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('excelFile', file);
+        
+                    try {
+                        const response = await fetch("{% url 'import-data' %}", {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            }
+                        });
+        
+                        const result = await response.json();
+        
+                        if (result.success) {
+                            // Populate the fields with the data from Excel
+                            document.getElementById('description').value = result.data.description;
+                            document.getElementById('short_description').value = result.data.short_description;
+                            document.getElementById('department_type').value = result.data.department_type;
+                            
+                            closeImportModal(); 
+                        } else {
+                            alert(result.error);
+                        }
+                    } catch (error) {
+                        alert("Failed to upload file.");
+                    }
+                } else {
+                    alert("Please select an Excel file.");
+                }
+            }            
+            
+            // end - Handling import data ----------------
+
+
             // Retrieve the comparison type from localStorage and set it in the hidden input field
             const comparisonTypeSelected = localStorage.getItem("comparisonTypeSelected");
 
@@ -320,7 +329,6 @@
             };
             
             if (comparisonTypeSelected) {
-                document.getElementById("comparison_between_hidden").value = comparisonTypeSelected;
                 docFormatField.value = comparisonTypeSelected
                 updateTitle(comparisonTypeSelected)
             } else {
@@ -328,31 +336,10 @@
                     openCTModal();
                 }, 1000);
             }
-        
-            // Handle form submission
-            form.addEventListener("submit", function(event) {
-                event.preventDefault();
-                const reason = reasonTextarea.value.trim();
-                if (reason) {
-                    // Proceed to the comparison page with the reason
-                    window.location.href = "{% url 'compare' %}?reason=" + encodeURIComponent(reason);
-                }
-            });
 
             // Open comparison modal
             window.openCTModal = function() {
                 comparisonTypeModal.classList.remove("hidden");
-            };
-        
-            // Open comparison modal
-            window.openModal = function() {
-                modal.classList.remove("hidden");
-            };
-        
-            // Close comparison modal
-            window.closeModal = function() {
-                modal.classList.add("hidden");
-                reasonTextarea.value = ""; // Clear the textarea
             };
         
             // Close comparison success modal
@@ -371,7 +358,6 @@
                         alert("Make sure this action will reset all the files.")
                         comparisonTypeModal.classList.add("hidden");
                         localStorage.setItem("comparisonTypeSelected", selectedType);
-                        document.getElementById("comparison_between_hidden").value = selectedType;
                         docFormatField.value = selectedType
                         error.innerText = "";
                         updateTitle(selectedType)
@@ -382,6 +368,10 @@
                     }
                 }
             };
+
+            if (openCTM) {
+                openModal();
+            }
         
             // If comparison was successful, reset the comparison type in localStorage
             const isTrue = {{ success|yesno:"true,false" }};

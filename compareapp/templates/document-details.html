@@ -18,7 +18,7 @@
         <div class="shadow-lg shadow-slate-800 rounded-lg p-6 backdrop-blur-3xl bg-cyan-900">
             <div class="flex justify-between items-center mb-4">
                 <div class="rounded p-2 text-slate-400 bg-slate-100 font-semibold">
-                    Document Number :  <span class="text-blue-600 font-bold">{{ document.report_number|default:report_number }}<span class="font-normal text-slate-400">/</span>{{ document.document_id }}</span>
+                    Document Number :  <span class="text-blue-600 font-bold">{{ document.report_number }}<span class="font-normal text-slate-400">/</span>{{ document.document_id }}</span>
                 </div>
             </div>
             {% if perms.compareapp.view_document %}
@@ -27,8 +27,8 @@
                         <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-50">
                             <thead>
                                 <tr>
-                                    <th class="px-5 py-3 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Document Attributes</th>
-                                    <th class="px-5 py-3 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Document Information</th>
+                                    <th class="px-5 py-3 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Attributes</th>
+                                    <th class="px-5 py-3 bg-slate-600 text-sm font-semibold text-white uppercase text-left">Information</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -37,41 +37,29 @@
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.document_id }}</td>
                                 </tr>
                                 <tr class="hover:bg-gray-100">
-                                    <td class="px-5 py-3 border-b border-gray-200">Title</td>
-                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.title }}</td>
-                                </tr>
-                                <tr class="hover:bg-gray-100">
-                                    <td class="px-5 py-3 border-b border-gray-200">Author</td>
-                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.author }}</td>
-                                </tr>
-                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Creation Date</td>
                                     <td class="px-5 py-3 border-b border-gray-200">{{ document.creation_date }}</td>
                                 </tr>
                                 <tr class="hover:bg-gray-100">
-                                    <td class="px-5 py-3 border-b border-gray-200">Document Type</td>
-                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_type }}</td>
-                                </tr>
-                                <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Document Format</td>
-                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.doc_format }}</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.comparison_between }}</td>
                                 </tr>
                                 <tr class="hover:bg-gray-100">
-                                    <td class="px-5 py-3 border-b border-gray-200">Language</td>
-                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.language }}</td>
-                                </tr>
-                                <tr class="hover:bg-gray-100">
-                                    <td class="px-5 py-3 border-b border-gray-200">Version</td>
-                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.version }}</td>
-                                </tr>
-                                <tr class="hover:bg-gray-100">
-                                    <td class="px-5 py-3 border-b border-gray-200">Comments</td>
-                                    <td class="px-5 py-3 border-b border-gray-200">{{ document.comments }}</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">Comparison Status</td>
+                                    <td class="px-5 py-3 border-b border-gray-200">
+                                        <div class="flex items-center">
+                                            {% if document.comparison_status == 'Compared' %}
+                                                <p class="px-3 py-1.5 bg-green-500 text-white rounded-full font-medium">Success</p>
+                                            {% else %}
+                                                <p class="px-3 py-1.5 bg-red-500 text-white rounded-full font-medium">Fail</p>
+                                            {% endif %}
+                                        </div>
+                                    </td>
                                 </tr>
                                 <tr class="hover:bg-gray-100">
                                     <td class="px-5 py-3 border-b border-gray-200">Action</td>
                                     <td class="px-5 py-3 border-b border-gray-200">
-                                        <a href="{{ document.upload_document.url }}" class="hover:bg-slate-200 rounded-full">
+                                        <a href="{{ document.upload_documents.url }}" class="hover:bg-slate-200 rounded-full">
                                             <img src="{% static 'images/download-icon.png' %}" class="size-8" title="Download" alt="">
                                         </a>
                                     </td>
