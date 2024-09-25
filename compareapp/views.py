@@ -126,11 +126,11 @@ def userManagement(request):
 def add_edit_user(request, user_id=None):
     if user_id:
         user = get_object_or_404(User, id=user_id)
-        form = UserForm(request.POST or None, request.FILES or None, instance=user)
+        form = UserForm(request.POST or None, request.FILES or None , instance=user)
         user_permissions = user.user_permissions.all()
     else:
         user = None
-        form = UserForm(request.POST or None, request=request)
+        form = UserForm(request.POST or None, request.FILES or None , request=request)
         user_permissions = []
 
     if request.method == 'POST':

@@ -152,8 +152,8 @@ TAILWIND_APP_NAME = 'theme'
 
 # During Development not for Production
 INTERNAL_IPS = [
-    "127.0.0.1",
-    "89.116.21.165"
+    "127.0.0.1"
+    # "89.116.21.165"
 ]
 
 NPM_BIN_PATH = "C:/Program Files/nodejs/npm.cmd"

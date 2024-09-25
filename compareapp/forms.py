@@ -247,15 +247,14 @@ class UserForm(forms.ModelForm):
         profile.department = self.cleaned_data.get('department', profile.department)
         profile.blood_group = self.cleaned_data.get('blood_group', profile.blood_group)
 
-        if self.cleaned_data.get('image'):
-            
-            if profile.pk:
+        new_image = self.cleaned_data.get('image')
+        if new_image:
+            if profile.pk and profile.image and profile.image != new_image:
                 old_image = profile.image
-                if old_image and old_image != self.cleaned_data['image']:
-                    if os.path.isfile(old_image.path):
-                        os.remove(old_image.path)
+                if old_image and os.path.isfile(old_image.path):
+                    os.remove(old_image.path)
 
-            profile.image = self.cleaned_data['image']
+            profile.image = new_image  # Update with the new image
 
         profile.save()
 

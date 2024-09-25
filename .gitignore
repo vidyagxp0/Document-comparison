@@ -24,7 +24,7 @@ env/
 /mediafiles/
 
 # Ignore environment variables file
-.env
+.env/
 
 # Ignore coverage reports
 htmlcov/

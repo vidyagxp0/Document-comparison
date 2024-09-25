@@ -21,7 +21,6 @@
             </div>
         </div>
         <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg rounded-lg p-8 border border-cyan-900">
-            {% if perms.compareapp.view_comparisonreport %}
                 <div class="flex items-center mb-3 justify-between">
                     <form method="GET" action="" class="flex items-center gap-3 ">
                         <div class="flex">
@@ -44,13 +43,14 @@
                             <img src="{% static 'images/search.png' %}" alt="Search" class="size-6 text-white" /><span>Search</span>
                         </button>
                     </form>
-                    {% if reports %}
+                    {% if reports or perms.compareapp.add_document %}
                         <a class="bg-pink-700 hover:bg-pink-600 text-white font-medium rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">
                             <img class="inline-block mt-0 pt-0 size-6" src="{% static 'images/new-comparison.png' %}" alt="" srcset="">
                             <span>Start Comparison</span>
                         </a>
                     {% endif %}
                 </div>
+            {% if perms.compareapp.view_comparisonreport %}
                 {% if reports %}
                     <div class="overflow-auto">
                         <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-50 text-left">
@@ -148,5 +148,5 @@
             {% endif %}
         </div>
     </div>
-
+    
 {% endblock body %}

@@ -155,7 +155,7 @@ class Document(models.Model):
     document_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     creation_date = models.DateField(default=timezone.now)
-    upload_documents = models.FileField(upload_to=upload_to_path)
+    upload_documents = models.FileField(upload_to=upload_to_path, default="user_images/user.png")
     comparison_status = models.CharField(max_length=255, null=True, blank=True)
     summary = models.CharField(max_length=255, null=True, blank=True)
     similarity_score = models.FloatField(null=True, blank=True)

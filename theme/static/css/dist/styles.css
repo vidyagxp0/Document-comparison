@@ -1346,6 +1346,26 @@ select {
   height: 100vh;
 }
 
+.max-h-96 {
+  max-height: 24rem;
+}
+
+.max-h-\[\] {
+  max-height: ;
+}
+
+.max-h-\[120\] {
+  max-height: 120;
+}
+
+.max-h-\[120px\] {
+  max-height: 120px;
+}
+
+.max-h-\[96\] {
+  max-height: 96;
+}
+
 .min-h-screen {
   min-height: 100vh;
 }
