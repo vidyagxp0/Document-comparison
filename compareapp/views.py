@@ -412,12 +412,13 @@ def formView(request):
         short_description = request.POST.get("short_description")
         description = request.POST.get("description")
         department_type = request.POST.get("department_type")
+        documents = request.FILES.getlist('upload_documents')
 
         if form.is_valid():
             documents = request.FILES.getlist('upload_documents')
 
             if not comparison_between:
-                messages.warning(request, f"Please select the files type to intialise the upload process, otherwise reset the process!")
+                messages.warning(request, f"Please select the files type or reset to intialise the upload process!")
                 return render(request, "form.html", {
                     'form': form,
                     'success': success,
@@ -1017,6 +1018,8 @@ def preview(request, report):
     
     return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'report': report})
 
+def softwareDocumentation(request):
+    return render(request, "documentation/view.html")
 
 # Chatting with document -----------------------------------------------------------------------
 @csrf_exempt

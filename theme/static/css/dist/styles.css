@@ -1031,6 +1031,10 @@ select {
   float: inline-end;
 }
 
+.float-right {
+  float: right;
+}
+
 .m-4 {
   margin: 1rem;
 }
@@ -1068,6 +1072,11 @@ select {
 .my-4 {
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+.my-8 {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
 .-mr-1 {
@@ -1344,22 +1353,6 @@ select {
 
 .h-screen {
   height: 100vh;
-}
-
-.max-h-96 {
-  max-height: 24rem;
-}
-
-.max-h-\[\] {
-  max-height: ;
-}
-
-.max-h-\[120\] {
-  max-height: 120;
-}
-
-.max-h-\[120px\] {
-  max-height: 120px;
 }
 
 .max-h-\[96\] {
@@ -2067,6 +2060,11 @@ select {
   background-color: rgb(234 179 8 / var(--tw-bg-opacity));
 }
 
+.bg-blue-800 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(30 64 175 / var(--tw-bg-opacity));
+}
+
 .bg-opacity-50 {
   --tw-bg-opacity: 0.5;
 }
@@ -2234,6 +2232,11 @@ select {
 .py-5 {
   padding-top: 1.25rem;
   padding-bottom: 1.25rem;
+}
+
+.py-6 {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
 }
 
 .pb-1 {

@@ -8,6 +8,7 @@ urlpatterns = [
     path('logout/', views.logoutUser, name="logout"),
     path('dashboard/', views.dashboard, name="dashboard"),
     path('feedback/', views.submitFeedback, name="feedback"),
+    path('software/org-documentation/', views.softwareDocumentation, name="documentation"),
 
     # User Management system
     path('user-management/users/', views.userManagement, name='user-management'),

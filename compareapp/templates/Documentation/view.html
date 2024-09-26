@@ -1,0 +1,215 @@
+{% extends "layout/base.html" %}
+{% load custom_filters %}
+
+{% block title %}
+    Report
+{% endblock title %}
+
+{% block body %}
+{% load static %}
+
+    <div class="container mx-auto my-12 px-6">
+        <div class="text-start mb-8">
+            <h1 class="text-3xl font-bold text-white">Software Documentation</h1>
+        </div>
+        
+        <!-- Navigator -->
+        {% include "layout/navigator.html" with pageInfo="Here you can view detailed information about your comparison reports and enables you to preview the comparison report." %}
+        
+        <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg shadow-slate-800 rounded-lg p-8">
+
+            <div class="flex justify-end mb-4">
+                <a class="inline-flex gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2 px-3" href="{% get_media_prefix %}Software-Files/Documentation - Document Comparison Pro.pdf"><img src="{% static "images/download-report.png" %}" class="size-6" alt="" srcset=""> <span>Get Offline Document</span></a>
+            </div>
+
+            <!-- Section: Introduction -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('introduction')">
+                    <span class="font-semibold">1. Introduction</span> <span class="float-right">+</span>
+                </button>
+                <div id="introduction" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h2 class="text-2xl font-bold mb-4">Overview</h2>
+                    <p class="mb-4">Document Comparison Pro is an advanced software solution designed to facilitate seamless and accurate comparisons between multiple document types, such as PDFs and Word files.</p>
+                    
+                    <h3 class="text-xl font-semibold">Key Features</h3>
+                    <ul class="list-disc list-inside mb-4">
+                        <li>Multiple File Formats: Supports comparison of PDFs, Word documents, and more.</li>
+                        <li>Detailed Comparison Reports: Color-coded reports outlining added, removed, or changed content.</li>
+                        <li>User-Friendly Interface: Drag-and-drop upload, navigation, and comparison features.</li>
+                        <li>Version Tracking: Track document versions and changes over time.</li>
+                        <li>Role-Based Access: Customizable permissions for secure document handling.</li>
+                        <li>Scalability: Handle large files, bulk uploads, and multiple users.</li>
+                    </ul>
+                    
+                    <h3 class="text-xl font-semibold">Target Audience</h3>
+                    <ul class="list-disc list-inside">
+                        <li><strong>Law Firms:</strong> Compare legal documents, contracts, and case files.</li>
+                        <li><strong>Editors & Publishers:</strong> Review manuscript changes across versions.</li>
+                        <li><strong>Business Professionals:</strong> Manage document version control for proposals.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section: System Requirements -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('system-requirements')">
+                    <span class="font-semibold">2. System Requirements</span> <span class="float-right">+</span>
+                </button>
+                <div id="system-requirements" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">2.1 Minimum Technical Requirements</h3>
+                    <ul class="list-disc list-inside mb-4">
+                        <li>Browser: Latest versions of Chrome, Firefox, Edge, or Safari.</li>
+                        <li>Operating System: Windows 10, macOS 10.15+, or Linux.</li>
+                        <li>Internet: Minimum 5 Mbps stable connection.</li>
+                    </ul>
+                    
+                    <h3 class="text-xl font-semibold mb-4">2.2 Server Requirements (For Client Servers)</h3>
+                    <ul class="list-disc list-inside">
+                        <li>Operating System: Ubuntu 18.04+ or CentOS 7+.</li>
+                        <li>Database: PostgreSQL 12+, MySQL 8.0+, or similar databases.</li>
+                        <li>Web Server: Apache 2.4+ or Nginx.</li>
+                        <li>Python: Python 3.7+ (Django 3.2+).</li>
+                        <li>Storage: 50GB minimum for smaller businesses.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section: Accessing Document Comparison Pro -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('accessing')">
+                    <span class="font-semibold">3. Accessing Document Comparison Pro</span> <span class="float-right">+</span>
+                </button>
+                <div id="accessing" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">3.1 Logging In</h3>
+                    <p class="mb-4">Use your web browser to log in with your credentials at the provided URL (e.g., <strong>https://yourdomain.com</strong>).</p>
+                    
+                    <h3 class="text-xl font-semibold mb-4">3.2 Forgot Password</h3>
+                    <p>If you forget your password, click the <strong>Forgot Password</strong> link and follow the instructions sent to your email.</p>
+                </div>
+            </section>
+
+            <!-- Section: User Roles and Permissions -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('roles')">
+                    <span class="font-semibold">4. User Roles and Permissions</span> <span class="float-right">+</span>
+                </button>
+                <div id="roles" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">4.1 Overview</h3>
+                    <p>The system uses role-based permissions to control access and maintain security. Administrators can assign roles and customize permissions.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-4">4.2 User Roles</h3>
+                    <ul class="list-disc list-inside">
+                        <li><strong>Administrator:</strong> Full control, including user management and document uploads.</li>
+                        <li><strong>Editor:</strong> Upload, edit, and compare documents.</li>
+                        <li><strong>Viewer:</strong> View comparison reports only.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section: Uploading Documents -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('uploading-docs')">
+                    <span class="font-semibold">5. Uploading Documents</span> <span class="float-right">+</span>
+                </button>
+                <div id="uploading-docs" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">5.1 Uploading Files</h3>
+                    <p>Users can upload documents for comparison via drag-and-drop or file selection in the dashboard.</p>
+                    
+                    <h3 class="text-xl font-semibold mb-4">5.2 Supported File Formats</h3>
+                    <ul class="list-disc list-inside">
+                        <li>PDF (.pdf)</li>
+                        <li>Microsoft Word (.docx)</li>
+                        <li>Text Files (.txt)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section: Comparing Documents -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('comparing-docs')">
+                    <span class="font-semibold">6. Comparing Documents</span> <span class="float-right">+</span>
+                </button>
+                <div id="comparing-docs" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">6.1 Selecting Documents for Comparison</h3>
+                    <p>Once documents are uploaded, select the ones you want to compare from the document list by checking the boxes next to them. Then click the <strong>Compare</strong> button.</p>
+
+                    <h3 class="text-xl font-semibold mb-4">6.2 Comparison Options</h3>
+                    <p>You can choose between different comparison types (e.g., <strong>Text Comparison</strong>, <strong>Structural Comparison</strong>) before running the comparison. The options are available in the comparison settings dialog.</p>
+
+                    <h3 class="text-xl font-semibold mb-4">6.3 Viewing Comparison Results</h3>
+                    <p>Once the comparison is complete, the results will be displayed in a report. The changes will be highlighted with colors:</p>
+                    <ul class="list-disc list-inside">
+                        <li><span class="text-red-500">Red:</span> Removed text</li>
+                        <li><span class="text-blue-500">Blue:</span> Added text</li>
+                        <li><span class="text-black">Black:</span> Unchanged text</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section: Exporting Comparison Reports -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('exporting-reports')">
+                    <span class="font-semibold">7. Exporting Comparison Reports</span> <span class="float-right">+</span>
+                </button>
+                <div id="exporting-reports" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">7.1 Export Options</h3>
+                    <p>You can export the comparison report in various formats for sharing or archiving:</p>
+                    <ul class="list-disc list-inside">
+                        <li>PDF (.pdf)</li>
+                        <li>Word Document (.docx)</li>
+                        <li>Text File (.txt)</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold mb-4">7.2 How to Export</h3>
+                    <p>After reviewing the comparison results, click the <strong>Export</strong> button at the top-right of the comparison report. Select your desired format and download the file.</p>
+                </div>
+            </section>
+
+            <!-- Section: Troubleshooting -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('troubleshooting')">
+                    <span class="font-semibold">8. Troubleshooting</span> <span class="float-right">+</span>
+                </button>
+                <div id="troubleshooting" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">8.1 Common Issues</h3>
+                    <p>Here are some common issues you may encounter and how to resolve them:</p>
+                    <ul class="list-disc list-inside">
+                        <li><strong>Slow Uploads:</strong> Ensure your internet connection is stable and meets the minimum speed requirements.</li>
+                        <li><strong>File Format Not Supported:</strong> Check that the document is in one of the supported formats (PDF, DOCX, TXT).</li>
+                        <li><strong>Comparison Errors:</strong> If comparison fails, try re-uploading the document or contact support.</li>
+                    </ul>
+
+                    <h3 class="text-xl font-semibold mb-4">8.2 Contact Support</h3>
+                    <p>If you face any issues not listed above, contact our support team at <strong>support@doccomparisonpro.com</strong> or call <strong>1-800-123-4567</strong>.</p>
+                </div>
+            </section>
+
+            <!-- Section: FAQ -->
+            <section class="mb-8">
+                <button class="w-full bg-cyan-600 text-white py-3 px-4 rounded-md mb-2 text-left" onclick="toggleSection('faq')">
+                    <span class="font-semibold">9. Frequently Asked Questions (FAQ)</span> <span class="float-right">+</span>
+                </button>
+                <div id="faq" class="hidden bg-white p-6 rounded-md shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">9.1 What document formats are supported?</h3>
+                    <p>Document Comparison Pro supports PDF (.pdf), Microsoft Word (.docx), and Text (.txt) files for comparison.</p>
+
+                    <h3 class="text-xl font-semibold mb-4">9.2 Can I compare more than two documents at once?</h3>
+                    <p>Yes, you can select and compare multiple documents at the same time by checking the corresponding boxes before running the comparison.</p>
+
+                    <h3 class="text-xl font-semibold mb-4">9.3 How secure is my data?</h3>
+                    <p>Your data is encrypted and stored securely in compliance with data privacy regulations. You can review our detailed security policy for more information.</p>
+                </div>
+            </section>
+
+        </div>
+        
+    <script>
+        toggleSection('introduction')
+
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.toggle('hidden');
+        }
+    </script>
+
+{% endblock body %}
