@@ -985,19 +985,15 @@ logger = logging.getLogger(__name__)
 
 def docx_to_pdf(docx_path, pdf_path):
     try:
-        # Set your ConvertAPI secret
         convertapi.api_secret = settings.CONVERT_API_SECRET
 
-        # Convert the file paths to strings
         docx_path = str(docx_path)
         pdf_path = str(pdf_path)
 
-        # Convert the DOCX to PDF
         result = convertapi.convert('pdf', {
             'File': docx_path
         })
 
-        # Save the result to the specified path
         result.file.save(pdf_path)
         
     except Exception as e:
@@ -1141,3 +1137,5 @@ def getSummary(data, ind=True):
         print("Error occured while fetching the summary response!\n", e)
 
         return None
+    
+
