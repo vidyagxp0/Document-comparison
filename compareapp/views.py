@@ -397,6 +397,7 @@ def formView(request):
 
     report_number = request.GET.get('report_number')
     success = request.GET.get('success')
+    saved = True if (request.GET.get('saved', False) == 'True') else False
     last_report = ComparisonReport.objects.last()
     current_date = datetime.date.today()
 
@@ -407,38 +408,30 @@ def formView(request):
 
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
-        comparison_between = request.POST.get("documents_format")
-        comparison_date = request.POST.get("comparison_date")
-        short_description = request.POST.get("short_description")
-        description = request.POST.get("description")
-        department_type = request.POST.get("department_type")
-        documents = request.FILES.getlist('upload_documents')
+        valid_format = ['docx', 'pdf']
 
         if form.is_valid():
+            comparison_between = request.POST.get("documents_format")
+            comparison_date = request.POST.get("comparison_date")
+            short_description = request.POST.get("short_description")
+            description = request.POST.get("description")
+            department_type = request.POST.get("department_type")
             documents = request.FILES.getlist('upload_documents')
 
             if not comparison_between:
                 messages.warning(request, f"Please select the files type or reset to intialise the upload process!")
-                return render(request, "form.html", {
-                    'form': form,
-                    'success': success,
-                    'new_report_number': new_report_number,
-                    'current_date': current_date,
-                    'report_number': report_number
-                })
+                return redirect('form')
+
+            elif comparison_between not in valid_format:
+                messages.warning(request, f"Bad request, invalid documents format '{comparison_between}' for comaprison!")
+                return redirect('form')
 
             for doc in documents:
                 file_extension = os.path.splitext(doc.name)[1].lstrip('.').lower()
 
                 if file_extension != comparison_between:
-                    messages.warning(request, f"Please upload '{comparison_between}' files only for the comparison!")
-                    return render(request, "form.html", {
-                        'form': form,
-                        'success': success,
-                        'new_report_number': new_report_number,
-                        'current_date': current_date,
-                        'report_number': report_number
-                    })
+                    messages.error(request, f"Bad request, file extension '{file_extension}' mismatched with selected format '{comparison_between}'.")
+                    return redirect('form')
             
             try:
                 for doc in documents:
@@ -458,22 +451,23 @@ def formView(request):
                 comparison_instance.user = request.user
                 comparison_instance.save()
             except:
-                messages.warning(request, "Error occured while saving the files or comparison!")
+                messages.warning(request, "Error occured while saving the files!")
                 messages.info(request, "Please reset the upload process!")
                 return redirect("form")
 
-            url = reverse('compare')
-            redirect_url = f"{url}?report_number={new_report_number}"
+            url = reverse('form')
+            redirect_url = f"{url}?saved=True"
             
             return redirect(redirect_url)
         else:
-            messages.warning(request, "All fields are required to be filled!")
+            messages.warning(request, "All fields are required to be fill!")
     else:
         form = DocumentForm()
 
     return render(request, "form.html", {
         'form': form,
         'success': success,
+        'saved': saved,
         'report_number': report_number,
         'current_date': current_date,
         'new_report_number': new_report_number
@@ -508,8 +502,15 @@ def importData(request):
 
 # Resetting upload process
 @login_required
-def uploadReset(request):
+def uploadReset(request: HttpRequest):
+
+    report_number = request.GET.get('report_number', '')
     documents = Form.objects.filter(new=True, user=request.user)
+    report = ComparisonReport.objects.filter(report_number=report_number, user=request.user)
+
+    if report:
+        report.delete()
+        
     if documents:
         documents.delete()
 
