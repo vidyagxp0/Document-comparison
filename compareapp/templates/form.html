@@ -89,7 +89,7 @@
                 <div class="md:mt-0 w-full md:w-[30%] flex flex-col md:items-center">
                     <div class="mt-4 flex justify-around gap-4 p-6 bg-cyan-800 rounded-lg w-full">
                         <button onclick="openCTModal()" class="flex gap-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg py-2 px-3">
-                            <img class="size-6" src="{% static 'images/reset.png' %}" alt="" srcset="">Reset Process
+                            <img class="size-6" src="{% static 'images/reset.png' %}" alt="" srcset="">Comparison Type
                         </button>
                         <button type="button" onclick="prepareDoc()" class="flex gap-1 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg py-2 px-3">
                             <img class="size-6" src="{% static 'images/cloud.png' %}" alt="" srcset="">Get Documents
@@ -237,32 +237,47 @@
             const openCTM = {{ perform_comparison|yesno:"true,false" }} ;
             
             // Comparison Modal ----------------------------------------
-            // Modal and buttons
+            
             const docSavedModal = document.getElementById('docSavedModal');
             const comparisonBtn = document.getElementById("comparisonBtn");
             const comparisonCancelBtn = document.getElementById("comparisonCancelBtn");
 
             const savedFromContext = {{ saved|yesno:"true,false" }};
+            console.log(savedFromContext, typeof(savedFromContext));
             const savedFromLocalStorage = localStorage.getItem('isSaved');
 
-            if (savedFromContext === true || savedFromLocalStorage === "True") {
+            if (savedFromContext === true) {
                 localStorage.setItem('isSaved', 'True');
-                localStorage.setItem('report_number', {{report_number}});
+                localStorage.setItem('report_number', "{{ report_number }}");
                 docSavedModal.classList.remove('hidden');
             }
 
+            if (savedFromLocalStorage === "True") {
+                docSavedModal.classList.remove('hidden');
+            }
+
+
             comparisonCancelBtn.addEventListener('click', () => {
+                const oldReportNumber = localStorage.getItem('report_number');
+
                 localStorage.removeItem('isSaved'); 
+                localStorage.removeItem('report_number');
+                localStorage.removeItem('comparisonTypeSelected');
                 docSavedModal.classList.add('hidden');  
-                window.location.href = "{% url 'reset' %}";
+
+                const baseUrl = "{% url 'cancel-comparison' %}";
+                window.location.href = `${baseUrl}?report_number=${oldReportNumber}`;
             });
             
             comparisonBtn.addEventListener('click', () => {
                 const rn = localStorage.getItem('report_number');
-                localStorage.removeItem('isSaved');  
+                localStorage.removeItem('isSaved'); 
+                localStorage.removeItem('report_number');
+                localStorage.removeItem('comparisonTypeSelected');
                 docSavedModal.classList.add('hidden');
 
-                {% comment %} window.location.href = `{% url 'compare' report_number=${rn} %}`;   {% endcomment %}
+                const baseUrl = "{% url 'compare' %}";
+                window.location.href = `${baseUrl}?report_number=${rn}`;
             });
 
 
@@ -519,14 +534,11 @@
                 }
                 else {
                     if (selectedType) {
-                        alert("Make sure this action will reset all the files.")
-                        comparisonTypeModal.classList.add("hidden");
                         localStorage.setItem("comparisonTypeSelected", selectedType);
                         docFormatField.value = selectedType
-                        error.innerText = "";
                         updateTitle(selectedType)
-                        window.location.href = "{% url 'reset' %}";
-    
+                        error.innerText = "";
+                        comparisonTypeModal.classList.add("hidden");    
                     } else {
                         error.innerText = "This field is required.";
                     }

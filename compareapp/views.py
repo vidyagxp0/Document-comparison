@@ -411,6 +411,7 @@ def formView(request):
         valid_format = ['docx', 'pdf']
 
         if form.is_valid():
+            saveReportNumber = request.POST.get("report_number")
             comparison_between = request.POST.get("documents_format")
             comparison_date = request.POST.get("comparison_date")
             short_description = request.POST.get("short_description")
@@ -442,7 +443,7 @@ def formView(request):
                     document_instance.save()
 
                 comparison_instance = ComparisonReport()
-                comparison_instance.report_number = new_report_number
+                comparison_instance.report_number = saveReportNumber
                 comparison_instance.department_type = department_type
                 comparison_instance.description = description
                 comparison_instance.short_description = short_description
@@ -456,7 +457,7 @@ def formView(request):
                 return redirect("form")
 
             url = reverse('form')
-            redirect_url = f"{url}?saved=True"
+            redirect_url = f"{url}?saved=True&report_number={saveReportNumber}"
             
             return redirect(redirect_url)
         else:
@@ -500,9 +501,9 @@ def importData(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 
-# Resetting upload process
+# Comparison Cancellation Process
 @login_required
-def uploadReset(request: HttpRequest):
+def cancelComparison(request: HttpRequest):
 
     report_number = request.GET.get('report_number', '')
     documents = Form.objects.filter(new=True, user=request.user)
@@ -514,7 +515,7 @@ def uploadReset(request: HttpRequest):
     if documents:
         documents.delete()
 
-    messages.success(request, "The upload process was successfully reset.")
+    messages.success(request, "The comparison was cancelled, resetting the process.")
     return redirect('form')
 
 def documentDetail(request, doc_id):

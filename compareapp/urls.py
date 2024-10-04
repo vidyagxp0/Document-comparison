@@ -22,7 +22,7 @@ urlpatterns = [
 
     # For Document upload
     path('form/', views.formView, name="form"),
-    path('form/reset', views.uploadReset, name="reset"),  
+    path('form/reset', views.cancelComparison, name="cancel-comparison"),  
     path('form/view/<int:doc_id>/', views.documentDetail, name="view-document"),
     path('form/compared-documents/<str:id>', views.comparedDocument, name="compared-documents"),
     path('form/remove/<int:doc_id>/', views.removeDocument, name="remove-doc"),
