@@ -1,19 +1,18 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.core.validators import RegexValidator
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     phone_number = models.CharField(
-        max_length=13,
+        max_length=15,
         blank=True,
         null=True
     )
     address = models.TextField(blank=True, null=True)
     department = models.CharField(max_length=50, blank=True, null=True)
     blood_group = models.CharField(max_length=3, blank=True, null=True)
-    image = models.ImageField(upload_to='user_images/', blank=True, null=True)  # Image field for user profile picture
+    image = models.ImageField(upload_to='user_images/', default="user_images/user.png")
 
     def __str__(self):
         return self.user.username
@@ -155,7 +154,7 @@ class Document(models.Model):
     document_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     creation_date = models.DateField(default=timezone.now)
-    upload_documents = models.FileField(upload_to=upload_to_path, default="user_images/user.png")
+    upload_documents = models.FileField(upload_to=upload_to_path)
     comparison_status = models.CharField(max_length=255, null=True, blank=True)
     summary = models.CharField(max_length=255, null=True, blank=True)
     similarity_score = models.FloatField(null=True, blank=True)

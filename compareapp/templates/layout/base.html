@@ -51,7 +51,7 @@
                     <p id="timer" class="bg-rose-500 text-white py-1 px-2 rounded-full font-bold animate-pulse">00:00:00</p>
                 </div>
                 <div class="relative -mr-1">
-                    {% if user.profile.image %}
+                    {% if user.profile and user.profile.image %}
                         <img class="size-12 rounded-full bg-gray-300 border-2 border-cyan-500" src="{{user.profile.image.url}}" alt="{{user}}' profile image">
                     {% else %}
                         <img class="size-10 rounded-full bg-gray-300 border-2 border-cyan-500" src="{% static "images/user.png" %}" alt="{{user|title}}'s profile image">
@@ -355,17 +355,16 @@
                 function startCountdown() {
                     countdownInterval = setInterval(function() {
                         countdown--;
-                        countdownElement.textContent = countdown;  // Update the modal with the countdown number
+                        countdownElement.textContent = countdown; 
                         if (countdown <= 0) {
                             clearInterval(countdownInterval);
                         }
                     }, 1000);
                 }
         
-                // Hide the warning modal
                 function hideModal() {
                     modal.classList.add('hidden');
-                    countdownElement.textContent = 10;  // Reset the countdown display
+                    countdownElement.textContent = 10; 
                 }
         
                 function logout() {
@@ -373,9 +372,8 @@
                     window.location.href = "{% url 'logout' %}";
                 }
         
-                // Event listener for the "Stay Logged In" button
                 stayLoggedInButton.addEventListener('click', function() {
-                    resetTimer({target: document.body});  // Manually reset timer
+                    resetTimer({target: document.body});
                 });
         
                 // Detect user activity and reset the timer

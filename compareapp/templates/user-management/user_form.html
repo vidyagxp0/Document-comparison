@@ -25,13 +25,15 @@
                         <p class="text-white font-bold text-2xl border-b border-cyan-500 pb-2">Personal Information</p>
                     </div>
 
-                    <div class="w-full lg:w-2/3 mx-auto bg-cyan-800 rounded-lg p-6 flex gap-6 items-center">
-                        {% if form.image.initial %}
-                            <img src="{{ form.image.initial.url }}" class="hover:bg-white size-64 rounded-full border-2 border-cyan-500 bg-gray-300" alt="Profile Image">
-                        {% else %}
-                            <img src="{% static "images/user.png" %}" class="hover:bg-white size-64 rounded-full border-2 border-cyan-500 bg-gray-300" alt="Profile Image">
-                        {% endif %}
-                        <div class="w-full">
+                    <div class="w-full lg:w-2/3 mx-auto bg-cyan-800 rounded-lg p-6 flex flex-col md:flex-row gap-6 items-center">
+                        <div class="flex justify-center w-full md:w-4/12 text-center">
+                            {% if form.image.initial %}
+                                <img src="{{ form.image.initial.url }}" class="hover:opacity-50 size-64 rounded-full border-4 border-white bg-gray-300 bg-contain" alt="Profile Image">
+                            {% else %}
+                                <img src="{% static "images/user.png" %}" class="hover:opacity-50 size-64 rounded-full border-4 border-white bg-gray-300 bg-contain" alt="Profile Image">
+                            {% endif %}
+                        </div>
+                        <div class="w-full md:w-8/12">
                             <label for="id_image" class="block text-white font-semibold mb-2">Profile Image</label>
                             <div class="w-full">{{ form.image }}</div>
                             {% if form.image.errors %}
@@ -70,7 +72,7 @@
                             {% endif %}
                         </div>
                         <div class="mb-4">
-                            <label for="id_date_joined" class="block text-white font-medium mb-2">Joining Date</label>
+                            <label for="id_date_joined" class="block text-white font-medium mb-2">Creation Date</label>
                             <div class="w-full">{{ form.date_joined }}</div>
                             {% if form.date_joined.errors %}
                                 <div class="text-red-500 font-semibold">
@@ -167,7 +169,7 @@
                             <label for="permissions" class="block text-white font-medium mb-2 text-lg">Permissions</label>
                             <div class="flex items-center mb-4">
                                 <input type="checkbox" id="select-all" class="form-checkbox size-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3">
-                                <label for="select-all" class="text-cyan-400 font-medium">Select All</label>
+                                <label for="select-all" class="text-cyan-500 font-medium">Select All</label>
                             </div>
                             <div class="flex flex-col md:flex-row gap-6">
                                 <div class="p-4 rounded-lg w-full bg-white">

@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.urls import reverse
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import user_passes_test
@@ -13,15 +13,14 @@ from django.templatetags.static import static
 from django.contrib import messages
 
 from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm, CustomSetPasswordForm
-from .models import Document as Form, ComparisonReport, Feedback, UserProfile
+from .models import Document as Form, ComparisonReport, Feedback
 
 from docx import Document
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
-from docx.shared import RGBColor
+from docx.shared import RGBColor, Pt, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
-from docx.shared import Pt, Inches
 
 import fitz     # PDF reader
 from PyPDF2 import PdfReader
@@ -30,7 +29,6 @@ import pandas as pd
 from pathlib import Path
 import convertapi
 import difflib
-from django.http import JsonResponse
 import json
 
 import os
@@ -561,6 +559,7 @@ def comparedDocument(request, id):
     
     return render(request, 'view-comparisons/compared-documents.html', { 'documents': documents })
 
+# Optional route for future use --------
 @login_required
 def removeDocument(request, doc_id):
     previous_url = request.META.get('HTTP_REFERER', 'dashboard')

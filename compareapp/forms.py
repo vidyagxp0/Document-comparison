@@ -1,4 +1,4 @@
-import os
+import os, re
 from django import forms
 from .models import Document, Feedback, UserProfile
 
@@ -63,10 +63,10 @@ class UserForm(forms.ModelForm):
         'view_comparisonreport',
     ]
     USER_MANAGEMENT_PERMISSIONS = [
-        'add_user',
+        # 'add_user',
         'change_user',
-        'delete_user',
-        'view_user',
+        # 'delete_user',
+        # 'view_user',
     ]
     FEEDBACK_PERMISSIONS = [
         'add_feedback',
@@ -108,10 +108,18 @@ class UserForm(forms.ModelForm):
         max_length=15,
         widget=forms.TextInput(attrs={
             'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
-            'placeholder': '+91 0000000000',
+            'placeholder': '+91 1234567890',
         }),
         required=True,
     )
+
+    def clean_phone_number(self):
+        phone_number = self.cleaned_data.get('phone_number')
+
+        if not re.match(r'^\+91 \d{10}$', phone_number):
+            raise ValidationError("Enter a valid phone number in the format: +91 1234567890")
+
+        return phone_number
 
     address = forms.CharField(
         widget=forms.Textarea(attrs={
@@ -284,3 +292,4 @@ class FeedbackForm(forms.ModelForm):
             'feedback': forms.Textarea(attrs={'rows': 3}),
             'email': forms.EmailInput(attrs={'placeholder': 'Optional'}),
         }
+
