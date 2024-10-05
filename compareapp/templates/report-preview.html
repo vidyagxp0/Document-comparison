@@ -120,6 +120,7 @@
             const message = document.getElementById('chatInput').value;
             if (message.trim()) {
                 const chatContainer = document.getElementById('chatContainer');
+                loader.classList.remove('hidden')
                 chatContainer.innerHTML += `
                     <div class="flex justify-end mb-3">
                         <span class="bg-blue-600 text-white py-2 px-3 rounded-lg max-w-xs md:max-w-xl break-words">${message}</span>
@@ -136,14 +137,19 @@
 
                     if (response.ok) {
                         const data = await response.json();
+
+                        loader.classList.add('hidden')
+
                         chatContainer.innerHTML += `
                            <div class="flex justify-start mb-3">
                                 <span class="bg-gray-700 text-white py-2 px-3 rounded-lg max-w-xs md:max-w-xl  break-words">${data.content}</span>
                             </div>`;
                     } else {
+                        loader.classList.add('hidden')
                         chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error fetching response</div>`;
                     }
                 } catch (error) {
+                    loader.classList.add('hidden')
                     chatContainer.innerHTML += `<div class="text-left text-red-600 mb-2">Error: ${error.message}</div>`;
                 }
 

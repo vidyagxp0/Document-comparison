@@ -1,0 +1,82 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}
+    Activity Logs
+{% endblock title %}
+
+{% block body %}
+<div class="container mx-auto my-12 px-6">
+    <div class="text-start mb-8">
+        <h1 class="text-3xl font-bold text-white">Activity Logs</h1>
+    </div>
+
+    <!-- Navigator -->
+    {% include "layout/navigator.html" with pageInfo="Here you can view user activities, some basic information." %}
+
+    <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg rounded-lg p-8 border border-cyan-900">
+        <div class="mb-5 flex justify-between items-center">
+            <form method="GET" action="" class="flex items-center gap-3 ">
+                <div class="flex">
+                    <input type="text" name="q" placeholder="Search logs..." value="{{ request.GET.q }}" class="py-2 px-4 shadow-sm border border-gray-300 w-64 focus:ring-1 focus:border-cyan-500 rounded-l-lg" />
+                    <select name="status" class="w-48 border border-gray-300 rounded-r-lg py-2 px-4 bg-white text-gray-700 focus:ring-1 focus:border-cyan-500">
+                        <option value="">Action Type</option>
+                        <option value="create" {% if request.GET.status == "create" %}selected{% endif %}>Create</option>
+                        <option value="read" {% if request.GET.status == "read" %}selected{% endif %}>Read</option>
+                        <option value="update" {% if request.GET.status == "update" %}selected{% endif %}>Update</option>
+                        <option value="delete" {% if request.GET.status == "delete" %}selected{% endif %}>Delete</option>
+                    </select>
+                </div>
+                <button type="submit" class="flex gap-2 items-center text-white font-bold bg-cyan-700 hover:bg-cyan-600 rounded-lg px-2 py-2">
+                    <img src="{% static 'images/search.png' %}" alt="Search" class="size-6 text-white" /><span>Search</span>
+                </button>
+            </form>
+            <div class=""></div>
+        </div>
+
+        {% if logs %}
+            <div class="overflow-hidden">
+                <table class="min-w-full leading-normal rounded-lg max-h-full overflow-auto bg-slate-100 text-left">
+                    <thead>
+                        <tr>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">S.No.</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Action</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Last Login</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Action Type</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Performed On</th>
+                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">Performed By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ forloop.counter }}</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ log.action }}</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ log.last_login|date:"d M Y  h:i A" }}</td>
+                                <td class="px-5 py-3 border-b border-gray-200">
+                                    {% if log.action_type %}
+                                    <span class="{% if log.action_type == 'create' %} bg-green-500 {% elif log.action_type == 'read' %} bg-blue-500 {% elif log.action_type == 'update' %} bg-yellow-500 {% else %} bg-red-500 {% endif %} rounded-full py-1.5 px-3 font-medium text-white">{{ log.action_type|title }}</span>
+                                    {% else %}
+                                    <span class="font-medium text-slate-600">Not Applicable</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ log.date|date:"d M Y  h:i A" }}</td>
+                                <td class="px-5 py-3 border-b border-gray-200">{{ log.done_by }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="flex justify-center items-center mt-5 border rounded-lg bg-white h-80">
+                <div class="p-6 text-center">
+                    <p class="text-gray-700 mb-6 text-3xl font-semibold">No Activity Logs Found</p>
+                    <p class="text-gray-500 mb-8">There is no activity logs found by filtering the logs, please try after some time.</p>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+    
+</div>
+{% endblock body %}

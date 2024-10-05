@@ -183,9 +183,19 @@ class ComparisonReport(models.Model):
     description = models.TextField(max_length=400, null=True, blank=True)
     department_type = models.CharField(max_length=255, null=True, blank=True)
 
-
     def __str__(self):
         return self.short_description
+
+class UserLogs(models.Model):
+    action = models.CharField(max_length=255, null=True, blank=True)
+    last_login = models.DateTimeField(null=True, blank=True)
+    action_type = models.CharField(max_length=255, null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+    done_by = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.done_by}'s Activities"
+
 
 class Feedback(models.Model):
     feedback = models.TextField()

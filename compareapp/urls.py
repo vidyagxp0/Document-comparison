@@ -13,9 +13,10 @@ urlpatterns = [
     # User Management system
     path('user-management/users/', views.userManagement, name='user-management'),
     path('user-management/users/add/', views.add_edit_user, name='add-user'),
-    path('user-management/users/edit/<int:user_id>/', views.add_edit_user, name='edit-user'),
-    path('user-management/users/delete/<int:user_id>/', views.delete_user, name='delete-user'),
-    path('user-management/users/profile/<int:user_id>/', views.user_profile, name='user-profile'),
+    path('user-management/user/edit/<int:user_id>/', views.add_edit_user, name='edit-user'),
+    path('user-management/user/delete/<int:user_id>/', views.delete_user, name='delete-user'),
+    path('user-management/user/profile/<int:user_id>/', views.user_profile, name='user-profile'),
+    path('user-management/user-logs', views.userLogs, name='user-logs'),
 
     # View analytics
     path('analytics/', views.analytics, name="analytics"),  

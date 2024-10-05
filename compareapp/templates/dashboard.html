@@ -43,7 +43,7 @@
                             <img src="{% static 'images/search.png' %}" alt="Search" class="size-6 text-white" /><span>Search</span>
                         </button>
                     </form>
-                    {% if reports or perms.compareapp.add_document %}
+                    {% if reports and perms.compareapp.add_document %}
                         <a class="bg-pink-700 hover:bg-pink-600 text-white font-medium rounded-lg py-2 px-3 flex items-center gap-2" href="{% url "form" %}">
                             <img class="inline-block mt-0 pt-0 size-6" src="{% static 'images/new-comparison.png' %}" alt="" srcset="">
                             <span>Start Comparison</span>

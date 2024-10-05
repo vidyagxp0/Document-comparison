@@ -13,7 +13,7 @@ from django.templatetags.static import static
 from django.contrib import messages
 
 from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm, CustomSetPasswordForm
-from .models import Document as Form, ComparisonReport, Feedback
+from .models import Document as Form, ComparisonReport, Feedback, UserLogs
 
 from docx import Document
 from docx.oxml.ns import qn
@@ -51,6 +51,16 @@ def index(request):
     return render(request, "index.html")
 
 def logoutUser(request):
+
+    log = UserLogs.objects.create(
+        done_by = request.user.get_full_name() or request.user.username,
+        last_login = request.user.last_login,
+        action = "Logged out",
+        action_type = ""
+    )
+
+    log.save()
+    
     logout(request)
     messages.info(request, "You have been logged out.")
     return redirect('index')
@@ -69,6 +79,15 @@ def loginUser(request):
                 
                 request.session.set_expiry(settings.SESSION_COOKIE_AGE)
                 request.session['expiry_time'] = settings.SESSION_COOKIE_AGE
+
+                log = UserLogs.objects.create(
+                    done_by = request.user.get_full_name() or request.user.username,
+                    last_login = request.user.last_login,
+                    action = "Logged In",
+                    action_type = ""
+                )
+
+                log.save()
 
                 messages.success(request, "You have successfully logged in.")
                 return redirect('dashboard')
@@ -121,6 +140,30 @@ def userManagement(request):
 
 @login_required
 @user_passes_test(lambda user: user.is_superuser)
+def userLogs(request: HttpRequest):
+    query = request.GET.get('q')
+    filter_by = request.GET.get('status')
+    
+    user_id = request.GET.get("user_id", '')
+    
+    if user_id:
+        logs = UserLogs.objects.filter(user=user_id)
+    else:
+        logs = UserLogs.objects.all()
+
+    if query:
+        logs = logs.filter(
+            # Q(user__icontains=query) |
+            Q(action__icontains=query)
+        ).distinct()
+
+    if filter_by:
+        logs = logs.filter(action_type=filter_by)
+
+    return render(request, 'user-management/user-logs.html', {'logs': logs})
+
+@login_required
+@user_passes_test(lambda user: user.is_superuser)
 def add_edit_user(request, user_id=None):
     if user_id:
         user = get_object_or_404(User, id=user_id)
@@ -165,8 +208,27 @@ def add_edit_user(request, user_id=None):
                     messages.info(request, 'Password creation request has been sent to the user.')
                 else:
                     messages.success(request, 'User created successfully.')
+                
+                log = UserLogs.objects.create(
+                    done_by = request.user.get_full_name() or request.user.username,
+                    last_login = request.user.last_login,
+                    action = "User Created",
+                    action_type = "create"
+                )
+
+                log.save()
+                    
             else:
                 messages.success(request, 'User updated successfully.')
+
+            log = UserLogs.objects.create(
+                done_by = request.user.get_full_name() or request.user.username,
+                last_login = request.user.last_login,
+                action = "User Updated",
+                action_type = "update"
+            )
+
+            log.save()
 
             return redirect('user-management')
 
@@ -183,6 +245,17 @@ def delete_user(request, user_id):
     if request.method == 'POST':
         user.delete()
         messages.success(request, f'User {user.username} was successfully deleted.')
+
+        log = UserLogs.objects.create(
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = "User Removed",
+            action_type = "delete"
+        )
+
+        log.save()
+        
+        
         return redirect(reverse('user-management'))
     return render(request, 'user-management/user_management.html', {'users': User.objects.all()})
 
@@ -301,6 +374,16 @@ def password_reset_request(request):
                     email.attach_alternative(email_message, "text/html")
                     email.send(fail_silently=False)
                 messages.success(request, "Password reset request has been sent.")
+
+                log = UserLogs.objects.create(
+                    done_by = request.user.get_full_name() or request.user.username,
+                    last_login = request.user.last_login,
+                    action = "Password Reset, requested",
+                    action_type = "update"
+                )
+
+                log.save()
+
             else:
                 messages.error(request, "The provided email is not registered.")
             form = CustomPasswordResetForm()
@@ -321,6 +404,16 @@ def password_creation_view(request, uidb64, token):
             form = CustomSetPasswordForm(user, request.POST)
             if form.is_valid():
                 form.save()
+
+                log = UserLogs.objects.create(
+                    done_by = request.user.get_full_name() or request.user.username,
+                    last_login = request.user.last_login,
+                    action = "Password Created",
+                    action_type = "create"
+                )
+
+                log.save()                
+                
                 return redirect('password_create_done')
         else:
             form = CustomSetPasswordForm(user)
@@ -456,6 +549,15 @@ def formView(request):
 
             url = reverse('form')
             redirect_url = f"{url}?saved=True&report_number={saveReportNumber}"
+
+            log = UserLogs.objects.create(
+                done_by = request.user.get_full_name() or request.user.username,
+                last_login = request.user.last_login,
+                action = "Documents uploaded",
+                action_type = "create"
+            )
+
+            log.save()
             
             return redirect(redirect_url)
         else:
@@ -472,7 +574,6 @@ def formView(request):
         'new_report_number': new_report_number
     })
     
-
 # Import data view
 def importData(request):
     if request.method == 'POST' and request.FILES.get('excelFile'):
@@ -498,7 +599,6 @@ def importData(request):
     
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
-
 # Comparison Cancellation Process
 @login_required
 def cancelComparison(request: HttpRequest):
@@ -514,6 +614,16 @@ def cancelComparison(request: HttpRequest):
         documents.delete()
 
     messages.success(request, "The comparison was cancelled, resetting the process.")
+
+    log = UserLogs.objects.create(
+        done_by = request.user.get_full_name() or request.user.username,
+        last_login = request.user.last_login,
+        action = "Comparison Cancelled",
+        action_type = "update"
+    )
+
+    log.save()
+
     return redirect('form')
 
 def documentDetail(request, doc_id):
@@ -570,6 +680,16 @@ def removeDocument(request, doc_id):
         remove_file = document.upload_document.path
         os.remove(remove_file)
         messages.success(request, "Document deleted successfully.")
+
+        log = UserLogs.objects.create(
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = "Removed Document",
+            action_type = "delete"
+        )
+
+        log.save()
+
     except:
         messages.warning(request, "Invalid document ID, please provide valid ID")
         
@@ -702,6 +822,15 @@ def comparison(request: HttpRequest):
         comparison_instance.compared_by = comparedBy
         comparison_instance.report_path = result_path
         comparison_instance.save()
+
+        log = UserLogs.objects.create(
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = "Compared, Documents",
+            action_type = "create"
+        )
+
+        log.save()
 
         return redirect(f'{reverse("form")}?success=True&report_number={old_report_number}')
 
@@ -1009,6 +1138,16 @@ def preview(request, report):
     if not pdf_path.exists():
         try:
             docx_to_pdf(comparison_report, pdf_path)
+
+            log = UserLogs.objects.create(
+                done_by = request.user.get_full_name() or request.user.username,
+                last_login = request.user.last_login,
+                action = "Viewed the comparison Report",
+                action_type = "read"
+            )
+
+            log.save()
+
         except :
             messages.info(request, 'Error occured while rendering the file!')
             return redirect('view-comparison', report)
@@ -1042,6 +1181,16 @@ def uploadPDF(request):
                 response = requests.post('https://api.chatpdf.com/v1/sources/add-file', headers=headers, files=files)
 
                 if response.status_code == 200:
+
+                    log = UserLogs.objects.create(
+                        done_by = request.user.get_full_name() or request.user.username,
+                        last_login = request.user.last_login,
+                        action = "Chat with comparison report",
+                        action_type = "read"
+                    )
+
+                    log.save()
+
                     return JsonResponse(response.json())
                 else:
                     return JsonResponse({'error': response.text}, status=response.status_code)
