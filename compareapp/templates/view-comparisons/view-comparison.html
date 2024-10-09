@@ -32,7 +32,7 @@
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Summary</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity Score</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">AI Summary</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document Summary</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -42,13 +42,13 @@
                                         <td class="px-5 py-3 border-b border-gray-200 text-sm">{{ document.creation_date }}</td>
                                         <td class="px-5 py-3 border-b border-gray-200 text-sm">{{ document.comparison_between }}</td>
                                         <td class="px-5 py-3 border-b border-gray-200 text-sm">{{ document.summary }}</td>
-                                        <td class="px-5 py-3 border-b border-gray-200 text-sm">{{ document.similarity_score|floatformat:0 }}%</td>
+                                        <td class="px-5 py-3 border-b border-gray-200 text-sm">{{ document.similarity_score }}</td>
                                         <td class="px-5 py-3 border-b border-gray-200 text-sm">
                                             <div class="flex items-center">
                                                 {% if document.comparison_status == 'Compared' %}
                                                     <p class="px-3 py-1.5 bg-green-500 text-white rounded-full font-medium">Success</p>
                                                 {% else %}
-                                                    <p class="px-3 py-1.5 bg-red-500 text-white rounded-full font-medium">Fail</p>
+                                                    <p class="px-5 py-1.5 bg-red-500 text-white rounded-full font-medium">Failed</p>
                                                 {% endif %}
                                             </div>
                                         </td>
@@ -90,6 +90,7 @@
                         </div>
                     </div>
                     <div class="overflow-auto rounded-lg max-h-[700px]">
+                        {% if comparison_details and comparison_status %}
                         <table class="min-w-full leading-normal bg-slate-50 text-balance">
                             <thead>
                                 <tr>
@@ -155,7 +156,12 @@
                                     </tr>
                                 {% endfor %}
                             </tbody>
-                        </table>                    
+                        </table>      
+                        {% else %}
+                            <div class="bg-white flex justify-center items-center text-red-500 h-96 font-bold text-lg">
+                                The document comparison has failed due to unsupported documents.
+                            </div>
+                        {% endif %}              
                     </div>
                 </div>
             {% else %}
@@ -174,10 +180,10 @@
     <div id="summaryModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
         <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 p-6 relative">
             <button onclick="closeSummary()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-4xl">&times;</button>
-            <h2 class="text-2xl font-bold mb-4">Documents AI Summary</h2>
+            <h2 class="text-2xl font-bold mb-4">AI-Generated Summary</h2>
             <p id="summaryContent" class="border rounded-lg p-5 bg-gray-50 text-lg mb-4 max-h-[300px] overflow-auto"></p>
             <div class="mt-6 text-right">
-                <button onclick="closeSummary()" class="bg-slate-300 hover:bg-slate-200 text-white font-bold rounded-lg py-2 px-4">
+                <button onclick="closeSummary()" class="bg-slate-600 hover:bg-slate-400 text-white font-bold rounded-lg py-2 px-4">
                     Close
                 </button>
             </div>

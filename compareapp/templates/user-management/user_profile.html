@@ -37,15 +37,31 @@
         </div>
     
         <!-- Additional Info -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
             <!-- Account Information Section -->
             <div class="bg-gradient-to-r from-cyan-800 to-cyan-600 p-6 rounded-lg shadow-lg border border-cyan-700 transition-all duration-300 hover:shadow-2xl hover:scale-105">
-                <h3 class="text-lg font-semibold text-white mb-4">Account Information</h3>
+                <h3 class="text-cyan-500 text-xl font-bold ">Account Information</h3>
+                <hr class="mb-4">
                 <p class="text-cyan-100 mb-3">
                     <strong class="block text-cyan-50">Username:</strong> {{ user.username }}
                 </p>
                 <p class="text-cyan-100 mb-3">
                     <strong class="block text-cyan-50">Email:</strong> {{ user.email }}
+                </p>
+                <p class="text-cyan-100 mb-3">
+                    <strong class="block text-cyan-50">Phone:</strong> {{ user.profile.phone_number|default:"N/A" }}
+                </p>
+                <p class="text-cyan-100 mb-3">
+                    <strong class="block text-cyan-50">Phone:</strong> {{ user.profile.phone_number|default:"N/A" }}
+                </p>
+                <p class="text-cyan-100 mb-3">
+                    <strong class="block text-cyan-50">Address:</strong> {{ user.profile.address|default:"N/A" }}
+                </p>
+                <p class="text-cyan-100 mb-3">
+                    <strong class="block text-cyan-50">Department:</strong> {{ user.profile.department|default:"N/A" }}
+                </p>
+                <p class="text-cyan-100 mb-3">
+                    <strong class="block text-cyan-50">Blood Group:</strong> {{ user.profile.blood_group|default:"N/A" }}
                 </p>
                 <p class="text-cyan-100 mb-3">
                     <strong class="block text-cyan-50">Last Login:</strong> {{ user.last_login|date:"F j, Y, g:i A" }}
@@ -57,7 +73,8 @@
             
             <!-- User Activity Section -->
             <div class="bg-gradient-to-r from-cyan-800 to-cyan-600 p-6 rounded-lg shadow-lg border border-cyan-700 transition-all duration-300 hover:shadow-2xl hover:scale-105">
-                <h3 class="text-lg font-semibold text-white mb-4">User Activity</h3>
+                <h3 class="text-cyan-500 text-xl font-bold">User Activity</h3>
+                <hr class=" mb-4">
                 <div class="mb-3">
                     <strong class="block text-gray-50">Total Documents:</strong>
                     <p class="text-gray-200">{{ total_documents|default:"N/A" }}</p>
@@ -66,16 +83,21 @@
                     <strong class="block text-gray-50">Total Comparisons:</strong>
                     <p class="text-gray-200">{{ total_comparison|default:"N/A" }}</p>
                 </div>
+                <div class="mb-3">
+                    <strong class="block text-gray-50">Failed Comparisons:</strong>
+                    <p class="text-gray-200">{{ failed_comparisons|default:"N/A" }}</p>
+                </div>
                 <div>
                     <strong class="block text-gray-50">Last Activity:</strong>
-                    <p class="text-gray-200">{{ user.last_activity|default:"N/A" }}</p>
+                    <p class="text-gray-200">{{ last_activity|default:"N/A" }}</p>
                 </div>
             </div>
         </div>
         
         <!-- Permissions Section -->
         <div class="mb-10">
-            <h3 class="text-2xl font-bold text-white mb-6">Permissions</h3>
+            <h3 class="text-2xl font-bold text-white mb-1">Permissions</h3>
+            <hr class="mb-6">
             
             <!-- Permissions Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

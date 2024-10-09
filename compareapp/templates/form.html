@@ -61,9 +61,9 @@
 
                             <div class="mb-0">
                                 <label for="upload_documents" class="mb-2 block text-md font-medium text-white">Upload Documents</label>
-                                <div id="drop-area" class="p-6 border-dashed border-4 border-gray-300 rounded-lg text-center bg-slate-400 hover:bg-slate-300 hover:border-gray-500 relative">
+                                <div id="drop-area" class="cursor-pointer p-6 border-dashed border-4 border-gray-300 rounded-lg text-center bg-slate-400 hover:bg-slate-300 hover:border-gray-500 relative">
+                                    <input type="file" id="id_upload_documents" name="upload_documents" class="opacity-0 w-full h-full absolute top-0 left-0 -z-50" multiple required>
                                     <p class="text-white">Drag & Drop files here or click to upload</p>
-                                    <input type="file" id="id_upload_documents" name="upload_documents" class="opacity-0 w-full h-full absolute top-0 left-0 cursor-pointer" multiple required>
                                     <p id="file-count" class="my-2 text-gray-700"></p>
                                 </div>
                                 {% if form.upload_documents.errors %}
@@ -169,7 +169,6 @@
         </div>
     </div>
 
-    {% comment %} {% if saved %}{% else %}hidden{% endif %} {% endcomment %}
     <div id="docSavedModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
             <div class="text-center">
@@ -189,7 +188,7 @@
             <div class="text-center">
                 <img src="{% static 'images/success.png' %}" class="mx-auto mb-4" width="80" height="80" alt="Success">
                 <h2 class="text-2xl font-bold mb-4 text-green-700">Comparison Successful</h2>
-                <p class="text-gray-700 mb-4">Documents has been compared successfully.</p>
+                <p class="text-gray-700 mb-4">Documents has been compared successfully. Now you can view the comaprison info by clicking on below buttons.</p>
                 <p class="font-semibold text-gray-900">Report Number: <strong>{{ report_number }}</strong></p>
                 <div class="flex justify-center mt-6 gap-4">
                     <a href="{% url 'view-comparison' report_number %}" class="bg-pink-600 hover:bg-pink-500 text-white font-semibold rounded-lg py-2 px-6 transition-colors">View Report</a>
@@ -243,7 +242,6 @@
             const comparisonCancelBtn = document.getElementById("comparisonCancelBtn");
 
             const savedFromContext = {{ saved|yesno:"true,false" }};
-            console.log(savedFromContext, typeof(savedFromContext));
             const savedFromLocalStorage = localStorage.getItem('isSaved');
 
             if (savedFromContext === true) {
@@ -268,7 +266,7 @@
                 const baseUrl = "{% url 'cancel-comparison' %}";
                 window.location.href = `${baseUrl}?report_number=${oldReportNumber}`;
             });
-            
+
             comparisonBtn.addEventListener('click', () => {
                 const rn = localStorage.getItem('report_number');
                 localStorage.removeItem('isSaved'); 
@@ -276,6 +274,7 @@
                 localStorage.removeItem('comparisonTypeSelected');
                 docSavedModal.classList.add('hidden');
 
+                loader.classList.remove('hidden') // show loading effect
                 const baseUrl = "{% url 'compare' %}";
                 window.location.href = `${baseUrl}?report_number=${rn}`;
             });

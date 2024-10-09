@@ -53,10 +53,11 @@ def index(request):
 def logoutUser(request):
 
     log = UserLogs.objects.create(
+        user = request.user,
         done_by = request.user.get_full_name() or request.user.username,
         last_login = request.user.last_login,
         action = "Logged out",
-        action_type = ""
+        action_type = "logout"
     )
 
     log.save()
@@ -81,10 +82,11 @@ def loginUser(request):
                 request.session['expiry_time'] = settings.SESSION_COOKIE_AGE
 
                 log = UserLogs.objects.create(
+                    user = request.user,
                     done_by = request.user.get_full_name() or request.user.username,
                     last_login = request.user.last_login,
                     action = "Logged In",
-                    action_type = ""
+                    action_type = "login"
                 )
 
                 log.save()
@@ -108,7 +110,7 @@ def submitFeedback(request):
             messages.warning(request, 'Please provide valid feedback!')
 
     return redirect(previous_url)
-    
+      
 # User Management Section -------------------------------------------------------------
 @login_required
 @user_passes_test(lambda user: user.is_superuser)
@@ -153,14 +155,14 @@ def userLogs(request: HttpRequest):
 
     if query:
         logs = logs.filter(
-            # Q(user__icontains=query) |
-            Q(action__icontains=query)
+            Q(action__icontains=query) |
+            Q(done_by__icontains=query)
         ).distinct()
 
     if filter_by:
         logs = logs.filter(action_type=filter_by)
 
-    return render(request, 'user-management/user-logs.html', {'logs': logs})
+    return render(request, 'user-management/user-logs.html', {'logs': logs[::-1]})
 
 @login_required
 @user_passes_test(lambda user: user.is_superuser)
@@ -210,6 +212,7 @@ def add_edit_user(request, user_id=None):
                     messages.success(request, 'User created successfully.')
                 
                 log = UserLogs.objects.create(
+                    user = request.user,
                     done_by = request.user.get_full_name() or request.user.username,
                     last_login = request.user.last_login,
                     action = "User Created",
@@ -222,6 +225,7 @@ def add_edit_user(request, user_id=None):
                 messages.success(request, 'User updated successfully.')
 
             log = UserLogs.objects.create(
+                user = request.user,
                 done_by = request.user.get_full_name() or request.user.username,
                 last_login = request.user.last_login,
                 action = "User Updated",
@@ -247,6 +251,7 @@ def delete_user(request, user_id):
         messages.success(request, f'User {user.username} was successfully deleted.')
 
         log = UserLogs.objects.create(
+            user = request.user,
             done_by = request.user.get_full_name() or request.user.username,
             last_login = request.user.last_login,
             action = "User Removed",
@@ -254,7 +259,6 @@ def delete_user(request, user_id):
         )
 
         log.save()
-        
         
         return redirect(reverse('user-management'))
     return render(request, 'user-management/user_management.html', {'users': User.objects.all()})
@@ -275,6 +279,8 @@ def user_profile(request, user_id):
 
     total_comparison = len(ComparisonReport.objects.filter(user=request.user))
     total_documents = len(Form.objects.filter(user=request.user))
+    failed_comparisons = len(ComparisonReport.objects.filter(user=request.user, comparison_status=False))
+    last_activity = UserLogs.objects.filter(user=request.user).last().action
 
     specific_permissions = [
         "auth.add_user",
@@ -294,12 +300,14 @@ def user_profile(request, user_id):
         "compareapp.delete_feedback",
         "compareapp.view_feedback",
     ]
-    
+
     return render(request, 'user-management/user_profile.html', {
         'user': user,
         'total_comparison': total_comparison,
         'total_documents': total_documents,
+        'failed_comparisons': failed_comparisons,
         'specific_permissions': specific_permissions,
+        'last_activity': last_activity,
     })
 
 # Comparison analytics ------------------------------------
@@ -318,12 +326,14 @@ def analytics(request):
 
         total_comparisons = len(ComparisonReport.objects.all())
         failed_reports = len(ComparisonReport.objects.filter(comparison_status=False))
+        success_reports = len(ComparisonReport.objects.filter(comparison_status=True))
     else:
         total_files_data = [ len(Form.objects.filter(user=request.user, comparison_between = doc)) for doc in files_format ]
         all_comparison_data = [ len(ComparisonReport.objects.filter(user=request.user, comparison_between = doc)) for doc in files_format ]
 
         total_comparisons = len(ComparisonReport.objects.filter(user=request.user))
         failed_reports = len(ComparisonReport.objects.filter(user=request.user, comparison_status=False))
+        success_reports = len(ComparisonReport.objects.filter(user=request.user, comparison_status=True))
     
     total_users = len(User.objects.all())
     user_feedbacks = len(Feedback.objects.all())
@@ -343,7 +353,20 @@ def analytics(request):
         'values': total_files_data
     }
 
-    return render(request, 'analytics.html', { 'failed_reports':failed_reports, 'total_users': total_users, 'total_files': total_files, 'report_data':report_data , 'user_feedbacks': user_feedbacks, 'total_comparisons':total_comparisons , 'all_comparisons':all_comparisons})
+    if not request.session.get(f"opened_analytics_{request.user.username}"):
+        log = UserLogs.objects.create(
+            user = request.user,
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = "Opened Analytics",
+            action_type = "open"
+        )
+
+        log.save()
+
+        request.session[f"opened_analytics_{request.user.username}"] = True
+
+    return render(request, 'analytics.html', { 'failed_reports': failed_reports, "success_reports": success_reports, 'total_users': total_users, 'total_files': total_files, 'report_data':report_data , 'user_feedbacks': user_feedbacks, 'total_comparisons':total_comparisons , 'all_comparisons':all_comparisons})
 
 def password_reset_request(request):
     if request.method == "POST":
@@ -376,6 +399,7 @@ def password_reset_request(request):
                 messages.success(request, "Password reset request has been sent.")
 
                 log = UserLogs.objects.create(
+                    user = request.user,
                     done_by = request.user.get_full_name() or request.user.username,
                     last_login = request.user.last_login,
                     action = "Password Reset, requested",
@@ -406,6 +430,7 @@ def password_creation_view(request, uidb64, token):
                 form.save()
 
                 log = UserLogs.objects.create(
+                    user = request.user,
                     done_by = request.user.get_full_name() or request.user.username,
                     last_login = request.user.last_login,
                     action = "Password Created",
@@ -460,13 +485,28 @@ def viewComparison(request, report_id):
         if request.user.is_superuser:
             report = ComparisonReport.objects.filter(report_number=report_id).first()
             compared_documents = report.compared_documents
+            comparison_status = report.comparison_status
             document_ids = list(compared_documents.values())
             documents = Form.objects.filter(document_id__in=document_ids)
         else:
             report = ComparisonReport.objects.filter(user=request.user, report_number=report_id).first()
             compared_documents = report.compared_documents
+            comparison_status = report.comparison_status
             document_ids = list(compared_documents.values())
             documents = Form.objects.filter(user=request.user, document_id__in=document_ids)
+        
+        if not request.session.get(f"viewed_comparison_{report_id}"):
+            log = UserLogs.objects.create(
+                user = request.user,
+                done_by = request.user.get_full_name() or request.user.username,
+                last_login = request.user.last_login,
+                action = f"Viewed comparison info, RN-{report_id}",
+                action_type = "read"
+            )
+
+            log.save()
+
+            request.session[f"viewed_comparison_{report_id}"] = True
 
     except:
         messages.warning(request, "The requested report is not available!")
@@ -476,6 +516,7 @@ def viewComparison(request, report_id):
 
     return render(request, "view-comparisons/view-comparison.html", {
         "documents": documents,
+        "comparison_status": comparison_status,
         "comparison_details": comparison_details,
         "report": report_id,
         "report_summary": report.ai_summary
@@ -551,6 +592,7 @@ def formView(request):
             redirect_url = f"{url}?saved=True&report_number={saveReportNumber}"
 
             log = UserLogs.objects.create(
+                user = request.user,
                 done_by = request.user.get_full_name() or request.user.username,
                 last_login = request.user.last_login,
                 action = "Documents uploaded",
@@ -616,10 +658,11 @@ def cancelComparison(request: HttpRequest):
     messages.success(request, "The comparison was cancelled, resetting the process.")
 
     log = UserLogs.objects.create(
+        user = request.user,
         done_by = request.user.get_full_name() or request.user.username,
         last_login = request.user.last_login,
         action = "Comparison Cancelled",
-        action_type = "update"
+        action_type = "delete"
     )
 
     log.save()
@@ -640,6 +683,19 @@ def documentDetail(request, doc_id):
         messages.warning(request, "Invalid document ID, please provide valid ID.")
         return redirect('dashboard')
     
+    if not request.session.get(f"opened_d_{document.report_number}"):
+        log = UserLogs.objects.create(
+            user = request.user,
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = f"Opened compared document, DN-{document.report_number}/{document.document_id}",
+            action_type = "open"
+        )
+
+        log.save()
+
+        request.session[f"opened_d_{document.report_number}"] = True
+
     return render(request, 'document-details.html', { 'document': document })
 
 def comparedDocument(request, id):
@@ -655,6 +711,19 @@ def comparedDocument(request, id):
     except:
         messages.warning(request, "Document ID is not available or invalid!")
         return redirect('dashboard')
+
+    if not request.session.get(f"viewed_cd_{id}"):
+        log = UserLogs.objects.create(
+            user = request.user,
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = f"Viewed compared documents, RN-{id}",
+            action_type = "read"
+        )
+
+        log.save()
+
+        request.session[f"viewed_cd_{id}"] = True
 
     if query:
         documents = documents.filter(
@@ -682,6 +751,7 @@ def removeDocument(request, doc_id):
         messages.success(request, "Document deleted successfully.")
 
         log = UserLogs.objects.create(
+            user = request.user,
             done_by = request.user.get_full_name() or request.user.username,
             last_login = request.user.last_login,
             action = "Removed Document",
@@ -760,6 +830,8 @@ def comparison(request: HttpRequest):
     headers = set()
     for sections in data.values():
         headers.update(sections.keys())
+        print(sections.keys())
+        print("------------------------------")
 
     headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
 
@@ -799,10 +871,16 @@ def comparison(request: HttpRequest):
 
     # Now Saving the Comparison Result
     for doc in documents:
+        if not data[primary_doc_id] or not data[doc.document_id]:
+            doc.summary = "Not Applicable"
+            doc.similarity_score = "Not Applicable"
+            doc.comparison_status = 'Not Compared'
+        else:
+            doc.summary = "Same" if overall_similarity_scores[doc.document_id] == 100 else "Different"
+            doc.similarity_score = f"{int(overall_similarity_scores[doc.document_id])}%"
+            doc.comparison_status = 'Compared'
+
         doc.new = False
-        doc.summary = "Same" if overall_similarity_scores[doc.document_id] == 100 else "Different"
-        doc.similarity_score = overall_similarity_scores[doc.document_id]
-        doc.comparison_status = 'Compared'
         doc.ai_summary = ai_summary[doc.document_id]
         doc.report_number = old_report_number
         doc.save()
@@ -812,18 +890,26 @@ def comparison(request: HttpRequest):
         compared_documents[f'doc{index}'] = doc.document_id
 
     prepare_data = read_file(result_path)
-    comparison_ai_summary = getSummary(prepare_data, ind=False)
+
+    if not comparison_details or not data[primary_doc_id]:
+        comparison_status = False
+        comparison_ai_summary = "The document comparison has failed due to unsupported documents, but you can still get an AI-generated summary of the provided documents."
+    else:
+        comparison_status = True
+        comparison_ai_summary = getSummary(prepare_data, ind=False)
 
     try:
         comparison_instance = ComparisonReport.objects.get(report_number=old_report_number, user=request.user)
         comparison_instance.compared_documents = compared_documents
         comparison_instance.comparison_summary = comparison_details
         comparison_instance.ai_summary = comparison_ai_summary
+        comparison_instance.comparison_status = comparison_status
         comparison_instance.compared_by = comparedBy
         comparison_instance.report_path = result_path
         comparison_instance.save()
 
         log = UserLogs.objects.create(
+            user = request.user,
             done_by = request.user.get_full_name() or request.user.username,
             last_login = request.user.last_login,
             action = "Compared, Documents",
@@ -1138,20 +1224,23 @@ def preview(request, report):
     if not pdf_path.exists():
         try:
             docx_to_pdf(comparison_report, pdf_path)
-
-            log = UserLogs.objects.create(
-                done_by = request.user.get_full_name() or request.user.username,
-                last_login = request.user.last_login,
-                action = "Viewed the comparison Report",
-                action_type = "read"
-            )
-
-            log.save()
-
         except :
             messages.info(request, 'Error occured while rendering the file!')
             return redirect('view-comparison', report)
     
+    if not request.session.get(f"opened_cr_{report}"):
+        log = UserLogs.objects.create(
+            user = request.user,
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = f"Opened Comparison Report, RN-{report}",
+            action_type = "open"
+        )
+
+        log.save()
+
+        request.session[f"opened_cr_{report}"] = True
+        
     return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'report': report})
 
 def softwareDocumentation(request):
@@ -1164,6 +1253,10 @@ def uploadPDF(request):
         try:
             data = json.loads(request.body)
             relative_pdf_path = data.get('file_url')
+            try:
+                RN = relative_pdf_path.split('/')[-1].split('.')[0]
+            except:
+                RN = ''
 
             absolute_pdf_path = os.path.join(settings.MEDIA_ROOT, relative_pdf_path)
 
@@ -1183,9 +1276,10 @@ def uploadPDF(request):
                 if response.status_code == 200:
 
                     log = UserLogs.objects.create(
+                        user = request.user,
                         done_by = request.user.get_full_name() or request.user.username,
                         last_login = request.user.last_login,
-                        action = "Chat with comparison report",
+                        action = f"Chat with comparison report, RN-{RN}",
                         action_type = "read"
                     )
 

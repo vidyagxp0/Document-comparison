@@ -31,7 +31,6 @@
                 </button>
             </form>
             <div class="flex gap-4 items-center">
-                <a href="{% url "user-logs" %}" class="bg-blue-600 hover:bg-blue-500 rounded-lg p-2 font-medium text-white" >Activity Logs</a>
                 {% if users %}
                     <a href="{% url 'add-user' %}" class="flex gap-2 items-center bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg py-2 px-4">
                         <img src="{% static 'images/user.png' %}" class="size-6 inline-flex" alt="" srcset="">

@@ -12,7 +12,7 @@
     </div>
 
     <!-- Navigator -->
-    {% include "layout/navigator.html" with pageInfo="Here you can view user activities, some basic information." %}
+    {% include "layout/navigator.html" with pageInfo="Here you can view user activities, and some basic information about the activities." %}
 
     <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg rounded-lg p-8 border border-cyan-900">
         <div class="mb-5 flex justify-between items-center">
@@ -25,6 +25,9 @@
                         <option value="read" {% if request.GET.status == "read" %}selected{% endif %}>Read</option>
                         <option value="update" {% if request.GET.status == "update" %}selected{% endif %}>Update</option>
                         <option value="delete" {% if request.GET.status == "delete" %}selected{% endif %}>Delete</option>
+                        <option value="open" {% if request.GET.status == "open" %}selected{% endif %}>Open</option>
+                        <option value="login" {% if request.GET.status == "login" %}selected{% endif %}>Login</option>
+                        <option value="logout" {% if request.GET.status == "logout" %}selected{% endif %}>Logout</option>
                     </select>
                 </div>
                 <button type="submit" class="flex gap-2 items-center text-white font-bold bg-cyan-700 hover:bg-cyan-600 rounded-lg px-2 py-2">
@@ -35,8 +38,8 @@
         </div>
 
         {% if logs %}
-            <div class="overflow-hidden">
-                <table class="min-w-full leading-normal rounded-lg max-h-full overflow-auto bg-slate-100 text-left">
+            <div class="rounded-lg max-h-[600px] overflow-auto">
+                <table class="min-w-full leading-normal rounded-lg overflow-auto bg-slate-100 text-left">
                     <thead>
                         <tr>
                             <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-sm font-semibold text-white uppercase tracking-wider">S.No.</th>
@@ -49,15 +52,17 @@
                     </thead>
                     <tbody>
                         {% for log in logs %}
-                            <tr>
+                            <tr class="hover:bg-gray-50">
                                 <td class="px-5 py-3 border-b border-gray-200">{{ forloop.counter }}</td>
                                 <td class="px-5 py-3 border-b border-gray-200">{{ log.action }}</td>
                                 <td class="px-5 py-3 border-b border-gray-200">{{ log.last_login|date:"d M Y  h:i A" }}</td>
                                 <td class="px-5 py-3 border-b border-gray-200">
                                     {% if log.action_type %}
-                                    <span class="{% if log.action_type == 'create' %} bg-green-500 {% elif log.action_type == 'read' %} bg-blue-500 {% elif log.action_type == 'update' %} bg-yellow-500 {% else %} bg-red-500 {% endif %} rounded-full py-1.5 px-3 font-medium text-white">{{ log.action_type|title }}</span>
+                                        <div class="w-20 text-center">
+                                            <p class="{% if log.action_type == 'create' %} bg-green-500 {% elif log.action_type == 'read' %} bg-blue-500 {% elif log.action_type == 'update' %} bg-yellow-500 {% elif log.action_type == 'open' %} bg-yellow-500 {% elif log.action_type == 'login' %} bg-cyan-500 {% elif log.action_type == 'logout' %} bg-slate-500 {% else %} bg-red-500 {% endif %} rounded-full py-1.5 px-3 font-medium text-white">{{ log.action_type|title }}</p>
+                                        </div>
                                     {% else %}
-                                    <span class="font-medium text-slate-600">Not Applicable</span>
+                                    <span class="ml-4">N/A</span>
                                     {% endif %}
                                 </td>
                                 <td class="px-5 py-3 border-b border-gray-200">{{ log.date|date:"d M Y  h:i A" }}</td>
@@ -70,8 +75,9 @@
         {% else %}
             <div class="flex justify-center items-center mt-5 border rounded-lg bg-white h-80">
                 <div class="p-6 text-center">
-                    <p class="text-gray-700 mb-6 text-3xl font-semibold">No Activity Logs Found</p>
-                    <p class="text-gray-500 mb-8">There is no activity logs found by filtering the logs, please try after some time.</p>
+                    <img src="{% static 'images/activity-log.png' %}" class="size-16 mx-auto" alt="No logs" >
+                    <p class="text-gray-700 mb-6 text-3xl font-semibold">Not Found</p>
+                    <p class="text-gray-500 mb-8">There is no activity logs found by filtering or fetching the user logs.</p>
                 </div>
             </div>
         {% endif %}

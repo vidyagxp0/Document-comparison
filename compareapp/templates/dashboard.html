@@ -14,7 +14,13 @@
         <div class="flex justify-between mb-4 border border-cyan-900 backdrop-blur-3xl bg-cyan-950 rounded-lg py-3 px-6">
             <p class="flex items-center text-emerald-500 border-l-8 border-yellow-500 pl-4">Use the button to access Analytics for data insights and view the comparison reports. Start a new comparison when you're ready.</p>
             <div class="flex items-center gap-4">
-                <a href="{% url "analytics" %}" class="flex gap-1 items-center bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                {% if request.user.is_superuser %}
+                    <a href="{% url "user-logs" %}" class="flex gap-1 items-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
+                        <img class="size-6" src="{% static 'images/activity-log.png' %}" alt="Analytics Icon" srcset="">
+                        <span>Activity Logs</span>
+                    </a>
+                {% endif %}
+                <a href="{% url "analytics" %}" class="flex gap-1 items-center bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out">
                     <img class="size-6" src="{% static 'images/analytics-icon.png' %}" alt="Analytics Icon" srcset="">
                     <span>Analytics</span>
                 </a>
@@ -52,7 +58,7 @@
                 </div>
             {% if perms.compareapp.view_comparisonreport %}
                 {% if reports %}
-                    <div class="overflow-auto">
+                    <div class=" overflow-auto">
                         <table class="min-w-full leading-normal rounded-lg overflow-hidden bg-slate-50 text-left">
                             <thead>
                                 <tr>

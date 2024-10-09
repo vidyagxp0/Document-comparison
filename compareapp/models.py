@@ -157,7 +157,7 @@ class Document(models.Model):
     upload_documents = models.FileField(upload_to=upload_to_path)
     comparison_status = models.CharField(max_length=255, null=True, blank=True)
     summary = models.CharField(max_length=255, null=True, blank=True)
-    similarity_score = models.FloatField(null=True, blank=True)
+    similarity_score = models.CharField(max_length=255, null=True, blank=True)
     report_number = models.CharField(max_length=255, null=True, blank=True)
     ai_summary = models.TextField(null=True, blank=True)
     new = models.BooleanField(default=True)
@@ -187,6 +187,7 @@ class ComparisonReport(models.Model):
         return self.short_description
 
 class UserLogs(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     action = models.CharField(max_length=255, null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
     action_type = models.CharField(max_length=255, null=True, blank=True)
