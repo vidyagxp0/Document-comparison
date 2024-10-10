@@ -15,12 +15,24 @@ from django.contrib import messages
 from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm, CustomSetPasswordForm
 from .models import Document as Form, ComparisonReport, Feedback, UserLogs
 
+# DOC generation
 from docx import Document
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.shared import RGBColor, Pt, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
+
+# PDF generation
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from datetime import datetime
+from io import BytesIO
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 
 import fitz     # PDF reader
 from PyPDF2 import PdfReader
@@ -105,6 +117,17 @@ def submitFeedback(request):
         form = FeedbackForm(request.POST)
         if form.is_valid():
             form.save()
+
+            log = UserLogs.objects.create(
+                user = request.user,
+                done_by = request.user.get_full_name() or request.user.username,
+                last_login = request.user.last_login,
+                action = "Submit Feedback",
+                action_type = "create"
+            )
+
+            log.save()
+
             messages.success(request, 'Thank you for your valuable feedback!')
         else:
             messages.warning(request, 'Please provide valid feedback!')
@@ -281,6 +304,19 @@ def user_profile(request, user_id):
     total_documents = len(Form.objects.filter(user=request.user))
     failed_comparisons = len(ComparisonReport.objects.filter(user=request.user, comparison_status=False))
     last_activity = UserLogs.objects.filter(user=request.user).last().action
+
+    if not request.session.get(f"viewed_up_{user_id}_{request.user}"):
+        log = UserLogs.objects.create(
+            user = request.user,
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = "Viewed Profile",
+            action_type = "open"
+        )
+        
+        log.save()
+
+        request.session[f"viewed_up_{user_id}_{request.user}"] = True
 
     specific_permissions = [
         "auth.add_user",
@@ -819,10 +855,17 @@ def comparison(request: HttpRequest):
     result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison-reports')
     os.makedirs(result_dir, exist_ok=True)
 
-    result_path = os.path.join(result_dir, f"{old_report_number}.docx")
+    docx_path = os.path.join(result_dir, f"{old_report_number}.docx")
+    pdf_path = os.path.join(result_dir, f"{old_report_number}.pdf")
     logo_path = "compareapp" + static('images/logo.png')
 
-    create_merged_docx(data, old_report_number, result_path, logo_path, comparedBy, short_description)
+    create_merged_docx(data, old_report_number, docx_path, logo_path, comparedBy, short_description)
+
+    # try:
+    #     create_merged_pdf(data, old_report_number, pdf_path, logo_path, comparedBy, short_description)
+    # except Exception as e:
+    #     return HttpResponse(f'ERROR in PDF Conversion:: {e}')
+
 
     # Prepare comparison details
     comparison_details = {}
@@ -889,7 +932,7 @@ def comparison(request: HttpRequest):
     for index, doc in zip(range(1, len(documents) + 1), documents):
         compared_documents[f'doc{index}'] = doc.document_id
 
-    prepare_data = read_file(result_path)
+    prepare_data = read_file(docx_path)
 
     if not comparison_details or not data[primary_doc_id]:
         comparison_status = False
@@ -905,7 +948,7 @@ def comparison(request: HttpRequest):
         comparison_instance.ai_summary = comparison_ai_summary
         comparison_instance.comparison_status = comparison_status
         comparison_instance.compared_by = comparedBy
-        comparison_instance.report_path = result_path
+        comparison_instance.report_path = docx_path
         comparison_instance.save()
 
         log = UserLogs.objects.create(
@@ -1174,6 +1217,119 @@ def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, short
 
     new_doc.save(output_path)
 
+def create_merged_pdf(data, reportNo, output_path, logo_path, comparedBy, short_description):
+    # Create the PDF document with A4 page size and margins
+    pdf = SimpleDocTemplate(output_path, pagesize=A4, rightMargin=0.5 * inch, leftMargin=0.5 * inch, topMargin=1 * inch, bottomMargin=1 * inch)
+
+    # Initialize content to hold all the story flow
+    content = []
+
+    # Set up styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', fontSize=15, alignment=TA_CENTER)
+    normal_style = ParagraphStyle('Normal', fontSize=12, alignment=TA_LEFT)
+    bold_style = ParagraphStyle('Bold', fontSize=12, alignment=TA_LEFT, fontName="Helvetica-Bold")
+
+    # Add logo to header table (with compared by, report number, and short description)
+    if logo_path:
+        logo_img = Image(logo_path, width=1.5 * inch, height=1.5 * inch)
+    else:
+        logo_img = ''  # Empty cell for logo if not available
+
+    # Header table with merged short description and logo in the first column
+    header_data = [
+        [logo_img, f"Compared By: {comparedBy}", f"Report Number: {reportNo}"],
+        ['', f"Short Description: {short_description}", '']  # Merging the description columns
+    ]
+
+    # Table with span and border styles
+    header_table = Table(header_data, colWidths=[1.5 * inch, 3.5 * inch, 3.5 * inch])
+    header_table.setStyle(TableStyle([
+        ('SPAN', (1, 1), (2, 1)),  # Merge columns for short description
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),  # Align logo to the left
+        ('ALIGN', (1, 0), (-1, -1), 'LEFT'),  # Align text to the left
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # Vertically align everything
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),  # Add borders
+        ('BACKGROUND', (1, 0), (-1, 0), colors.lightgrey),  # Background color for the first row
+        ('TEXTCOLOR', (1, 0), (-1, 0), colors.black),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+    ]))
+
+    content.append(header_table)
+    content.append(Spacer(1, 0.2 * inch))
+
+    # Prepare headers for the content in sorted order
+    headers = set()
+    for sections in data.values():
+        headers.update(sections.keys())
+    headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
+
+    # Loop through headers and add content
+    for header in headers:
+        content.append(Paragraph(header, styles['Heading1']))
+
+        for doc_id, sections in data.items():
+            section_content = sections.get(header, "")
+            if section_content:
+                ref_section_content = list(data.values())[0].get(header, "")
+                similarity, is_different, tag, added_text, removed_text, modified_text = compare_sections(ref_section_content, section_content)
+                summary = "Same" if not is_different else "Different"
+                tag_description = {
+                    'A': 'Added',
+                    'R': 'Removed',
+                    'S': 'Similar',
+                    'M': 'Modified'
+                }
+                tag = tag_description.get(tag, 'Unknown')
+
+                # Document section
+                content.append(Paragraph(f"Document {doc_id}", styles['Heading2']))
+
+                # Similarity score
+                content.append(Paragraph(f"Content Similarity Score: {int(similarity * 100)}%", bold_style))
+                content.append(Paragraph(f"Summary: {summary}", bold_style))
+                content.append(Paragraph(f"Tag: {tag}", bold_style))
+
+                # Display added, removed, and modified text
+                if modified_text:
+                    content.append(Paragraph("<b>Modified Text:</b>", bold_style))
+                    content.append(Paragraph(modified_text, normal_style))
+                else:
+                    if added_text:
+                        content.append(Paragraph("<b>Added Text:</b>", bold_style))
+                        content.append(Paragraph(added_text, normal_style))
+                    if removed_text:
+                        content.append(Paragraph("<b>Removed Text:</b>", bold_style))
+                        content.append(Paragraph(removed_text, normal_style))
+
+                content.append(Paragraph("<b>Content:</b>", bold_style))
+                content.append(Paragraph(section_content, normal_style))
+
+                content.append(Spacer(1, 0.2 * inch))
+
+    # Add the footer table with borders, date, and page number
+    def add_page_footer(canvas, doc):
+        canvas.saveState()
+        # Footer table with borders, date, and page number
+        cdate = date.now()
+        
+        footer_data = [
+            [f"Comparison Date: {str(cdate).split(' ')[0]}"],
+            [f"Page {doc.page}"]
+        ]
+        footer_table = Table(footer_data, colWidths=[7 * inch])
+        footer_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+        width, height = A4
+        footer_table.wrapOn(canvas, width, height)
+        footer_table.drawOn(canvas, inch, 0.5 * inch)
+        canvas.restoreState()
+
+    # Build the PDF with the footer on each page
+    pdf.build(content, onFirstPage=add_page_footer, onLaterPages=add_page_footer)
+  
 def set_table_borders(table):
     tbl = table._element
     tbl_pr = tbl.tblPr if tbl.tblPr is not None else OxmlElement('w:tblPr')
@@ -1244,6 +1400,20 @@ def preview(request, report):
     return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'report': report})
 
 def softwareDocumentation(request):
+
+    if not request.session.get(f"viewed_sd_{request.user}"):
+        log = UserLogs.objects.create(
+            user = request.user,
+            done_by = request.user.get_full_name() or request.user.username,
+            last_login = request.user.last_login,
+            action = "Viewed Documentation",
+            action_type = "open"
+        )
+
+        log.save()
+
+        request.session[f"viewed_sd_{request.user}"] = True
+    
     return render(request, "documentation/view.html")
 
 # Chatting with document -----------------------------------------------------------------------

@@ -97,9 +97,11 @@
     </header>
 
     <!-- Loader -->
-    <div id="loader" class="fixed inset-0 flex flex-col gap-3 items-center justify-center z-50 backdrop-blur-md">
-        <div class="animate-spin border-transparent border-[8px] border-t-[8px] border-t-orange-500 rounded-[50%] size-16"></div>
-        <p class="text-slate-600 font-bold text-xl tracking-wide drop-shadow-xl shadow-orange">Loading...</p>
+    <div id="loader" class="fixed inset-0 flex flex-col gap-4 items-center justify-center z-50 backdrop-blur-md">
+        <div class="animate-spin border-transparent border-8 border-t-8 border-t-orange-500 rounded-full w-16 h-16"></div>
+        <p class="text-white font-semibold text-lg tracking-wide [text-shadow:_2px_2px_6px_rgb(0_0_0_/_80%)]">
+            Please wait, loading...
+        </p>
     </div>
 
     <!-- Modal -->
@@ -135,11 +137,11 @@
                 </div>
                 <div class="mb-4">
                     <label for="email" class="block text-lg font-semibold mb-2">Your Email (Optional)</label>
-                    <input type="email" id="email" name="email" class="form-input w-full rounded-lg border-gray-300 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Enter your email address...">
+                    <input type="email" id="email" name="email" value="{{user.email}}" class="form-input w-full rounded-lg border-gray-300 focus:ring-cyan-500 focus:border-cyan-500" placeholder="Enter your email address...">
                 </div>
                 <div class="text-right">
                     {% if perms.compareapp.add_feedback %}
-                        <button type="button" id="backFeedbackModal" class="bg-cyan-600 font-bold text-white px-4 py-2 mr-2 rounded-lg hover:bg-cyan-500">Back</button>
+                        <button type="button" id="backFeedbackModal" class="bg-gray-600 font-bold text-white px-4 py-2 mr-2 rounded-lg hover:bg-gray-500">Back</button>
                         <button type="submit" class="bg-cyan-600 font-bold text-white px-4 py-2 rounded-lg hover:bg-cyan-500">Submit</button>
                     {% else %}
                     <button type="button" id="backFeedbackModal" class="bg-cyan-600 font-bold text-white px-4 py-2 mr-4 rounded-lg hover:bg-cyan-500">Back</button>
@@ -168,12 +170,12 @@
 
     <!-- Logout Warning Modal -->
     <div id="logoutWarningModal" class="fixed inset-0 flex items-center justify-center backdrop-blur-md z-50 hidden">
-        <div class="bg-white p-6 rounded-lg shadow-lg text-center max-w-96">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-center w-4/12">
             <h3 class="text-2xl text-center font-extrabold text-slate-500 mb-5">Action Required</h3>
             <p id="countdown" class="text-center text-red-600 text-3xl font-extrabold animate-ping py-3">10</p>
-            <p>You will be logged out soon due to inactivity.</p>
+            <p class="text-slate-500 my-2">Your session is about to expire due to inactivity. Please click the button below to extend your session.</p>
             <div class="mt-4 flex justify-center">
-                <button id="stayLoggedInButton" class="bg-cyan-600 text-white px-4 py-2 rounded-lg font-semibold">
+                <button id="stayLoggedInButton" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg font-semibold">
                     Stay Logged In
                 </button>
             </div>
