@@ -15,32 +15,12 @@ from django.contrib import messages
 from .forms import DocumentForm, CustomPasswordResetForm, UserForm, FeedbackForm, CustomSetPasswordForm
 from .models import Document as Form, ComparisonReport, Feedback, UserLogs
 
-# DOC generation
-from docx import Document
-from docx.oxml.ns import qn
-from docx.oxml import OxmlElement
-from docx.shared import RGBColor, Pt, Inches
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
-
-# PDF generation
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
-from datetime import datetime
-from io import BytesIO
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-
-import fitz     # PDF reader
 from PyPDF2 import PdfReader
+from docx import Document
 
 import pandas as pd
 from pathlib import Path
 import convertapi
-import difflib
 import json
 
 import os
@@ -58,6 +38,10 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.encoding import force_bytes
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
+
+# Importing DOC and PDF generator
+
+from .reportGenerator import create_merged_docx, create_merged_pdf, compare_sections, read_docx, read_pdf
 
 def index(request):
     return render(request, "index.html")
@@ -851,21 +835,17 @@ def comparison(request: HttpRequest):
             messages.error(request, "Can't perform comparison due to invalid file format.")
             return redirect('form')
 
-
     result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison-reports')
     os.makedirs(result_dir, exist_ok=True)
 
     docx_path = os.path.join(result_dir, f"{old_report_number}.docx")
     pdf_path = os.path.join(result_dir, f"{old_report_number}.pdf")
     logo_path = "compareapp" + static('images/logo.png')
+    primary_data = data[documents[0].document_id] or ""
 
-    create_merged_docx(data, old_report_number, docx_path, logo_path, comparedBy, short_description)
-
-    # try:
-    #     create_merged_pdf(data, old_report_number, pdf_path, logo_path, comparedBy, short_description)
-    # except Exception as e:
-    #     return HttpResponse(f'ERROR in PDF Conversion:: {e}')
-
+    # Generating reports
+    create_merged_docx(primary_data, data, old_report_number, docx_path, logo_path, comparedBy, short_description)
+    create_merged_pdf(primary_data, data, old_report_number, pdf_path, logo_path, comparedBy, short_description)
 
     # Prepare comparison details
     comparison_details = {}
@@ -873,8 +853,6 @@ def comparison(request: HttpRequest):
     headers = set()
     for sections in data.values():
         headers.update(sections.keys())
-        print(sections.keys())
-        print("------------------------------")
 
     headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
 
@@ -967,391 +945,6 @@ def comparison(request: HttpRequest):
         # messages.error(request, "Error occured while saving the comparison data.")
         return HttpResponse(f"Error: {e}")
 
-def compare_sections(section1, section2):      
-    words1 = section1.strip().split()
-    words2 = section2.strip().split()
-
-    seq_matcher = difflib.SequenceMatcher(None, words1, words2)
-    similarity = seq_matcher.ratio()
-    is_different = similarity < 1.0
-
-    added_words = []
-    removed_words = []
-    modified_words = []
-
-    for tag, i1, i2, j1, j2 in seq_matcher.get_opcodes():
-        if tag == 'replace':
-            removed_words.append(' '.join(words1[i1:i2]))
-            added_words.append(' '.join(words2[j1:j2]))
-        elif tag == 'delete':
-            removed_words.append(' '.join(words1[i1:i2]))
-        elif tag == 'insert':
-            added_words.append(' '.join(words2[j1:j2]))
-
-    if similarity <= 0.4:
-        modified_words.append(section2)
-
-    if similarity == 1.0:
-        tag = "S"  # Same
-    elif added_words and not removed_words:
-        tag = "A"  # Added
-    elif removed_words and not added_words:
-        tag = "R"  # Removed
-    else:
-        tag = "M"  # Modified       
-
-    return similarity, is_different, tag, ' '.join(added_words), ' '.join(removed_words), ' '.join(modified_words) 
-
-def read_docx(file_path):
-    doc = Document(file_path)
-    sections = {}
-    current_section = None
-    current_content = []
-
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if text:
-            if text[0].isdigit() and (text[1] == '.' or (text[1].isdigit() and text[2] == '.')):
-                if current_section:
-                    sections[current_section] = '\n'.join(current_content)
-                current_section = text
-                current_content = []
-            else:
-                current_content.append(text)
-
-    if current_section:
-        sections[current_section] = '\n'.join(current_content)
-
-    return sections
-
-def read_pdf(file_path):
-    doc = fitz.open(file_path)
-    sections = {}
-    current_section = None
-    current_content = []
-
-    for page_num in range(len(doc)):
-        page = doc[page_num]
-        text = page.get_text("text").strip()
-        lines = text.splitlines()
-
-        for line in lines:
-            line = line.strip()
-            if line:
-                if line[0].isdigit() and (line[1] == '.' or (line[1].isdigit() and line[2] == '.')):
-                    if current_section:
-                        sections[current_section] = '\n'.join(current_content)
-                    current_section = line
-                    current_content = []
-                else:
-                    current_content.append(line)
-
-    if current_section:
-        sections[current_section] = '\n'.join(current_content)
-
-    return sections
-
-def create_merged_docx(data, reportNo, output_path, logo_path, comparedBy, short_description):
-    new_doc = Document()
-
-    # Set headers and footers for the entire document
-    section = new_doc.sections[0]
-
-    # Header with logo image
-    header = section.header
-    header_table = header.add_table(rows=3, cols=2, width=Inches(6))
-
-    header_table.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    # Set table borders for header
-    set_table_borders(header_table)
-
-    # Set vertical alignment for all cells
-    for row in header_table.rows:
-        for cell in row.cells:
-            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-
-    header_table.cell(0, 0).paragraphs[0].add_run().add_picture(logo_path, width=Inches(1.5))  # Adjust width as needed
-
-    header_right_cell = header_table.cell(0, 1)
-    header_right_para = header_right_cell.paragraphs[0]
-    header_right_para.add_run("Documents Comparison Report").font.size = Pt(15)
-    header_right_para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    header_left_cell = header_table.cell(1, 0)
-    header_left_para = header_left_cell.paragraphs[0]
-    header_left_para.add_run("Compared By: " + comparedBy).font.size = Pt(12)
-    header_left_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-
-    header_right1_cell = header_table.cell(1, 1)
-    header_right1_para = header_right1_cell.paragraphs[0]
-    header_right1_para.add_run(f"Report Number: {reportNo}").font.size = Pt(12)
-    header_right1_para.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
-
-    header_table.cell(2, 0).merge(header_table.cell(2, 1))
-
-    header_right2_cell = header_table.cell(2, 0)
-    header_right2_para = header_right2_cell.paragraphs[0]
-    header_right2_para.add_run("Comparison short description: " + short_description).font.size = Pt(12)
-    header_right2_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-
-    footer = section.footer
-    footer_table = footer.add_table(rows=1, cols=2, width=Inches(6))
-
-    footer_table.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
-
-    set_table_borders(footer_table)
-
-    for row in footer_table.rows:
-        for cell in row.cells:
-            cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
-
-    footer_left_cell = footer_table.cell(0, 0)
-    footer_left_para = footer_left_cell.paragraphs[0]
-    cdate = date.now()
-    footer_left_para.add_run(f"Comparison Date: {str(cdate).split(' ')[0]}").font.size = Pt(12)
-    footer_left_para.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-
-    footer_right_cell = footer_table.cell(0, 1)
-    footer_right_para = footer_right_cell.paragraphs[0]
-    footer_right_para.add_run("Page ").font.size = Pt(12)
-    footer_right_para.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
-
-    run = footer_right_para.add_run()
-    fldChar = OxmlElement('w:fldChar')
-    fldChar.set(qn('w:fldCharType'), 'begin')
-    run._r.append(fldChar)
-
-    instrText = OxmlElement('w:instrText')
-    instrText.set(qn('xml:space'), 'preserve')
-    instrText.text = 'PAGE'
-    run._r.append(instrText)
-
-    fldChar = OxmlElement('w:fldChar')
-    fldChar.set(qn('w:fldCharType'), 'separate')
-    run._r.append(fldChar)
-
-    run._r.append(OxmlElement('w:t'))
-
-    fldChar = OxmlElement('w:fldChar')
-    fldChar.set(qn('w:fldCharType'), 'end')
-    run._r.append(fldChar)
-
-    run = footer_right_para.add_run(" of ")
-
-    run = footer_right_para.add_run()
-    fldChar = OxmlElement('w:fldChar')
-    fldChar.set(qn('w:fldCharType'), 'begin')
-    run._r.append(fldChar)
-
-    instrText = OxmlElement('w:instrText')
-    instrText.set(qn('xml:space'), 'preserve')
-    instrText.text = 'NUMPAGES'
-    run._r.append(instrText)
-
-    fldChar = OxmlElement('w:fldChar')
-    fldChar.set(qn('w:fldCharType'), 'separate')
-    run._r.append(fldChar)
-
-    run._r.append(OxmlElement('w:t'))
-
-    fldChar = OxmlElement('w:fldChar')
-    fldChar.set(qn('w:fldCharType'), 'end')
-    run._r.append(fldChar)
-
-    headers = set()
-    for sections in data.values():
-        headers.update(sections.keys())
-
-    headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
-
-    for header in headers:
-        new_doc.add_heading(header, level=1)
-        for doc_id, sections in data.items():
-            section_content = sections.get(header, "")
-            if section_content:
-                ref_section_content = list(data.values())[0].get(header, "")
-                similarity, is_different, tag , added_text, removed_text, modified_text = compare_sections(ref_section_content, section_content)
-                summary = "Same" if not is_different else "Different"
-                comparison_status = "Compared" if ref_section_content else "Not Compared"
-
-                if tag == 'A':
-                    tag = 'Added'
-                elif tag == 'R':
-                    tag = 'Removed'
-                elif tag == 'S':
-                    tag = 'Similar'
-                else:
-                    tag = 'Modified'
-
-                new_doc.add_heading(f"Document {doc_id}", level=2)
-
-                css = new_doc.add_paragraph()
-                run = css.add_run("Content Similarity Score: ")
-                run.bold = True
-                css.add_run(f"{int(similarity*100)}%")
-
-                s = new_doc.add_paragraph()
-                run = s.add_run("Summary: ")
-                run.bold = True
-                s.add_run(summary)
-                
-                t = new_doc.add_paragraph()
-                run = t.add_run("Tag: ")
-                run.bold = True
-                t.add_run(tag)
-
-                if modified_text:
-                    new_doc.add_heading("Modified Text:", level=3)
-                    new_doc.add_paragraph(modified_text)
-                else:
-                    if added_text:
-                        new_doc.add_heading("Added Text:", level=3)
-                        new_doc.add_paragraph(added_text)
-                    if removed_text:
-                        new_doc.add_heading("Removed Text:", level=3)
-                        new_doc.add_paragraph(removed_text)
-
-                new_doc.add_heading("Content:", level=3)
-                highlight_differences(new_doc, header, section_content, is_different)
-
-    new_doc.save(output_path)
-
-def create_merged_pdf(data, reportNo, output_path, logo_path, comparedBy, short_description):
-    # Create the PDF document with A4 page size and margins
-    pdf = SimpleDocTemplate(output_path, pagesize=A4, rightMargin=0.5 * inch, leftMargin=0.5 * inch, topMargin=1 * inch, bottomMargin=1 * inch)
-
-    # Initialize content to hold all the story flow
-    content = []
-
-    # Set up styles
-    styles = getSampleStyleSheet()
-    title_style = ParagraphStyle('Title', fontSize=15, alignment=TA_CENTER)
-    normal_style = ParagraphStyle('Normal', fontSize=12, alignment=TA_LEFT)
-    bold_style = ParagraphStyle('Bold', fontSize=12, alignment=TA_LEFT, fontName="Helvetica-Bold")
-
-    # Add logo to header table (with compared by, report number, and short description)
-    if logo_path:
-        logo_img = Image(logo_path, width=1.5 * inch, height=1.5 * inch)
-    else:
-        logo_img = ''  # Empty cell for logo if not available
-
-    # Header table with merged short description and logo in the first column
-    header_data = [
-        [logo_img, f"Compared By: {comparedBy}", f"Report Number: {reportNo}"],
-        ['', f"Short Description: {short_description}", '']  # Merging the description columns
-    ]
-
-    # Table with span and border styles
-    header_table = Table(header_data, colWidths=[1.5 * inch, 3.5 * inch, 3.5 * inch])
-    header_table.setStyle(TableStyle([
-        ('SPAN', (1, 1), (2, 1)),  # Merge columns for short description
-        ('ALIGN', (0, 0), (0, 0), 'LEFT'),  # Align logo to the left
-        ('ALIGN', (1, 0), (-1, -1), 'LEFT'),  # Align text to the left
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),  # Vertically align everything
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),  # Add borders
-        ('BACKGROUND', (1, 0), (-1, 0), colors.lightgrey),  # Background color for the first row
-        ('TEXTCOLOR', (1, 0), (-1, 0), colors.black),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
-    ]))
-
-    content.append(header_table)
-    content.append(Spacer(1, 0.2 * inch))
-
-    # Prepare headers for the content in sorted order
-    headers = set()
-    for sections in data.values():
-        headers.update(sections.keys())
-    headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
-
-    # Loop through headers and add content
-    for header in headers:
-        content.append(Paragraph(header, styles['Heading1']))
-
-        for doc_id, sections in data.items():
-            section_content = sections.get(header, "")
-            if section_content:
-                ref_section_content = list(data.values())[0].get(header, "")
-                similarity, is_different, tag, added_text, removed_text, modified_text = compare_sections(ref_section_content, section_content)
-                summary = "Same" if not is_different else "Different"
-                tag_description = {
-                    'A': 'Added',
-                    'R': 'Removed',
-                    'S': 'Similar',
-                    'M': 'Modified'
-                }
-                tag = tag_description.get(tag, 'Unknown')
-
-                # Document section
-                content.append(Paragraph(f"Document {doc_id}", styles['Heading2']))
-
-                # Similarity score
-                content.append(Paragraph(f"Content Similarity Score: {int(similarity * 100)}%", bold_style))
-                content.append(Paragraph(f"Summary: {summary}", bold_style))
-                content.append(Paragraph(f"Tag: {tag}", bold_style))
-
-                # Display added, removed, and modified text
-                if modified_text:
-                    content.append(Paragraph("<b>Modified Text:</b>", bold_style))
-                    content.append(Paragraph(modified_text, normal_style))
-                else:
-                    if added_text:
-                        content.append(Paragraph("<b>Added Text:</b>", bold_style))
-                        content.append(Paragraph(added_text, normal_style))
-                    if removed_text:
-                        content.append(Paragraph("<b>Removed Text:</b>", bold_style))
-                        content.append(Paragraph(removed_text, normal_style))
-
-                content.append(Paragraph("<b>Content:</b>", bold_style))
-                content.append(Paragraph(section_content, normal_style))
-
-                content.append(Spacer(1, 0.2 * inch))
-
-    # Add the footer table with borders, date, and page number
-    def add_page_footer(canvas, doc):
-        canvas.saveState()
-        # Footer table with borders, date, and page number
-        cdate = date.now()
-        
-        footer_data = [
-            [f"Comparison Date: {str(cdate).split(' ')[0]}"],
-            [f"Page {doc.page}"]
-        ]
-        footer_table = Table(footer_data, colWidths=[7 * inch])
-        footer_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ]))
-        width, height = A4
-        footer_table.wrapOn(canvas, width, height)
-        footer_table.drawOn(canvas, inch, 0.5 * inch)
-        canvas.restoreState()
-
-    # Build the PDF with the footer on each page
-    pdf.build(content, onFirstPage=add_page_footer, onLaterPages=add_page_footer)
-  
-def set_table_borders(table):
-    tbl = table._element
-    tbl_pr = tbl.tblPr if tbl.tblPr is not None else OxmlElement('w:tblPr')
-    tbl_borders = OxmlElement('w:tblBorders')
-    for border_name in ["top", "left", "bottom", "right", "insideH", "insideV"]:
-        border = OxmlElement(f'w:{border_name}')
-        border.set(qn('w:val'), 'single')
-        border.set(qn('w:sz'), '4')
-        border.set(qn('w:space'), '0')
-        border.set(qn('w:color'), '000000')
-        tbl_borders.append(border)
-    tbl_pr.append(tbl_borders)
-    tbl.append(tbl_pr)
-
-def highlight_differences(doc, title, text, is_different):
-    paragraphs = text.split('\n')
-    for para_text in paragraphs:
-        para = doc.add_paragraph()
-        for part in para_text.split(' '):
-            run = para.add_run(part + ' ')
-            if is_different:
-                run.font.color.rgb = RGBColor(255, 0, 0)  # Red color for differences
 
 logger = logging.getLogger(__name__)
 
