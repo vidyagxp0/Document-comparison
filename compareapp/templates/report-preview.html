@@ -16,10 +16,10 @@
         {% include "layout/navigator.html" with pageInfo="Preview your report and view it directly within the page; use the chat feature to interact with the document for detailed insights." %}
         
         <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg rounded-lg p-8 border border-cyan-900">
-            <div class="flex justify-between mb-6">
+            <div class="flex justify-between mb-4">
                 <div class="flex text-slate-500 items-center p-2 rounded bg-slate-100">Report Number : <span class="text-blue-600 font-bold"> {{ report }}</span></div>
                 <div class="flex items-center">
-                    <a class="inline-flex gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.docx"><img src="{% static "images/download-report.png" %}" class="size-6" alt="" srcset=""> <span>Report</span></a>
+                    <a class="inline-flex gap-2 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.docx"><img src="{% static "images/download-report.png" %}" class="size-6" alt="" srcset=""> <span>Get Report</span></a>
                 </div>
             </div>
             <div class="">

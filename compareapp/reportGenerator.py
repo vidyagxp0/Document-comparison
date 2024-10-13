@@ -106,7 +106,7 @@ def read_pdf(file_path):
 
 # DOC generation --------------------------
 
-def create_merged_docx(primary_data, data, reportNo, output_path, logo_path, comparedBy, short_description):
+def create_report_docx(primary_data, data, reportNo, output_path, logo_path, comparedBy, short_description):
     new_doc = Document()
 
     # Set headers and footers for the entire document
@@ -221,8 +221,19 @@ def create_merged_docx(primary_data, data, reportNo, output_path, logo_path, com
     headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
 
     if not primary_data:
-        new_doc.add_heading(f"Comparison Unsuccessful", level=1)        
-        new_doc.add_paragraph("The document comparison has failed due to unsupported files.")
+        section = new_doc.sections[0]
+        section.top_margin = Pt(350)
+        section.bottom_margin = Pt(300)
+
+        msg = new_doc.add_heading("Comparison Unsuccessful", level=1)
+        msg.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+
+        run = msg.runs[0]
+        run.font.size = Pt(22)
+        run.font.color.rgb = RGBColor(255, 0, 0)
+
+        phrase = new_doc.add_paragraph("The document comparison has failed due to unsupported files content.")
+        phrase.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
     else:
         for header in headers:
@@ -323,8 +334,7 @@ class NumberedCanvas(Canvas):
         self.setFont("Helvetica", 10)
         self.drawRightString(181 * mm, 14.5 * mm, f"Page {self.getPageNumber()} of {total_pages}")
 
-
-def create_merged_pdf(primary_data, data, report_no, output_path, logo_path, compared_by, short_description):
+def create_report_pdf(primary_data, data, report_no, output_path, logo_path, compared_by, short_description):
     pdf = SimpleDocTemplate(output_path, pagesize=A4, rightMargin=0.95 * inch, leftMargin=0.95 * inch, 
                             topMargin=0.75 * inch, bottomMargin=0.75 * inch)
 
@@ -344,7 +354,7 @@ def create_merged_pdf(primary_data, data, report_no, output_path, logo_path, com
         logo_img = ''
 
     header_data = [
-        [logo_img, Paragraph("<b>Document Comparison Report</b>", ParagraphStyle('Normal', fontSize=14, alignment=TA_CENTER, textColor=colors.darkcyan, fontName='Helvetica-Bold'))], 
+        [logo_img, Paragraph("<b>Documents Comparison Report</b>", ParagraphStyle('Normal', fontSize=14, alignment=TA_CENTER, textColor=colors.darkcyan, fontName='Helvetica-Bold'))], 
         [Paragraph(f"<b>Compared By:</b> {compared_by}", ParagraphStyle('Normal', fontSize=8, alignment=TA_LEFT)), 
          Paragraph(f"<b>Report Number:</b> {report_no}", ParagraphStyle('Normal', fontSize=8, alignment=TA_RIGHT))],
         [Paragraph(f"<b>Short Description:</b> {short_description}",ParagraphStyle('Normal', fontSize=8, alignment=TA_LEFT)), ''] 

@@ -20,14 +20,12 @@ from docx import Document
 
 import pandas as pd
 from pathlib import Path
-import convertapi
 import json
 
 import os
 import openai
 import requests
 import logging
-from datetime import datetime as date
 import datetime
 
 # mail configuration  
@@ -40,8 +38,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 
 # Importing DOC and PDF generator
-
-from .reportGenerator import create_merged_docx, create_merged_pdf, compare_sections, read_docx, read_pdf
+from .reportGenerator import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf
 
 def index(request):
     return render(request, "index.html")
@@ -844,8 +841,8 @@ def comparison(request: HttpRequest):
     primary_data = data[documents[0].document_id] or ""
 
     # Generating reports
-    create_merged_docx(primary_data, data, old_report_number, docx_path, logo_path, comparedBy, short_description)
-    create_merged_pdf(primary_data, data, old_report_number, pdf_path, logo_path, comparedBy, short_description)
+    create_report_docx(primary_data, data, old_report_number, docx_path, logo_path, comparedBy, short_description)
+    create_report_pdf(primary_data, data, old_report_number, pdf_path, logo_path, comparedBy, short_description)
 
     # Prepare comparison details
     comparison_details = {}
@@ -945,37 +942,10 @@ def comparison(request: HttpRequest):
         # messages.error(request, "Error occured while saving the comparison data.")
         return HttpResponse(f"Error: {e}")
 
-
-logger = logging.getLogger(__name__)
-
-def docx_to_pdf(docx_path, pdf_path):
-    try:
-        convertapi.api_secret = settings.CONVERT_API_SECRET
-
-        docx_path = str(docx_path)
-        pdf_path = str(pdf_path)
-
-        result = convertapi.convert('pdf', {
-            'File': docx_path
-        })
-
-        result.file.save(pdf_path)
-        
-    except Exception as e:
-        logger.error(f"Error converting DOCX to PDF: {e}")
-        raise
-
 def preview(request, report):
     comparison_report = Path(settings.MEDIA_ROOT) / f'comparison-reports/{report}.docx'
     pdf_path = comparison_report.with_suffix('.pdf')
     pdf_url = str(pdf_path.relative_to(settings.MEDIA_ROOT)).replace("\\", "/")
-
-    if not pdf_path.exists():
-        try:
-            docx_to_pdf(comparison_report, pdf_path)
-        except :
-            messages.info(request, 'Error occured while rendering the file!')
-            return redirect('view-comparison', report)
     
     if not request.session.get(f"opened_cr_{report}"):
         log = UserLogs.objects.create(
