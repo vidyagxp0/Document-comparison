@@ -43,6 +43,7 @@ from .reportGenerator import create_report_docx, create_report_pdf, compare_sect
 def index(request):
     return render(request, "index.html")
 
+@login_required
 def logoutUser(request):
 
     log = UserLogs.objects.create(
@@ -91,6 +92,7 @@ def loginUser(request):
             
     return render(request, "login.html")
 
+@login_required
 def submitFeedback(request):
     previous_url = request.META.get('HTTP_REFERER', 'dashboard')
 
@@ -118,12 +120,7 @@ def submitFeedback(request):
 # User Management Section -------------------------------------------------------------
 @login_required
 @user_passes_test(lambda user: user.is_superuser)
-def userManagement(request):
-    # Custom logic for superuser validation
-    # if not request.user.is_superuser:
-    #     messages.warning(request, "You are restricted to access the user management!")
-    #     return redirect(request.META.get('HTTP_REFERER', reverse('dashboard')))    
-    
+def userManagement(request):   
     query = request.GET.get('q')
     filter_by = request.GET.get('status')
 
@@ -284,7 +281,8 @@ def user_profile(request, user_id):
     total_comparison = len(ComparisonReport.objects.filter(user=request.user))
     total_documents = len(Form.objects.filter(user=request.user))
     failed_comparisons = len(ComparisonReport.objects.filter(user=request.user, comparison_status=False))
-    last_activity = UserLogs.objects.filter(user=request.user).last().action
+    activities = UserLogs.objects.filter(user=request.user).last()
+    last_activity = activities.action if activities else ""
 
     if not request.session.get(f"viewed_up_{user_id}_{request.user}"):
         log = UserLogs.objects.create(
@@ -328,6 +326,7 @@ def user_profile(request, user_id):
     })
 
 # Comparison analytics ------------------------------------
+@login_required
 def analytics(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
@@ -464,6 +463,7 @@ def password_creation_view(request, uidb64, token):
 
     return render(request, 'password-base/password_creation_confirm.html', {'form': form})
 
+@login_required
 def dashboard(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
@@ -493,6 +493,7 @@ def dashboard(request):
     
     return render(request, 'dashboard.html', { "reports": reports[::-1] })
 
+@login_required
 def viewComparison(request, report_id):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
@@ -539,6 +540,7 @@ def viewComparison(request, report_id):
         "report_summary": report.ai_summary
     })
 
+@login_required
 def formView(request):   
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
@@ -686,6 +688,7 @@ def cancelComparison(request: HttpRequest):
 
     return redirect('form')
 
+@login_required
 def documentDetail(request, doc_id):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
@@ -715,6 +718,7 @@ def documentDetail(request, doc_id):
 
     return render(request, 'document-details.html', { 'document': document })
 
+@login_required
 def comparedDocument(request, id):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
@@ -782,6 +786,7 @@ def removeDocument(request, doc_id):
         
     return redirect(previous_url)
 
+@login_required
 def comparison(request: HttpRequest):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
@@ -942,6 +947,7 @@ def comparison(request: HttpRequest):
         # messages.error(request, "Error occured while saving the comparison data.")
         return HttpResponse(f"Error: {e}")
 
+@login_required
 def preview(request, report):
     comparison_report = Path(settings.MEDIA_ROOT) / f'comparison-reports/{report}.docx'
     pdf_path = comparison_report.with_suffix('.pdf')
@@ -1115,4 +1121,4 @@ def getSummary(data, ind=True):
 
         return None
     
-
+# end - Handling an environment for generating comparison summary --------------------------------------

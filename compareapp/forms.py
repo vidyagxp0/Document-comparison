@@ -108,7 +108,7 @@ class UserForm(forms.ModelForm):
         max_length=15,
         widget=forms.TextInput(attrs={
             'class': 'form-input w-full text-slate-700 rounded-lg border-cyan-300 focus:ring-cyan-500 focus:border-cyan-500',
-            'placeholder': '+91 1234567890',
+            'placeholder': '9876543210',
         }),
         required=True,
     )
@@ -116,8 +116,8 @@ class UserForm(forms.ModelForm):
     def clean_phone_number(self):
         phone_number = self.cleaned_data.get('phone_number')
 
-        if not re.match(r'^\+91 \d{10}$', phone_number):
-            raise ValidationError("Enter a valid phone number in the format: +91 1234567890")
+        if not re.match(r'\d{10}$', phone_number):
+            raise ValidationError("Enter a valid phone number in the format: 9876543210")
 
         return phone_number
 
