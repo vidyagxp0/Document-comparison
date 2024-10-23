@@ -1,0 +1,99 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}
+    Comparison Report
+{% endblock title %}
+
+{% block body %}
+{% load custom_filters %}
+
+    <div class="container mx-auto my-12 px-6">
+        <div class="text-start mb-8">
+            <h1 class="text-3xl font-bold text-white">Comparison Report</h1>
+        </div>
+
+        <!-- Navigator -->
+        {% include "layout/navigator.html" with pageInfo="Here you can view detailed information about your excel comparison with comparison report." %}
+        
+        <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg shadow-slate-800 rounded-lg p-8">
+            {% if documents %}
+                <div class="mb-8 rounded-lg">
+                    <h2 class="text-xl font-bold text-white mb-3">Compared Documents Info</h2>
+                    <div class="mb-8 flex leading-normal rounded-lg overflow-auto">
+                        <table class="min-w-full leading-normal bg-slate-50">
+                            <thead>
+                                <tr>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document_ID</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Creation Date</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">File Format</th>
+                                    {% comment %} <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Summary</th> {% endcomment %}
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity Score</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in documents %}
+                                    <tr>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.creation_date }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comparison_between }}</td>
+                                        {% comment %} <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.summary }}</td> {% endcomment %}
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.similarity_score|floatformat:0 }}%</td>
+                                        <td class="px-5 py-3 border-b border-gray-200 text-sm">
+                                            <div class="flex items-center">
+                                                {% if document.comparison_status == 'Compared' %}
+                                                    <p class="px-3 py-1.5 bg-green-500 text-white rounded-full font-medium">Success</p>
+                                                {% else %}
+                                                    <p class="px-5 py-1.5 bg-red-500 text-white rounded-full font-medium">Failed</p>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="mt-8">
+                <div class="mb-5 flex justify-between items-center border-b py-1">
+                    <p class="font-bold text-xl text-white">Comparison Summary</p>
+                    <a title="Get excel comparison report" class="inline-flex gap-2 bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.xlsx"><img src="{% static "images/download-report.png" %}" class="size-6" alt="" srcset=""> <span>Report</span></a>
+                </div>  
+            </div>  
+
+            {% for idx_doc, result in comparison_results.items %}
+                <div class="mb-8">
+                    <h3 class="text-lg text-white font-semibold mb-3">
+                        {{documents.0.upload_documents.path|basename}}-({{ documents.0.document_id }}) VS {{documents.0.upload_documents.path|basename}}-({{ idx_doc }}) :
+                    </h3>
+                    <table class="table-auto w-full text-left border-collapse bg-white">
+                        <thead>
+                            {% for header_idx, header in result.comparison_df.values.0.values %}
+                                <th class="px-4 py-2 border border-gray-400">{{ header }}sf</th>
+                            {% endfor %}
+                        </thead>
+                        <tbody>
+                            {% if result.comparison_df.0.0 != "Both files are the same." %}
+                                {% for row_idx in result.comparison_df|get_item:'0' %}
+                                    <tr>
+                                        {% for idx in result.comparison_df.keys %}
+                                            <td class="px-4 font-medium py-2 border border-gray-300 {% if 'Added' in result.comparison_df|get_item:idx|get_item:row_idx %} bg-green-200 text-green-900 {% elif 'Removed' in result.comparison_df|get_item:idx|get_item:row_idx %} bg-red-200 text-red-900 {% elif '!=' in result.comparison_df|get_item:idx|get_item:row_idx %} bg-yellow-200 text-yellow-900 {% else %} text-black {% endif %}">
+                                                {{ result.comparison_df|get_item:idx|get_item:row_idx }}
+                                            </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                            <div class="px-4 py-2 border border-gray-300 bg-white rounded-lg">
+                                Can't Perform comparison, due to comparison between PRIMARY FILES
+                            </div>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock body %}

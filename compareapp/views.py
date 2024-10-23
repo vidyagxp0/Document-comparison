@@ -28,6 +28,11 @@ import requests
 import logging
 import datetime
 
+# Excel preprocessing
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import PatternFill, Alignment, Border, Side, Font
+from openpyxl.utils.dataframe import dataframe_to_rows
+
 # mail configuration  
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
@@ -38,7 +43,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 
 # Importing DOC and PDF generator
-from .reportGenerator import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf
+from .reportGenerator import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf, compare_sheets
 
 def index(request):
     return render(request, "index.html")
@@ -503,12 +508,14 @@ def viewComparison(request, report_id):
         if request.user.is_superuser:
             report = ComparisonReport.objects.filter(report_number=report_id).first()
             compared_documents = report.compared_documents
+            comparison_between = report.comparison_between
             comparison_status = report.comparison_status
             document_ids = list(compared_documents.values())
             documents = Form.objects.filter(document_id__in=document_ids)
         else:
             report = ComparisonReport.objects.filter(user=request.user, report_number=report_id).first()
             compared_documents = report.compared_documents
+            comparison_between = report.comparison_between
             comparison_status = report.comparison_status
             document_ids = list(compared_documents.values())
             documents = Form.objects.filter(user=request.user, document_id__in=document_ids)
@@ -532,13 +539,22 @@ def viewComparison(request, report_id):
 
     comparison_details = report.comparison_summary
 
-    return render(request, "view-comparisons/view-comparison.html", {
-        "documents": documents,
-        "comparison_status": comparison_status,
-        "comparison_details": comparison_details,
-        "report": report_id,
-        "report_summary": report.ai_summary
-    })
+    if comparison_between == "xlsx":
+        return render(request, "view-comparisons/excel-comparison.html", {
+            "documents": documents,
+            # "comparison_status": comparison_status,
+            "comparison_results": comparison_details,
+            "report": report_id,
+            # "report_summary": report.ai_summary
+        })
+    else:
+        return render(request, "view-comparisons/view-comparison.html", {
+            "documents": documents,
+            "comparison_status": comparison_status,
+            "comparison_details": comparison_details,
+            "report": report_id,
+            "report_summary": report.ai_summary
+        })
 
 @login_required
 def formView(request):   
@@ -559,7 +575,7 @@ def formView(request):
 
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
-        valid_format = ['docx', 'pdf']
+        valid_format = ['docx', 'pdf', 'xlsx']
 
         if form.is_valid():
             saveReportNumber = request.POST.get("report_number")
@@ -801,6 +817,19 @@ def comparison(request: HttpRequest):
     
     comparison_between = documents[0].comparison_between
     user_full_name = request.user.get_full_name().title()
+
+    result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison-reports')
+    os.makedirs(result_dir, exist_ok=True)
+
+    docx_path = os.path.join(result_dir, f"{old_report_number}.docx")
+    pdf_path = os.path.join(result_dir, f"{old_report_number}.pdf")
+
+    excel_path = os.path.join(result_dir, f"{old_report_number}.xlsx")
+    os.makedirs(os.path.dirname(excel_path), exist_ok=True)
+
+    logo_path = "compareapp" + static('images/logo.png')
+
+    text_based_comparison = ['docx', 'pdf']
     
     try:
         short_description = get_object_or_404(ComparisonReport, report_number=old_report_number).short_description
@@ -815,6 +844,8 @@ def comparison(request: HttpRequest):
     
     data = {}
     ai_summary = {}
+    comparison_details = {}
+
     for doc in documents:
         file_path = doc.upload_documents.path
         if comparison_between == 'docx':
@@ -833,93 +864,221 @@ def comparison(request: HttpRequest):
             content = read_file(file_path)
             ai_summary[doc.document_id] = getSummary(content)
 
+        elif comparison_between == 'xlsx':
+            file_path = doc.upload_documents.path
+            df = pd.read_excel(file_path, sheet_name=0)
+            data[doc.document_id] = df
+            ai_summary[doc.document_id] = ""
+
         else:
             messages.error(request, "Can't perform comparison due to invalid file format.")
             return redirect('form')
 
-    result_dir = os.path.join(settings.MEDIA_ROOT, 'comparison-reports')
-    os.makedirs(result_dir, exist_ok=True)
+    if comparison_between in text_based_comparison:
+        primary_data = data[documents[0].document_id] or ""
 
-    docx_path = os.path.join(result_dir, f"{old_report_number}.docx")
-    pdf_path = os.path.join(result_dir, f"{old_report_number}.pdf")
-    logo_path = "compareapp" + static('images/logo.png')
-    primary_data = data[documents[0].document_id] or ""
+        # Generating reports
+        create_report_docx(primary_data, data, old_report_number, docx_path, logo_path, comparedBy, short_description)
+        create_report_pdf(primary_data, data, old_report_number, pdf_path, logo_path, comparedBy, short_description)
 
-    # Generating reports
-    create_report_docx(primary_data, data, old_report_number, docx_path, logo_path, comparedBy, short_description)
-    create_report_pdf(primary_data, data, old_report_number, pdf_path, logo_path, comparedBy, short_description)
+        # Prepare comparison details
+        overall_similarity_scores = {}
+        headers = set()
+        for sections in data.values():
+            headers.update(sections.keys())
 
-    # Prepare comparison details
-    comparison_details = {}
-    overall_similarity_scores = {}
-    headers = set()
-    for sections in data.values():
-        headers.update(sections.keys())
+        headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
 
-    headers = sorted(headers, key=lambda x: (int(x.split('.')[0]), x))  # Sort headers
+        primary_doc_id = list(data.keys())[0]  # Assume the first document is the primary document
+        for header in headers:
+            comparison_details[header] = {
+                'primary': data[primary_doc_id].get(header, ""),
+                'documents': {}
+            }
+            ref_section_content = data[primary_doc_id].get(header, "")
+            for doc_id, sections in data.items():
+                if doc_id != primary_doc_id:
+                    section_content = sections.get(header, "")
+                    if section_content:
+                        similarity, is_different, tag ,added_text, removed_text, modified_text  = compare_sections(ref_section_content, section_content)
+                        if is_different:  # Only include if different
+                            comparison_details[header]['documents'][doc_id] = {
+                                'content': section_content or 'Removed',
+                                'tag': tag,
+                                'added_text': added_text,
+                                'removed_text': removed_text,
+                                'modified_text': modified_text
+                            }
+                        else:
+                            comparison_details[header]['documents'][doc_id] = {
+                                'content': 'Same as Primary Document',
+                                'tag': 'S'
+                            }
 
-    primary_doc_id = list(data.keys())[0]  # Assume the first document is the primary document
-    for header in headers:
-        comparison_details[header] = {
-            'primary': data[primary_doc_id].get(header, ""),
-            'documents': {}
-        }
-        ref_section_content = data[primary_doc_id].get(header, "")
+        # Calculate overall similarity score for each document
+        ref_doc_content = "\n".join(list(data.values())[0].values())
         for doc_id, sections in data.items():
-            if doc_id != primary_doc_id:
-                section_content = sections.get(header, "")
-                if section_content:
-                    similarity, is_different, tag ,added_text, removed_text, modified_text  = compare_sections(ref_section_content, section_content)
-                    if is_different:  # Only include if different
-                        comparison_details[header]['documents'][doc_id] = {
-                            'content': section_content or 'Removed',
-                            'tag': tag,
-                            'added_text': added_text,
-                            'removed_text': removed_text,
-                            'modified_text': modified_text
+            doc_content = "\n".join(sections.values())
+            overall_similarity_score, _, _, _, _, _ = compare_sections(ref_doc_content, doc_content )
+            overall_similarity_scores[doc_id] = int(overall_similarity_score * 100)
+
+    else:
+        if comparison_between == "xlsx":
+            wb = Workbook()
+
+            thin_border = Border(
+                left=Side(style='thin'),
+                right=Side(style='thin'),
+                top=Side(style='thin'),
+                bottom=Side(style='thin')
+            )
+
+            bold_font = Font(bold=True)
+            
+            white_fill = PatternFill(start_color="FFFFFF", end_color="FFFFFF", fill_type="solid")
+            green_fill = PatternFill(start_color="00FF00", end_color="00FF00", fill_type="solid")
+            red_fill = PatternFill(start_color="E06666", end_color="E06666", fill_type="solid")
+            yellow_fill = PatternFill(start_color="FFA500", end_color="FFA500", fill_type="solid")
+
+            performed_comparisons = []
+            
+            primary_file_name = documents[0].upload_documents.path
+            df_primary = data[documents[0].document_id]
+            
+            # Create a consolidated sheet to hold all comparison results
+            consolidated_sheet = wb.create_sheet(title="All Comparisons")
+            consolidated_sheet.append(["Sheet 1", "Sheet 2", "Comparison Result", "Similarity Score"])  # Add headers
+
+            for doc in documents:
+                comparison_id = f"sheet-{primary_file_name} vs {doc.upload_documents.path}"
+
+                try:
+                    primary_excel_name = os.path.basename(primary_file_name)
+                    current_excel_name = os.path.basename(doc.upload_documents.path)
+                except:
+                    primary_excel_name = ""
+                    current_excel_name = ""
+
+                if doc.upload_documents.path == primary_file_name:
+                    # If comparing the same file, create a sheet and append the message
+                    # If comparing the same file, define the sheet name and append the message
+                    ws = wb.create_sheet(title=f"Comparison-{doc.document_id}")
+                    ws.append(["Both files are the same. Similarity Score: 100 %"])
+
+                    # Add to the consolidated sheet
+                    consolidated_sheet.append([f"{primary_excel_name} - ({documents[0].document_id})", f"{current_excel_name} - ({doc.document_id})", "Both files are the same", "100%"])
+                    comparison_details[doc.document_id] = {
+                        'file_name': doc.upload_documents.path,
+                        'similarity_score': 100.0,
+                        'comparison_df': pd.DataFrame(["Both files are the same."]).to_dict()  
+                    }
+                else:
+                    try:
+                        performed_comparisons.append(comparison_id)
+                        df_comparison = data[doc.document_id]
+                        comparison_df, similarity_score = compare_sheets(df_primary, df_comparison)
+                        # Create a new sheet in the workbook for this comparison
+                        ws = wb.create_sheet(title=f"Comparison-{doc.document_id}")
+
+                        # Define the number of columns for merging based on the comparison data
+                        num_columns = len(comparison_df.columns)
+                        
+                        # Merge cells in the first row for the header (spanning the number of columns)
+                        ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=num_columns)
+                        
+                        # Add the header to the first row, centered across the merged cells
+                        header_cell = ws.cell(1, 1, value=f"Comparison between {primary_excel_name} VS {current_excel_name}")
+                        header_cell.alignment = Alignment(horizontal='center', vertical='center')
+                        header_cell.border = thin_border
+                        header_cell.font = bold_font
+
+                        # Write the comparison results into the sheet
+                        for row_idx, row in comparison_df.iterrows():
+                            for col_idx, value in enumerate(row):
+                                cell = ws.cell(row=row_idx + 2, column=col_idx + 1, value=value)
+
+                                cell.border = thin_border
+
+                                # Apply the appropriate highlighting based on the comparison result
+                                if 'Added' in str(value):
+                                    cell.fill = green_fill
+                                elif 'Removed' in str(value):
+                                    cell.fill = red_fill
+                                elif '!=' in str(value):
+                                    cell.fill = yellow_fill
+                                else:
+                                    cell.fill = white_fill  # Yellow for matching cells
+
+                        for row in ws.iter_rows(min_row=1, max_row=len(comparison_df) + 1, min_col=1, max_col=num_columns):
+                            for cell in row:
+                                cell.border = thin_border
+
+                        # Add to the consolidated sheet
+                        consolidated_sheet.append([f"{primary_excel_name} - ({documents[0].document_id})", f"{current_excel_name} - ({doc.document_id})", "Comparison Performed", f"{round(similarity_score, 2)}%"])
+
+                        comparison_details[doc.document_id] = {
+                            'file_name': doc.upload_documents.path,
+                            'similarity_score': similarity_score,
+                            'comparison_df': comparison_df.to_dict()
                         }
-                    else:
-                        comparison_details[header]['documents'][doc_id] = {
-                            'content': 'Same as Primary Document',
-                            'tag': 'S'
+
+                        # Mark this comparison as performed
+                         
+                    except Exception as e:
+                        print(f"Error comparing {documents[0].document_id} with {doc.document_id}: {e}")
+                        # Add error information to the consolidated sheet
+                        consolidated_sheet.append([documents[0].document_id, doc.document_id, "Error in comparison", 0])
+
+                        comparison_details[doc.document_id] = {
+                            'file_name': doc.upload_documents.path,
+                            'similarity_score': 0,
+                            'comparison_df': {None}
                         }
 
-    # Calculate overall similarity score for each document
-    ref_doc_content = "\n".join(list(data.values())[0].values())
-    for doc_id, sections in data.items():
-        doc_content = "\n".join(sections.values())
-        overall_similarity_score, _, _, _, _, _ = compare_sections(ref_doc_content, doc_content )
-        overall_similarity_scores[doc_id] = int(overall_similarity_score * 100)
-
-
+                wb.save(excel_path)
+    
+    compared_documents = {}
+    for index, doc in zip(range(1, len(documents) + 1), documents):
+        compared_documents[f'doc{index}'] = doc.document_id
+        
     # Now Saving the Comparison Result
+
     for doc in documents:
-        if not data[primary_doc_id] or not data[doc.document_id]:
+        if comparison_between == "xlsx":
+            doc.summary = "Compared"
+            doc.similarity_score = comparison_details[doc.document_id]["similarity_score"]
+            doc.comparison_status = 'Compared'
+            doc.ai_summary = ""
+
+        elif not data[primary_doc_id] or not data[doc.document_id]:
             doc.summary = "Not Applicable"
             doc.similarity_score = "Not Applicable"
             doc.comparison_status = 'Not Compared'
+            doc.ai_summary = ai_summary[doc.document_id]
         else:
             doc.summary = "Same" if overall_similarity_scores[doc.document_id] == 100 else "Different"
             doc.similarity_score = f"{int(overall_similarity_scores[doc.document_id])}%"
             doc.comparison_status = 'Compared'
+            doc.ai_summary = ai_summary[doc.document_id]
 
         doc.new = False
-        doc.ai_summary = ai_summary[doc.document_id]
         doc.report_number = old_report_number
         doc.save()
 
-    compared_documents = {}
-    for index, doc in zip(range(1, len(documents) + 1), documents):
-        compared_documents[f'doc{index}'] = doc.document_id
+    if comparison_between in text_based_comparison:
+        report_data = read_file(docx_path)
+        if not comparison_details or not data[primary_doc_id]:
+            comparison_status = False
+            comparison_ai_summary = "The document comparison has failed due to unsupported documents, but you can still get an AI-generated summary of the provided documents."
+        else:
+            comparison_status = True
+            comparison_ai_summary = getSummary(report_data, ind=False)
 
-    prepare_data = read_file(docx_path)
-
-    if not comparison_details or not data[primary_doc_id]:
-        comparison_status = False
-        comparison_ai_summary = "The document comparison has failed due to unsupported documents, but you can still get an AI-generated summary of the provided documents."
     else:
-        comparison_status = True
-        comparison_ai_summary = getSummary(prepare_data, ind=False)
+        if comparison_between == "xlsx":
+            comparison_status = True
+            comparison_ai_summary = ""
+            comparison_details = comparison_details
 
     try:
         comparison_instance = ComparisonReport.objects.get(report_number=old_report_number, user=request.user)

@@ -19,6 +19,11 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.pdfgen.canvas import Canvas
 from datetime import datetime as date
 
+# Excel importation
+import pandas as pd
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import PatternFill
+from openpyxl.utils.dataframe import dataframe_to_rows
 
 def compare_sections(section1, section2):      
     words1 = section1.strip().split()
@@ -457,3 +462,46 @@ def create_report_pdf(primary_data, data, report_no, output_path, logo_path, com
     pdf.multiBuild(content, canvasmaker=NumberedCanvas, onFirstPage=add_page_footer, onLaterPages=add_page_footer)
 
 
+# Excel comparison ------------------------
+
+def compare_sheets(df1, df2):
+    max_row = max(len(df1), len(df2))
+    max_column = max(len(df1.columns), len(df2.columns))
+
+    comparison_result = pd.DataFrame(index=range(max_row + 1), columns=range(max_column))
+
+    unchanged_count = 0  # To count unchanged cells
+
+    # Compare column headers
+    for col in range(max_column):
+        col_name1 = df1.columns[col] if col < len(df1.columns) else None
+        col_name2 = df2.columns[col] if col < len(df2.columns) else None
+
+        if col_name1 == col_name2:
+            comparison_result.iloc[0, col] = col_name1  # No difference in headers
+        else:
+            comparison_result.iloc[0, col] = f'Modified: {col_name1} != {col_name2}'  # Mark header difference
+
+    # Compare the data in the cells
+    for row in range(max_row):
+        for col in range(max_column):
+            val1 = df1.iloc[row, col] if row < len(df1) and col < len(df1.columns) else None
+            val2 = df2.iloc[row, col] if row < len(df2) and col < len(df2.columns) else None
+
+            # Check if both values are NaN
+            if pd.isna(val1) and pd.isna(val2):
+                comparison_result.iloc[row + 1, col] = "-"  # Treat NaN as no change
+                unchanged_count += 1
+            elif val1 == val2:
+                comparison_result.iloc[row + 1, col] = val1  # No difference
+                unchanged_count += 1
+            elif val1 is None:
+                comparison_result.iloc[row + 1, col] = f'Added: {val2}'  # Added value
+            elif val2 is None:
+                comparison_result.iloc[row + 1, col] = f'Removed: {val1}'  # Removed value
+            else:
+                comparison_result.iloc[row + 1, col] = f'Modified: {val1} != {val2}'  # Different values
+
+    similarity_score = (unchanged_count / (max_row * max_column)) * 100 if max_row * max_column > 0 else 0
+    
+    return comparison_result, similarity_score

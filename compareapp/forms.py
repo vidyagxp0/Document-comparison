@@ -31,7 +31,7 @@ class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
         fields = ['upload_documents']
- 
+
     def clean_upload_documents(self):
         files = self.files.getlist('upload_documents')
         if not files:
