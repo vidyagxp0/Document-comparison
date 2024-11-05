@@ -42,7 +42,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 
 # Importing DOC and PDF generator
-from .dataProcessing import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf, compare_sheets
+from .dataProcessing import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf, compare_sheets, processImage, recognize_celebrity, extract_text
 
 def index(request):
     return render(request, "index.html")
@@ -543,6 +543,8 @@ def viewComparison(request, report_id):
 
     if comparison_between == "xlsx":
         return render(request, "view-comparisons/excel-comparison.html", context=context)
+    elif comparison_between == "png":
+        return render(request, "view-comparisons/image-comparison.html", context=context)
     else:
         return render(request, "view-comparisons/view-comparison.html", {
             "documents": documents,
@@ -571,7 +573,7 @@ def formView(request):
 
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
-        valid_format = ['docx', 'pdf', 'xlsx']
+        valid_format = ['docx', 'pdf', 'xlsx', 'png']
 
         if form.is_valid():
             saveReportNumber = request.POST.get("report_number")
@@ -864,6 +866,16 @@ def comparison(request: HttpRequest):
             df = pd.read_excel(file_path, sheet_name=0)
             data[doc.document_id] = df
             ai_summary[doc.document_id] = ""                
+        
+        elif comparison_between == "png":
+            data = processImage(file_path)
+            for key, value in recognize_celebrity(file_path).items():
+                data[key] = value
+            for key, value in extract_text(file_path).items():
+                data[key] = value
+
+            ai_summary[doc.document_id] = ""
+            comparison_details[doc.document_id] = data
 
         else:
             messages.error(request, "Can't perform comparison due to invalid file format.")
@@ -1041,6 +1053,12 @@ def comparison(request: HttpRequest):
             doc.similarity_score = comparison_details[doc.document_id]["similarity_score"]
             doc.comparison_status = 'Compared'
             doc.ai_summary = ai_summary[doc.document_id]
+        
+        elif comparison_between == "png":
+            doc.summary = "Compared"
+            doc.similarity_score = 0
+            doc.comparison_status = 'Compared'
+            doc.ai_summary = ai_summary[doc.document_id]
 
         elif not data[primary_doc_id] or not data[doc.document_id]:
             doc.summary = "Not Applicable"
@@ -1071,8 +1089,12 @@ def comparison(request: HttpRequest):
             comparison_status = True
             comparison_ai_summary = ""
             comparison_details = comparison_details
+        
+        if comparison_between == "png":
+            comparison_status = True
+            comparison_ai_summary = ""
+            comparison_details = comparison_details
 
-        # png
 
     try:
         comparison_instance = ComparisonReport.objects.get(report_number=old_report_number, user=request.user)

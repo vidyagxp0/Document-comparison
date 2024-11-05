@@ -23,6 +23,15 @@ from datetime import datetime as date
 # Excel importation
 import pandas as pd
 
+# Image importation
+from PIL import Image
+import tensorflow as tf
+import numpy as np
+from skimage.metrics import structural_similarity as ssim
+import boto3
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError, ClientError
+
+
 def compare_sections(section1, section2):      
     words1 = section1.strip().split()
     words2 = section2.strip().split()
@@ -503,3 +512,80 @@ def compare_sheets(df1, df2):
     similarity_score = (unchanged_count / (max_row * max_column)) * 100 if max_row * max_column > 0 else 0
     
     return comparison_result, similarity_score
+
+
+# Image Processing ------------------------
+
+def extract_text(img):
+    try:
+        # Load the image
+        with open(img, 'rb') as image_file:
+            image_bytes = image_file.read()
+            text_response = settings.TEXTRACT_CLIENT.detect_document_text(
+                Document={'Bytes': image_bytes}
+            ) 
+        extracted_text = ""
+        for block in text_response['Blocks']:
+            if block['BlockType'] == 'LINE':
+                extracted_text += block['Text'] + " "
+        
+        return {"text": extracted_text}
+    
+    except Exception as e:
+        print(f"An unexpected error occurred during text extraction: {e}")
+        return {"text": '-'}
+
+def prepare_image(img):
+    try:
+        img = img.resize((224, 224))
+        img_array = np.array(img)
+        img_array = np.expand_dims(img_array, axis=0)
+        img_array = tf.keras.applications.mobilenet_v2.preprocess_input(img_array)
+    except Exception as e:
+        print(f"An unexpected error occurred during image preparing: {e}")
+    return img_array
+
+def processImage(file):
+    try:
+        model = tf.keras.applications.mobilenet_v2.MobileNetV2(weights='imagenet')
+        image = Image.open(file)
+        processed_image = prepare_image(image)
+        
+        predictions = model.predict(processed_image)
+        text = extract_text(file)
+        
+        decoded_predictions = tf.keras.applications.mobilenet_v2.decode_predictions(predictions, top=1)[0]
+        label = decoded_predictions[0][1]  # Extract label
+        confidence = decoded_predictions[0][2]  # Extract confidence
+        
+        return {"label": label, "preScore": str(round(confidence, 2)), "text": text}
+    
+    except Exception as e:
+        print(f"An unexpected error occurred during image processing: {e}")
+
+        return {"label": '-', "preScore": 0, "text": '-'}
+
+def recognize_celebrity(image_path):
+    try:
+        with open(image_path, 'rb') as image_file:
+            image_bytes = image_file.read()
+        
+        celeb_response = settings.REKOGNITION_CLIENT.recognize_celebrities(Image={'Bytes': image_bytes})
+
+        if celeb_response['CelebrityFaces']:
+            for celebrity in celeb_response['CelebrityFaces']:
+                name = celebrity['Name']
+                confidence = celebrity['MatchConfidence']
+                links = celebrity['Urls']
+            
+            return {"Name": name, "MatchConfidence": str(confidence), "Links": links}
+        
+        else:
+            return {"Name": "No Celebrity Found", "MatchConfidence": 0, "Links": '-'}
+
+    except Exception as e:
+        print(f"An unexpected error occurred during celebrity recognition: {e}")
+        return {"Name": "-", "MatchConfidence": 0, "Links": '-'}
+
+
+# end - Image Processing ------------------------
