@@ -57,9 +57,9 @@
                 </div>
             {% endif %}
             <div class="mt-8">
-                <div class="mb-5 flex justify-between items-center border-b py-1">
+                <div class="mb-5 flex justify-between items-center bg-slate-800 p-2 rounded-lg">
                     <p class="font-bold text-xl text-white">Comparison Summary</p>
-                    <a title="Get excel comparison report" class="inline-flex gap-2 bg-pink-700 hover:bg-pink-600 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.xlsx"><img src="{% static "images/download-report.png" %}" class="size-6" alt="" srcset=""> <span>Report</span></a>
+                    <a title="Get excel comparison report" class="inline-flex gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.xlsx"><img src="{% static "images/download-report.png" %}" class="size-6" alt="" srcset=""> <span>Get Report</span></a>
                 </div>  
             </div>  
 

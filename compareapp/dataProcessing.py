@@ -1,5 +1,6 @@
 import difflib
 import fitz     # PDF reader
+from django.conf import settings
 
 # DOC generation
 from docx import Document
@@ -21,9 +22,6 @@ from datetime import datetime as date
 
 # Excel importation
 import pandas as pd
-from openpyxl import Workbook, load_workbook
-from openpyxl.styles import PatternFill
-from openpyxl.utils.dataframe import dataframe_to_rows
 
 def compare_sections(section1, section2):      
     words1 = section1.strip().split()

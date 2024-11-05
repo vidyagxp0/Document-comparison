@@ -29,9 +29,8 @@ import logging
 import datetime
 
 # Excel preprocessing
-from openpyxl import Workbook, load_workbook
+from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Alignment, Border, Side, Font
-from openpyxl.utils.dataframe import dataframe_to_rows
 
 # mail configuration  
 from django.contrib.auth.tokens import default_token_generator
@@ -43,7 +42,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 
 # Importing DOC and PDF generator
-from .reportGenerator import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf, compare_sheets
+from .dataProcessing import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf, compare_sheets
 
 def index(request):
     return render(request, "index.html")
@@ -170,7 +169,7 @@ def userLogs(request: HttpRequest):
 
     return render(request, 'user-management/user-logs.html', {'logs': logs[::-1]})
 
-@login_required
+@login_required 
 @user_passes_test(lambda user: user.is_superuser)
 def add_edit_user(request, user_id=None):
     if user_id:
@@ -507,19 +506,17 @@ def viewComparison(request, report_id):
     try:
         if request.user.is_superuser:
             report = ComparisonReport.objects.filter(report_number=report_id).first()
-            compared_documents = report.compared_documents
-            comparison_between = report.comparison_between
-            comparison_status = report.comparison_status
-            document_ids = list(compared_documents.values())
+            document_ids = list(report.compared_documents.values())
             documents = Form.objects.filter(document_id__in=document_ids)
         else:
             report = ComparisonReport.objects.filter(user=request.user, report_number=report_id).first()
-            compared_documents = report.compared_documents
-            comparison_between = report.comparison_between
-            comparison_status = report.comparison_status
-            document_ids = list(compared_documents.values())
+            document_ids = list(report.compared_documents.values())
             documents = Form.objects.filter(user=request.user, document_id__in=document_ids)
         
+
+        comparison_between = report.comparison_between
+        comparison_status = report.comparison_status
+
         if not request.session.get(f"viewed_comparison_{report_id}"):
             log = UserLogs.objects.create(
                 user = request.user,
@@ -530,7 +527,6 @@ def viewComparison(request, report_id):
             )
 
             log.save()
-
             request.session[f"viewed_comparison_{report_id}"] = True
 
     except:
@@ -539,14 +535,14 @@ def viewComparison(request, report_id):
 
     comparison_details = report.comparison_summary
 
+    context = {
+        "documents": documents,
+        "comparison_results": comparison_details,
+        "report": report_id,
+    }
+
     if comparison_between == "xlsx":
-        return render(request, "view-comparisons/excel-comparison.html", {
-            "documents": documents,
-            # "comparison_status": comparison_status,
-            "comparison_results": comparison_details,
-            "report": report_id,
-            # "report_summary": report.ai_summary
-        })
+        return render(request, "view-comparisons/excel-comparison.html", context=context)
     else:
         return render(request, "view-comparisons/view-comparison.html", {
             "documents": documents,
@@ -865,10 +861,9 @@ def comparison(request: HttpRequest):
             ai_summary[doc.document_id] = getSummary(content)
 
         elif comparison_between == 'xlsx':
-            file_path = doc.upload_documents.path
             df = pd.read_excel(file_path, sheet_name=0)
             data[doc.document_id] = df
-            ai_summary[doc.document_id] = ""
+            ai_summary[doc.document_id] = ""                
 
         else:
             messages.error(request, "Can't perform comparison due to invalid file format.")
@@ -960,8 +955,6 @@ def comparison(request: HttpRequest):
                     current_excel_name = ""
 
                 if doc.upload_documents.path == primary_file_name:
-                    # If comparing the same file, create a sheet and append the message
-                    # If comparing the same file, define the sheet name and append the message
                     ws = wb.create_sheet(title=f"Comparison-{doc.document_id}")
                     ws.append(["Both files are the same. Similarity Score: 100 %"])
 
@@ -977,13 +970,12 @@ def comparison(request: HttpRequest):
                         performed_comparisons.append(comparison_id)
                         df_comparison = data[doc.document_id]
                         comparison_df, similarity_score = compare_sheets(df_primary, df_comparison)
+
                         # Create a new sheet in the workbook for this comparison
                         ws = wb.create_sheet(title=f"Comparison-{doc.document_id}")
 
                         # Define the number of columns for merging based on the comparison data
                         num_columns = len(comparison_df.columns)
-                        
-                        # Merge cells in the first row for the header (spanning the number of columns)
                         ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=num_columns)
                         
                         # Add the header to the first row, centered across the merged cells
@@ -1035,12 +1027,12 @@ def comparison(request: HttpRequest):
                             'comparison_df': {None}
                         }
 
-                wb.save(excel_path)
+            wb.save(excel_path)
     
     compared_documents = {}
     for index, doc in zip(range(1, len(documents) + 1), documents):
         compared_documents[f'doc{index}'] = doc.document_id
-        
+
     # Now Saving the Comparison Result
 
     for doc in documents:
@@ -1048,7 +1040,7 @@ def comparison(request: HttpRequest):
             doc.summary = "Compared"
             doc.similarity_score = comparison_details[doc.document_id]["similarity_score"]
             doc.comparison_status = 'Compared'
-            doc.ai_summary = ""
+            doc.ai_summary = ai_summary[doc.document_id]
 
         elif not data[primary_doc_id] or not data[doc.document_id]:
             doc.summary = "Not Applicable"
@@ -1079,6 +1071,8 @@ def comparison(request: HttpRequest):
             comparison_status = True
             comparison_ai_summary = ""
             comparison_details = comparison_details
+
+        # png
 
     try:
         comparison_instance = ComparisonReport.objects.get(report_number=old_report_number, user=request.user)
