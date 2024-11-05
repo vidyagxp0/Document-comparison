@@ -1,4 +1,5 @@
 from pathlib import Path
+import boto3
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,10 +46,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'SmartCompare.urls'
 
-CHATPDF_API_KEY = 'sec_svlzEoctoxWzXMSGAaPmbpJjX9z6bUrU'
-
-CONVERT_API_SECRET = 'secret_83bs1pF6eQgQ3NOX'
-
 # key will be replace here
 
 TEMPLATES = [
@@ -80,7 +77,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',  # Or your database host
-        'PORT': '3306',       # Or your database port
+        'PORT': '3307',       # Or your database port
     }
 }
 
