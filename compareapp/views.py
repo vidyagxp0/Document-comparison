@@ -42,7 +42,7 @@ from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 
 # Importing DOC and PDF generator
-from .dataProcessing import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf, compare_sheets, processImage, recognize_celebrity, extract_text
+from .dataProcessing import create_report_docx, create_report_pdf, compare_sections, read_docx, read_pdf, compare_sheets, processImage
 
 def index(request):
     return render(request, "index.html")
@@ -869,12 +869,7 @@ def comparison(request: HttpRequest):
         
         elif comparison_between == "png":
             data = processImage(file_path)
-            for key, value in recognize_celebrity(file_path).items():
-                data[key] = value
-            for key, value in extract_text(file_path).items():
-                data[key] = value
-
-            ai_summary[doc.document_id] = ""
+            ai_summary[doc.document_id] = "" 
             comparison_details[doc.document_id] = data
 
         else:
@@ -1057,7 +1052,7 @@ def comparison(request: HttpRequest):
         elif comparison_between == "png":
             doc.summary = "Compared"
             doc.similarity_score = 0
-            doc.comparison_status = 'Compared'
+            doc.comparison_status = 'Compared' if comparison_details[doc.document_id]['text'] else "Not Compared"
             doc.ai_summary = ai_summary[doc.document_id]
 
         elif not data[primary_doc_id] or not data[doc.document_id]:
@@ -1091,7 +1086,7 @@ def comparison(request: HttpRequest):
             comparison_details = comparison_details
         
         if comparison_between == "png":
-            comparison_status = True
+            comparison_status = True if comparison_details[documents[0].document_id]['text'] else False
             comparison_ai_summary = ""
             comparison_details = comparison_details
 

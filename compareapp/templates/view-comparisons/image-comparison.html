@@ -14,98 +14,81 @@
         </div>
         
         <!-- Navigator -->
-        {% include "layout/navigator.html" with pageInfo="Here you can view detailed information about your image comparison. This section allows you to examine the attributes of your compared images and review their similarity scores." %}
+        {% include "layout/navigator.html" with pageInfo="Here you can view detailed information about your image comparison." %}
         
-        <div class="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
+        <div class="backdrop-blur-3xl bg-cyan-900 shadow-lg shadow-slate-800 rounded-lg p-8">
             {% if perms.compareapp.view_comparisonreport %}
                 {% if documents %}
-                    <div class="flex justify-between mb-6">
-                        <div class="font-bold text-xl text-slate-600">Compared Documents Info</div>
-                        <div class="head">
-                            {% comment %} <a class="bg-blue-700 hover:bg-blue-600 text-white rounded-lg py-2 px-3" href="{% url "dashboard" %}">Back</a> {% endcomment %}
-                        </div>
-                    </div>
-                    <div class="mb-8 flex leading-normal rounded-lg overflow-auto bg-slate-100">
-                        <table class="min-w-full leading-normal bg-slate-100">
-                            <thead>
-                                <tr>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document_Id</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Creation Date</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">File Format</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Text</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Compared text</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Version</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Language</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Doc Type</th>
-                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comments</th>
-                                  
-                                  {% comment %}
-                                      <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
-                                    
-                                  {% endcomment %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for document in documents %}
+                    <div class="mb-8 rounded-lg">
+                        <h2 class="text-xl font-bold text-white mb-3">Compared Documents Info</h2>
+                        <div class="mb-8 flex leading-normal rounded-lg overflow-auto">
+                            <table class="min-w-full leading-normal bg-slate-50">
+                                <thead>
                                     <tr>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.title }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.author }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.creation_date }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.version }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.language }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_type }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.doc_format }}</td>
-                                        <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comments }}</td>
-                                     
-                                     {% comment %}
-                                         <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comparison_status }}</td>
-                                     {% endcomment %}
-                                          
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document_ID</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Creation Date</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">File Format</th>
+                                        {% comment %} <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity Score</th> {% endcomment %}
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">View</th>
                                     </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {% for document in documents %}
+                                        <tr>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.document_id }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.creation_date }}</td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.comparison_between }}</td>
+                                            {% comment %} <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ document.similarity_score|floatformat:0 }}%</td> {% endcomment %}
+                                            <td class="px-5 py-3 border-b border-gray-200 text-sm">
+                                                <div class="flex items-center">
+                                                    {% if document.comparison_status == 'Compared' %}
+                                                        <p class="px-3 py-1.5 bg-green-500 text-white rounded-full font-medium">Success</p>
+                                                    {% else %}
+                                                        <p class="px-5 py-1.5 bg-red-500 text-white rounded-full font-medium">Failed</p>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm flex gap-4">
+                                                <a href="{{ document.upload_documents.url }}" target="_blank" class="hover:bg-slate-200 rounded-full px-2.5 py-2"><img src="{% static 'images/download-icon.png' %}" class="h-5 w-4" title="Download" alt=""></a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 {% endif %}
                 <div class="">
                     <div class="mb-5 flex justify-between items-center">
-                        <p class="font-bold text-xl text-slate-600">Comparison Summary</p>
+                        <p class="font-bold text-xl text-white">Comparison Summary</p>
                         <a class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3 ml-4" href="{% url 'preview' report %}">View Report</a> 
                     </div>
                     <div class="mb-8 flex leading-normal rounded-lg overflow-auto bg-slate-100">
-                      <table class="w-full leading-normal bg-slate-100">
-                        <tr>
-                            <th class=" px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider ">Images</th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider  ">Predicted Label</th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider  ">Predection Score</th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider  ">Text</th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider  ">Celebrity Name</th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider  ">Matching Score</th>
-                            <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider  ">Celebrity Urls</th>
-                        </tr>
-                        
-                        <!-- Loop through the data passed from the view -->
-                      
-                        {% for key, value in comparison_results.items %}
-                        <tr>
-                            <td class=" px-5 py-5 border-b border-gray-200 text-sm  ">Image-{{ key }}</td>
-                            <td class="px-5 py-5 border-b border-gray-200 text-sm   ">{{ value.label }}</td>
-                            <td class="px-5 py-5 border-b border-gray-200 text-sm   ">{{ value.preScore }}</td>
-                            <td class="px-5 py-5 border-b border-gray-200 text-sm  ">{{ value.text }}</td>
-                            <td class="px-5 py-5 border-b border-gray-200 text-sm   ">{{ value.Name}}</td>
-                            <td class="px-5 py-5 border-b border-gray-200 text-sm   ">{{ value.MatchConfidence}}</td>
-                            <td class="px-5 py-5 border-b border-gray-200 text-sm   ">
-                                <ul>
-                                    {% for link in value.Links %}
-                                        <li><a href="https://{{ link }}" target="_blank">{{ link }}</a></li>
-                                    {% endfor %}
-                                </ul>
-                            </td>
-                        </tr>
-                        {% endfor %} 
-                    </table>
-                                        
+                        <table class="w-full leading-normal bg-slate-100">
+                            <thead>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Images</th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Predicted Label</th>
+                                {% comment %} <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Predection Score</th> {% endcomment %}
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Text</th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Added Text</th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Removed Text</th>
+                                <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Modified Text</th>
+                            </thead>
+                            <tbody>
+                                {% for key, value in comparison_results.items %}
+                                <tr>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-28">Image-{{ key }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-48">{{ value.label | default:"Not Applicable" }}</td>
+                                    {% comment %} <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ value.preScore }}%</td> {% endcomment %}
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.text | default:"Not Applicable" }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.addedText | default:"-" }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.removedText | default:"-" }}</td>
+                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.modifiedText | default:"-"  }}</td>
+                                </tr>
+                                {% endfor %} 
+                            </tbody>
+                        </table>             
                     </div>
                 </div>
             {% else %}
