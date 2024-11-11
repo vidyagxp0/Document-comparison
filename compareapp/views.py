@@ -538,6 +538,7 @@ def viewComparison(request, report_id):
     context = {
         "documents": documents,
         "comparison_results": comparison_details,
+        "data": report,
         "report": report_id,
     }
 
@@ -865,7 +866,10 @@ def comparison(request: HttpRequest):
         elif comparison_between == 'xlsx':
             df = pd.read_excel(file_path, sheet_name=0)
             data[doc.document_id] = df
-            ai_summary[doc.document_id] = ""                
+
+            # Getting AI Summary
+            content = read_file(file_path)
+            ai_summary[doc.document_id] = getSummary(content, excel=True)
         
         elif comparison_between == "png":
             data = processImage(file_path)
@@ -1077,19 +1081,17 @@ def comparison(request: HttpRequest):
             comparison_ai_summary = "The document comparison has failed due to unsupported documents, but you can still get an AI-generated summary of the provided documents."
         else:
             comparison_status = True
-            comparison_ai_summary = getSummary(report_data, ind=False)
+            comparison_ai_summary = getSummary(report_data)
 
     else:
         if comparison_between == "xlsx":
+            report_data = read_excel_report(excel_path)
             comparison_status = True
-            comparison_ai_summary = ""
-            comparison_details = comparison_details
+            comparison_ai_summary = getSummary(report_data, excel=True)
         
         if comparison_between == "png":
             comparison_status = True if comparison_details[documents[0].document_id]['text'] else False
             comparison_ai_summary = ""
-            comparison_details = comparison_details
-
 
     try:
         comparison_instance = ComparisonReport.objects.get(report_number=old_report_number, user=request.user)
@@ -1248,24 +1250,53 @@ def read_pdf_data(file):
         content += page.extract_text()
     return content
 
+def read_excel_data(file):
+    try:
+        df = pd.read_excel(file)
+        print(df)
+        content = df.to_string(index=False)  # Exclude index to keep the output clean
+        print(content)
+
+        return content
+    except Exception as e:
+        print("Error occurred while reading the Excel file!\n", e)
+        return None
+
+def read_excel_report(file):
+    try:
+        sheets = pd.read_excel(file, sheet_name=None)  # None reads all sheets
+        content = ""
+        
+        for sheet_name, df in sheets.items():
+            content += f"\n--- Sheet: {sheet_name} ---\n"  # Add sheet name as a separator
+            content += df.to_string(index=False) 
+            content += "\n"
+        
+        return content
+    except Exception as e:
+        print("Error occurred while reading the Excel file!\n", e)
+        return None
+
 def read_file(file):
     file_type = os.path.splitext(file)[1].lower()
     if file_type == ".docx":
         return read_word_data(file)
     elif file_type == ".pdf":
         return read_pdf_data(file)
+    elif file_type == ".xlsx":
+        return read_excel_data(file)
     else:
         return None
 
-def getSummary(data, ind=True):
+def getSummary(data, excel=False):
     openai.api_key = settings.OPENAI_API_KEY
 
     try:
-        if ind:
+        if not excel:
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": "You are an AI that give the summary of document content."},
+                    {"role": "system", "content": "You are an AI that gives the summary of document content."},
                     {"role": "user", "content": f"give the summary of the following document content:\n{data}"}
                 ],
                 max_tokens=2000
@@ -1277,8 +1308,8 @@ def getSummary(data, ind=True):
             response = openai.ChatCompletion.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                {"role": "system", "content": "You are an AI that compares documents and highlights revisions/changes."},
-                {"role": "user", "content": f"Compare the following documents and highlight the revisions/changes:\n{data}"}
+                {"role": "system", "content": "You are an AI that gives the summary of excel."},
+                {"role": "user", "content": f"give the summary of the following excel content:\n{data}"}
             ],
                 max_tokens=2000
             )

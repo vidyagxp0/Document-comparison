@@ -24,7 +24,7 @@ from datetime import datetime as date
 import pandas as pd
 
 # Image importation
-from PIL import Image
+from PIL import Image as Img
 import tensorflow as tf
 import numpy as np
 
@@ -344,8 +344,7 @@ class NumberedCanvas(Canvas):
         self.drawRightString(181 * mm, 14.5 * mm, f"Page {self.getPageNumber()} of {total_pages}")
 
 def create_report_pdf(primary_data, data, report_no, output_path, logo_path, compared_by, short_description):
-    pdf = SimpleDocTemplate(output_path, pagesize=A4, rightMargin=0.95 * inch, leftMargin=0.95 * inch, 
-                            topMargin=0.75 * inch, bottomMargin=0.75 * inch)
+    pdf = SimpleDocTemplate(output_path, pagesize=A4, rightMargin=0.95 * inch, leftMargin=0.95 * inch, topMargin=0.75 * inch, bottomMargin=0.75 * inch)
 
     content = []
 
@@ -430,7 +429,7 @@ def create_report_pdf(primary_data, data, report_no, output_path, logo_path, com
                     else:
                         if added_text:
                             content.append(Paragraph("<b>Added Text:</b>", bold_style))
-                            content.append(Paragraph(added_text, ParagraphStyle('Normal', fontSize=9, textColor=colors.lightgreen, alignment=TA_LEFT)))
+                            content.append(Paragraph(added_text, ParagraphStyle('Normal', fontSize=9, textColor=colors.green, alignment=TA_LEFT)))
                         if removed_text:
                             content.append(Paragraph("<b>Removed Text:</b>", bold_style))
                             content.append(Paragraph(removed_text, ParagraphStyle('Normal', fontSize=9, textColor=colors.red, alignment=TA_LEFT)))
@@ -549,7 +548,7 @@ def processImage(file):
 
     try:
         model = tf.keras.applications.mobilenet_v2.MobileNetV2(weights='imagenet')
-        image = Image.open(file)
+        image = Img.open(file)
         processed_image = prepare_image(image)
         predictions = model.predict(processed_image)
         

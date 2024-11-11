@@ -1,0 +1,33 @@
+{% extends "layout/base.html" %}
+
+{% block title %}
+    Server Error - 500
+{% endblock title %}
+
+{% block body %}
+{% load static %}
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="text-center p-6 max-w-lg mx-auto shadow-lg rounded-lg bg-white">
+        <div class="flex items-center justify-center mb-6">
+            <svg class="w-16 h-16 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 21.828a4 4 0 11-5.656-5.656 4 4 0 015.656 5.656zm2.828-2.828a8 8 0 11-11.314-11.314 8 8 0 0111.314 11.314z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l-4-4m4 4l-4 4m5-4H9m2 0H9" />
+            </svg>
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">500 - Server Error</h1>
+        <p class="text-gray-600 mb-6">Oops! Something went wrong on our end. We're working on fixing this as soon as possible.</p>
+
+        <div class="flex justify-center space-x-4">
+            <a href="/" class="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition">Go to Home</a>
+            <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Return to Dashboard</a>
+        </div>
+
+        <p class="mt-6 text-sm text-gray-500">Need help? <a href="mailto:support@doccomparisonpro.com" class="text-blue-600 hover:underline">Contact Support</a></p>
+    </div>
+
+</body>
+
+{% endblock body %}

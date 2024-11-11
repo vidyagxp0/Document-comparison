@@ -202,11 +202,11 @@
 
     <div id="comparisonTypeModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
         <div class="bg-white rounded-lg shadow-lg p-5 max-w-xl w-full">
-            <h1 class="text-2xl font-extrabold mb-3">Welcome to Files Comparison</h1>
-            <p class="text-slate-600 mb-3 text-lg">Please select the <strong>Files Type</strong> you would like to compare.</p>
-            <label for="comparison_between" class="font-semibold mb-2 block">Choose Files Type :</label>
+            <h1 class="text-2xl font-extrabold mb-3">Documents Type Selection</h1>
+            <p class="text-slate-600 mb-3 text-lg">Please select the <strong>Documents Type</strong> you would like to compare.</p>
+            <label for="comparison_between" class="font-semibold mb-2 block">Documents Type :</label>
             <select name="comparison_between" id="comparison_between" class="border rounded-lg p-2 w-full border-gray-300 focus:ring-cyan-500 focus:border-cyan-500">
-                <option value="">Select files type</option>
+                <option value="">Select documents type</option>
                 <option value="pdf">PDF</option>
                 <option value="docx">Word Document</option>
                 <option value="xlsx">Spreadsheet</option>
@@ -482,6 +482,11 @@
             // Retrieve the comparison type from localStorage and set it in the hidden input field
             const comparisonTypeSelected = localStorage.getItem("comparisonTypeSelected");
 
+            const setDragDropInputAccept = (acceptFormat) => {
+                const dragDropInput = document.getElementById('id_upload_documents');
+                dragDropInput.accept = `.${acceptFormat}`;
+            }
+
             const updateTitle = (fileType) => {
                 const title = document.getElementById("comparison_between_title");
 
@@ -511,6 +516,7 @@
             if (comparisonTypeSelected) {
                 docFormatField.value = comparisonTypeSelected
                 updateTitle(comparisonTypeSelected)
+                setDragDropInputAccept(comparisonTypeSelected)
             } else {
                 setTimeout(() => {
                     openCTModal();
@@ -538,6 +544,7 @@
                         localStorage.setItem("comparisonTypeSelected", selectedType);
                         docFormatField.value = selectedType
                         updateTitle(selectedType)
+                        setDragDropInputAccept(selectedType)
                         error.innerText = "";
                         comparisonTypeModal.classList.add("hidden");    
                     } else {

@@ -30,6 +30,7 @@
                                     {% comment %} <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Summary</th> {% endcomment %}
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity Score</th>
                                     <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Comparison Status</th>
+                                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Document Summary</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -49,6 +50,11 @@
                                                 {% endif %}
                                             </div>
                                         </td>
+                                        <td class="px-5 py-3 border-b border-gray-200 text-sm">
+                                            <button onclick="openSummary(`{{document.ai_summary}}`)" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg py-2 px-3">
+                                                View
+                                            </button>
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -56,17 +62,21 @@
                     </div>
                 </div>
             {% endif %}
-            <div class="mt-8">
-                <div class="mb-5 flex justify-between items-center bg-slate-800 p-2 rounded-lg">
-                    <p class="font-bold text-xl text-white">Comparison Summary</p>
+            <div class="mb-3 flex justify-between items-center rounded-lg bg-cyan-700 p-2">
+                <p class="font-bold text-xl text-white">Comparison Summary</p>
+                <div class="flex justify-between items-center">
+                    <button onclick="openSummary(`{{ data.ai_summary }}`)" class="flex items-center gap-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg py-2 px-3">
+                        <img class="size-7" src="{% static 'images/report.png' %}" alt="" srcset="">
+                        Comparison Summary
+                    </button>
                     <a title="Get excel comparison report" class="inline-flex gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 px-3 ml-4" href="{% get_media_prefix %}comparison-reports/{{ report }}.xlsx"><img src="{% static "images/download-report.png" %}" class="size-6" alt="" srcset=""> <span>Get Report</span></a>
                 </div>  
             </div>  
 
             {% for idx_doc, result in comparison_results.items %}
-                <div class="mb-8">
-                    <h3 class="text-lg text-white font-semibold mb-3">
-                        {{documents.0.upload_documents.path|basename}}-({{ documents.0.document_id }}) VS {{documents.0.upload_documents.path|basename}}-({{ idx_doc }}) :
+                <div class="mb-5">
+                    <h3 class="text-[16px] text-white font-semibold mb-2">
+                        {{documents.0.upload_documents.path|basename|getOriginal}}-({{ documents.0.document_id }}) VS {{documents.0.upload_documents.path|basename|getOriginal}}-({{ idx_doc }}) :
                     </h3>
                     <table class="table-auto w-full text-left border-collapse bg-white">
                         <thead>
@@ -96,4 +106,43 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Modal for Summary -->
+    <div id="summaryModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 p-6 relative">
+            <button onclick="closeSummary()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-4xl">&times;</button>
+            <h2 class="text-2xl font-bold mb-4">AI-Generated Summary</h2>
+            <p id="summaryContent" class="border rounded-lg p-5 bg-gray-50 text-lg mb-4 max-h-[300px] overflow-auto"></p>
+            <div class="mt-6 text-right">
+                <button onclick="closeSummary()" class="bg-slate-600 hover:bg-slate-400 text-white font-bold rounded-lg py-2 px-4">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function openSummary(summary) {
+            let content = '';
+            if (summary === 'None') {
+                content = `
+                    <div class="flex flex-col gap-5 h-48 justify-center items-center">
+                        <img class="size-24" src="{% static 'images/no-summary.png' %}" alt="" srcset="">
+                        <p class="text-slate-700 text-lg font-medium">Sorry, We didn't find the document summary.</p>
+                    </div>
+                `
+            } else {
+                content = summary;
+            }
+            document.getElementById('summaryContent').innerHTML = content;
+            document.getElementById('summaryModal').classList.remove('hidden');
+        }
+        
+        function closeSummary() {
+            document.getElementById('summaryModal').classList.add('hidden');
+        }
+        
+    </script>
+    
 {% endblock body %}
