@@ -1039,7 +1039,15 @@ def comparison(request: HttpRequest):
                         }
 
             wb.save(excel_path)
-    
+            
+        else:
+            primary_text = comparison_details[documents[0].document_id]['text']
+
+            for doc in documents:
+                doc_text = comparison_details[doc.document_id]['text']
+                comparison_details[doc.document_id]['compare'] = compare_sections(primary_text, doc_text)
+
+            
     compared_documents = {}
     for index, doc in zip(range(1, len(documents) + 1), documents):
         compared_documents[f'doc{index}'] = doc.document_id

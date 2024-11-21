@@ -31,6 +31,7 @@
                                         {% comment %} <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Similarity Score</th> {% endcomment %}
                                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Processing Status</th>
                                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">View</th>
+                                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Compare Visually</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -52,6 +53,11 @@
                                             <td class="px-5 py-5 border-b border-gray-200 text-sm flex gap-4">
                                                 <a href="{{ document.upload_documents.url }}" target="_blank" class="hover:bg-slate-200 rounded-full px-2.5 py-2"><img src="{% static 'images/download-icon.png' %}" class="h-5 w-4" title="Download" alt=""></a>
                                             </td>
+                                            <td class="px-5 py-3 border-b border-gray-200 text-sm">
+                                                <button onclick="openCompareImage(`{{document.upload_documents.url}}`)" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg py-2 px-3">
+                                                    View
+                                                </button>
+                                            </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -64,7 +70,7 @@
                         <p class="font-bold text-xl text-white">Comparison Summary</p>
                         <a class="bg-pink-700 hover:bg-pink-600 text-white font-bold rounded-lg py-2 px-3 ml-4" href="{% url 'preview' report %}">View Report</a> 
                     </div>
-                    <div class="mb-8 flex leading-normal rounded-lg overflow-auto bg-slate-100">
+                    <div class="flex leading-normal rounded-lg overflow-auto bg-slate-100">
                         <table class="w-full leading-normal bg-slate-100">
                             <thead>
                                 <th class="px-5 py-3 border-b-2 border-gray-200 bg-slate-600 text-left text-[13px] font-semibold text-white uppercase tracking-wider">Images</th>
@@ -82,9 +88,19 @@
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-48">{{ value.label | default:"Not Applicable" }}</td>
                                     {% comment %} <td class="px-5 py-5 border-b border-gray-200 text-sm">{{ value.preScore }}%</td> {% endcomment %}
                                     <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.text | default:"Not Applicable" }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.addedText | default:"-" }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.removedText | default:"-" }}</td>
-                                    <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.modifiedText | default:"-"  }}</td>
+                                    {% if value.compare.3 and value.compare.4 %}
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56 text-green-500 bg-green-50">{{ value.compare.3 | default:"-" }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200   text-sm min-w-56 text-red-500 bg-red-50">{{ value.compare.4 | default:"-" }}</td>
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">Not Applicable</td>
+                                    {% else %}
+                                        <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">Not Applicable</td>
+                                        <td class="px-5 py-5 border-b border-gray-200   text-sm min-w-56">Not Applicable</td>
+                                        {% if value.compare.5 %}
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56 text-yellow-500 bg-yellow-50">{{ value.compare.5 | default:"-"  }}</td>
+                                        {% else %}
+                                            <td class="px-5 py-5 border-b border-gray-200 text-sm min-w-56">{{ value.compare.5 | default:"Not Applicable"  }}</td>
+                                        {% endif %}
+                                    {% endif %}
                                 </tr>
                                 {% endfor %} 
                             </tbody>
@@ -102,5 +118,43 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Models -->
+    <div id="imageComp" class="modal modal-closed fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-8/12 p-6 relative">
+            <div class="flex justify-between border-b pb-2">
+                <p class="font-semibold text-2xl">Compare the Images visually</p>
+                <button id="closeImageComp" class="absolute top-5 right-5 text-gray-500 hover:text-gray-800 text-4xl">&times;</button>
+            </div>
+            <div class="mt-4 flex justify-around gap-4">
+                <div class="rounded-lg border p-2 shadow-md flex justify-between flex-col">
+                    <embed src="{{ documents.0.upload_documents.url }}" type="image/png" class="w-[500px] h-96">
+                    <p class="mt-2 p-2 bg-cyan-600 text-white rounded-md">Primary Image</p>
+                </div>
+                <div class="rounded-lg border p-2 shadow-md flex justify-between flex-col">
+                    <embed id="varImage" src="" type="image/png" class="w-[500px] h-96">
+                    <p class="mt-2 p-2 bg-cyan-600 text-white rounded-md">Varient Image</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const imageComp = document.getElementById("imageComp");
+        const closeImageComp = document.getElementById("closeImageComp");
+        const varImage = document.getElementById("varImage");
+
+        function openCompareImage(url) {    
+            varImage.src = url;
+            imageComp.classList.remove('modal-closed');
+            imageComp.classList.add('modal-open');
+        }
+
+        // Close image modal
+        closeImageComp.addEventListener('click', function () {
+            imageComp.classList.remove('modal-open');
+            imageComp.classList.add('modal-closed');
+        });
+    </script>
 
 {% endblock body %}
