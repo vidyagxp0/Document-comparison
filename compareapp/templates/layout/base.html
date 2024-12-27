@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doc Comparison Pro - {% block title %}{% endblock title %}</title>
-    <link rel="shortcut icon" href="{% static 'images/logosm.png' %}" type="image/x-icon">
+    <link rel="shortcut icon" href="{% static 'images/success.png' %}" type="image/x-icon">
     {% tailwind_css %}
     <style>
         .modal {
@@ -32,13 +32,13 @@
         <div class="z-40 flex w-full justify-between items-center shadow-black shadow-lg px-10 py-2.5 backdrop-blur-xl bg-cyan-900 bg-opacity-85 text-white fixed">
             <div>
                 <a href="{% url "dashboard" %}" class="flex items-center gap-4">
-                    <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo">
+                    {% comment %} <img class="w-200 h-14" src="{% static 'images/logo.png' %}" alt="Doc Comparison Pro Logo"> {% endcomment %}
                     <p class="hidden md:block text-white md:text-2xl font-semibold"> Document Comparison Pro </p>
                 </a>
             </div>
             <div class="flex gap-4 items-center relative">
                 <div class="border-r-2 border-yellow-600 h-8 flex items-center md:block hidden">
-                    <a href="mailto:quality@vidyagxp.com" class="text-blue-500 text-lg px-4 hover:text-blue-400 font-semibold">support@doccomparisonpro.com</a>
+                    <a href="mailto:quality@admin.com" class="text-blue-500 text-lg px-4 hover:text-blue-400 font-semibold">support@doccomparisonpro.com</a>
                 </div>
                 <div class="flex items-center ring-2 ring-cyan-600 rounded-full p-0.5 bg-slate-300" title="Last Login Time">
                     <img class="size-7 mx-2" src="{% static "images/calendar.png" %}" alt="" srcset="">
@@ -70,7 +70,7 @@
                     </button>
                     <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-64 bg-white text-black shadow-lg rounded-md">
                         <div class="flex justify-center font-extrabold text-lg items-center px-5 py-2 gap-2 border-b">
-                            <img src="{% static 'images/logosm.png' %}" alt="logo" width="50" height="50"> 
+                            <img src="{% static 'images/success.png' %}" alt="logo" width="50" height="50"> 
                             <p class="truncate">
                                 {% if request.user.is_authenticated %}
                                 {{ request.user.get_full_name|default:request.user.username|title }}
@@ -120,7 +120,7 @@
             <h3 class="text-xl font-semibold mb-2">Our Team</h3>
             <p class="text-lg mb-4">Our team is composed of dedicated professionals who are passionate about document management and technology. We are committed to providing the best tools and support to enhance your productivity.</p>
             <h3 class="text-xl font-semibold mb-2">Contact Us</h3>
-            <p class="text-lg">For more information or support, please contact us at <a href="mailto:quality@vidyagxp.com" class="text-blue-500 hover:underline">support@doccomparisonpro.com</a>.</p>
+            <p class="text-lg">For more information or support, please contact us at <a href="mailto:support@doccomparisonpro.com" class="text-blue-500 hover:underline">support@doccomparisonpro.com</a>.</p>
         </div>
     </div>
 
@@ -164,7 +164,7 @@
             <p class="text-lg mb-4 text-slate-500">Ans. The comparison report provides a detailed analysis of the differences and similarities between the documents. You can download or share the report as needed.</p>
             <hr>
             <h3 class="text-xl font-semibold my-2">Need Further Assistance?</h3>
-            <p class="text-lg text-slate-500">If you need further assistance, feel free to contact us at <a href="mailto:quality@vidyagxp.com" class="text-blue-500 hover:underline">support@doccomparisonpro.com</a>.</p>
+            <p class="text-lg text-slate-500">If you need further assistance, feel free to contact us at <a href="mailto:support@doccomparisonpro.com" class="text-blue-500 hover:underline">support@doccomparisonpro.com</a>.</p>
         </div>
     </div>
 

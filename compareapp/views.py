@@ -418,15 +418,17 @@ def password_reset_request(request):
                     email.send(fail_silently=False)
                 messages.success(request, "Password reset request has been sent.")
 
-                log = UserLogs.objects.create(
-                    user = request.user,
-                    done_by = request.user.get_full_name() or request.user.username,
-                    last_login = request.user.last_login,
-                    action = "Password Reset, requested",
-                    action_type = "update"
-                )
+                # Note: to get user it is required to login, otherwise gives anonymous
+                
+                # log = UserLogs.objects.create(
+                #     user = request.user,
+                #     done_by = "Anonymous" or request.user.get_full_name() or request.user.username,
+                #     last_login = request.user.last_login,
+                #     action = "Password Reset, requested",
+                #     action_type = "update"
+                # )
 
-                log.save()
+                # log.save()
 
             else:
                 messages.error(request, "The provided email is not registered.")
@@ -467,7 +469,7 @@ def password_creation_view(request, uidb64, token):
 
     return render(request, 'password-base/password_creation_confirm.html', {'form': form})
 
-@login_required
+# @login_required
 def dashboard(request):
     if not request.user.is_authenticated:
         messages.warning(request, "Login Required!")
@@ -826,7 +828,7 @@ def comparison(request: HttpRequest):
     excel_path = os.path.join(result_dir, f"{old_report_number}.xlsx")
     os.makedirs(os.path.dirname(excel_path), exist_ok=True)
 
-    logo_path = "compareapp" + static('images/logo.png')
+    logo_path = "compareapp" + static('images/success.png')
 
     text_based_comparison = ['docx', 'pdf']
     
