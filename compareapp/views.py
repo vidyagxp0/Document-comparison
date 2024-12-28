@@ -828,7 +828,8 @@ def comparison(request: HttpRequest):
     excel_path = os.path.join(result_dir, f"{old_report_number}.xlsx")
     os.makedirs(os.path.dirname(excel_path), exist_ok=True)
 
-    logo_path = "compareapp" + static('images/success.png')
+    # logo_path = "compareapp" + static('images/success.png')
+    logo_path = "staticfiles/images/success.png"
 
     text_based_comparison = ['docx', 'pdf']
     
@@ -850,7 +851,11 @@ def comparison(request: HttpRequest):
     for doc in documents:
         file_path = doc.upload_documents.path
         if comparison_between == 'docx':
-            sections = read_docx(file_path)
+            try:
+                sections = read_docx(file_path)
+            except:
+                sections = {}
+
             data[doc.document_id] = sections
             
             # Getting AI Summary
@@ -858,7 +863,11 @@ def comparison(request: HttpRequest):
             ai_summary[doc.document_id] = getSummary(content)
             
         elif comparison_between == 'pdf':
-            sections = read_pdf(file_path)
+            try:
+                sections = read_pdf(file_path)
+            except:
+                sections = {}
+
             data[doc.document_id] = sections
             
             # Getting AI Summary
@@ -1149,7 +1158,8 @@ def preview(request, report):
         request.session[f"opened_cr_{report}"] = True
         
     return render(request, 'report-preview.html', {'pdf_path': f'/media/{pdf_url}', 'report': report})
-
+    
+@login_required
 def softwareDocumentation(request):
 
     if not request.session.get(f"viewed_sd_{request.user}"):
